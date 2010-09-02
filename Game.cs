@@ -140,7 +140,7 @@ namespace Spider
                     break;
                 }
                 Discard();
-                ExposeCards();
+                TurnOverCards();
             }
         }
 
@@ -313,7 +313,7 @@ namespace Spider
                             {
                                 // No point in moving from a full pile
                                 // from one open position to another unless
-                                // there are more cards to expose.
+                                // there are more cards to turn over.
                                 if (DownPiles[from].Count == 0)
                                 {
                                     continue;
@@ -413,14 +413,6 @@ namespace Spider
                     {
                         break;
                     }
-#if false
-                    if (toPile[toIndex - 1].Face > fromCardParent.Face)
-                    {
-                        // Cannot possibly lead up to our card.
-                        break;
-                    }
-#endif
-
                     int toRun = GetRunUp(to, toIndex - 1);
                     toIndex = toIndex - toRun;
                     if (toIndex == 0)
@@ -430,8 +422,8 @@ namespace Spider
                     }
                     Card toCard = toPile[toIndex - 1];
                     Card toCardChild = toPile[toIndex];
-#if true
-                    if (toCard.Face - 1 == fromCard.Face && fromCardParent.Face - 1 == toCardChild.Face)
+                    if (toCard.Face - 1 == fromCard.Face &&
+                        (fromCardParent.IsEmpty || fromCardParent.Face - 1 == toCardChild.Face))
                     {
                         // We've found a legal move.
                         Candidates.Add(new Move(from, fromIndex, to, toIndex, holdingPile, holdingPileIndex));
@@ -441,18 +433,6 @@ namespace Spider
                         // No longer a continuous run.
                         break;
                     }
-#else
-                    if (toCard.Face - 1 != toPile[toIndex].Face)
-                    {
-                        // No longer a continuous run.
-                        break;
-                    }
-                    if (toCard.Suit == fromCard.Suit && toCard.Face - 1 == fromCard.Face)
-                    {
-                        // We've found a legal move.
-                        Candidates.Add(new Move(from, fromIndex, to, toIndex, holdingPile, holdingPileIndex));
-                    }
-#endif
                 }
             }
         }
@@ -699,7 +679,7 @@ namespace Spider
                 if (fromIndex == 0)
                 {
                     // Only move an entire pile if there
-                    // are more cards to be exposed.
+                    // are more cards to be turned over.
                     if (DownPiles[from].Count > 0)
                     {
                         return lastResortScore;
@@ -720,7 +700,7 @@ namespace Spider
             }
 
             int faceValue = (int)fromCard.Face;
-            int wholePile = fromIndex == 0 ? 1 : 0;
+            int wholePile = fromIndex == 0 && toIndex == toPile.Count ? 1 : 0;
             int moveRun = GetRunDown(from, fromIndex);
             int fromRun = GetRunUp(from, fromIndex) + moveRun - 1;
             int toRun = toIndex > 0 ? GetRunUp(to, toIndex - 1) : 0;
@@ -749,9 +729,9 @@ namespace Spider
             }
             else
             {
-                splitsFrom = 0;
                 if (fromIndex != 0)
                 {
+                    splitsFrom = 0;
                     Card nextCard = fromPile[fromIndex - 1];
                     if (nextCard.Face - 1 == fromCard.Face)
                     {
@@ -775,6 +755,14 @@ namespace Spider
                         }
 
                     }
+                }
+                else
+                {
+                    if (toIndex != toPile.Count)
+                    {
+                        return RejectScore;
+                    }
+                    splitsFrom = 0;
                 }
             }
 
@@ -1249,7 +1237,7 @@ namespace Spider
             }
         }
 
-        private void ExposeCards()
+        private void TurnOverCards()
         {
             for (int i = 0; i < NumberOfPiles; i++)
             {
