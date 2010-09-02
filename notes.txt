@@ -1,0 +1,20 @@
+- consider multiple moves when preferring to expose a useful card when forced to play onto free cells
+- prefer composite moves that create a free cell, particularly after a deal
+- break down composite moves when actually executing the move
+- prefer last resort moves that lead to a discard
+- optimize scoring factors using designed experiments
+- validate pile indexes, etc.
+- ensure last resort moves are scored less than all other moves
+- verify extra suits when moving to a free cell
+- make sure swaps where the from pile is at the root work
+- fix extra suits calculation for moving to a free cell
+- support finding buried multi-suit sequences
+- assess multi move sequences like regular moves
+- add asserts for buried inner runs
+- take holding pile into account for buried moves
+- emphasize last resort moves that expose a new card
+- make console access threadsafe
+- review scoring of whole pile swaps
+- assert that pile indexes are non-negative
+- add debug viewer for Pile, MoveList, and PileList
+- add to source control
