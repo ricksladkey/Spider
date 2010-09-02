@@ -1,12 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider
 {
+    [DebuggerDisplay("Count = {occupied}")]
+    [DebuggerTypeProxy(typeof(MoveListDebugView))]
     public class MoveList : IList<Move>
     {
+        internal class MoveListDebugView
+        {
+            private MoveList moveList;
+
+            public MoveListDebugView(MoveList moveList)
+            {
+                this.moveList = moveList;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public Move[] Items
+            {
+                get
+                {
+                    Move[] array = new Move[moveList.Count];
+                    moveList.CopyTo(array, 0);
+                    return array;
+                }
+            }
+        }
+
         int occupied;
         private Move[] moves;
 
@@ -36,10 +60,12 @@ namespace Spider
         {
             get
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 return moves[index];
             }
             set
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 moves[index] = value;
             }
         }
@@ -65,7 +91,10 @@ namespace Spider
 
         public void CopyTo(Move[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < occupied; i++)
+            {
+                array[arrayIndex + i] = moves[i];
+            }
         }
 
         public int Count

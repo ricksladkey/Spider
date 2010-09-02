@@ -1,12 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider
 {
+    [DebuggerDisplay("Count = {occupied}")]
+    [DebuggerTypeProxy(typeof(PileDebugView))]
     public class Pile : IList<Card>
     {
+        internal class PileDebugView
+        {
+            private Pile pile;
+
+            public PileDebugView(Pile pile)
+            {
+                this.pile = pile;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public Card[] Items
+            {
+                get
+                {
+                    Card[] array = new Card[pile.Count];
+                    pile.CopyTo(array, 0);
+                    return array;
+                }
+            }
+        }
+
         private int occupied;
         private Card[] pile;
 
@@ -19,7 +43,6 @@ namespace Spider
         public void Shuffle(int seed)
         {
             Random random = new Random(seed);
-
             // Knuth shuffle algorithm: for each card
             // except the last, swap it with one of the
             // later cards.
@@ -94,10 +117,12 @@ namespace Spider
         {
             get
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 return pile[index];
             }
             set
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 pile[index] = value;
             }
         }
@@ -123,7 +148,10 @@ namespace Spider
 
         public void CopyTo(Card[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < occupied; i++)
+            {
+                array[arrayIndex + i] = pile[i];
+            }
         }
 
         public int Count

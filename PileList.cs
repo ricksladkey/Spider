@@ -1,12 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider
 {
+    [DebuggerDisplay("Count = {occupied}")]
+    [DebuggerTypeProxy(typeof(PileListDebugView))]
     public class PileList : IList<int>
     {
+        internal class PileListDebugView
+        {
+            private PileList pileList;
+
+            public PileListDebugView(PileList pileList)
+            {
+                this.pileList = pileList;
+            }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public int[] Items
+            {
+                get
+                {
+                    int[] array = new int[pileList.Count];
+                    pileList.CopyTo(array, 0);
+                    return array;
+                }
+            }
+        }
+
         int occupied;
         int[] piles;
 
@@ -41,10 +65,12 @@ namespace Spider
         {
             get
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 return piles[index];
             }
             set
             {
+                Debug.Assert(index >= 0 && index < occupied);
                 piles[index] = value;
             }
         }
@@ -70,7 +96,10 @@ namespace Spider
 
         public void CopyTo(int[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < occupied; i++)
+            {
+                array[arrayIndex + i] = piles[i];
+            }
         }
 
         public int Count

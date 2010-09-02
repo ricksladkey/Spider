@@ -15,6 +15,4 @@
 - emphasize last resort moves that expose a new card
 - make console access threadsafe
 - review scoring of whole pile swaps
-- assert that pile indexes are non-negative
-- add debug viewer for Pile, MoveList, and PileList
-- add to source control
+- check whether the new swap changes make CheckWholePileSwaps redundant
