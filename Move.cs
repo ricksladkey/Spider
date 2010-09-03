@@ -8,31 +8,48 @@ namespace Spider
 {
     public struct Move
     {
-        public int From { get; private set; }
-        public int FromIndex { get; private set; }
-        public int To { get; private set; }
-        public int ToIndex { get; private set; }
-        public int HoldingPile { get; private set; }
-        public int HoldingPileIndex { get; private set; }
+        public int From { get; set; }
+        public int FromIndex { get; set; }
+        public int To { get; set; }
+        public int ToIndex { get; set; }
+        public int HoldingPile { get; set; }
+        public int HoldingIndex { get; set; }
+        public int OffloadPile { get; set; }
+        public int OffloadIndex { get; set; }
         public int Next { get; set; }
         public double Score { get; set; }
 
+        public Move(int from, int to)
+            : this(from, -1, to, -1, -1, -1, -1, -1, -1)
+        {
+        }
+
+        public Move(int from, int fromIndex, int to)
+            : this(from, fromIndex, to, -1, -1, -1, -1, -1, -1)
+        {
+        }
+
         public Move(int from, int fromIndex, int to, int toIndex)
-            : this(from, fromIndex, to, toIndex, -1, -1, -1)
+            : this(from, fromIndex, to, toIndex, -1, -1, -1, -1, -1)
         {
         }
 
         public Move(int from, int fromIndex, int to, int toIndex, int next)
-            : this(from, fromIndex, to, toIndex, -1, -1, next)
+            : this(from, fromIndex, to, toIndex, -1, -1, -1, -1, next)
         {
         }
 
-        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingPileIndex)
-            : this(from, fromIndex, to, toIndex, holdingPile, holdingPileIndex, -1)
+        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingIndex)
+            : this(from, fromIndex, to, toIndex, holdingPile, holdingIndex, -1, -1, -1)
         {
         }
 
-        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingPileIndex, int next)
+        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingIndex, int offloadPile, int offloadIndex)
+            : this(from, fromIndex, to, toIndex, holdingPile, holdingIndex, offloadPile, offloadIndex, -1)
+        {
+        }
+
+        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingIndex, int offloadPile, int offloadIndex, int next)
             : this()
         {
             From = from;
@@ -40,14 +57,16 @@ namespace Spider
             To = to;
             ToIndex = toIndex;
             HoldingPile = holdingPile;
-            HoldingPileIndex = holdingPile != -1 ? holdingPileIndex : -1;
+            HoldingIndex = holdingPile != -1 ? holdingIndex : -1;
+            OffloadPile = offloadPile;
+            OffloadIndex = offloadIndex;
             Next = next;
             Score = 0;
         }
 
         public override string ToString()
         {
-            return string.Format("{0}/{1} -> {2}/{3} w/ {4}/{5}, {6}: {7}", From, FromIndex, To, ToIndex, HoldingPile, HoldingPileIndex, Next, Score);
+            return string.Format("{0}/{1} -> {2}/{3} h/ {4}/{5} o/ {6}/{7}, {8}: score {9}", From, FromIndex, To, ToIndex, HoldingPile, HoldingIndex, OffloadPile, OffloadIndex, Next, Score);
         }
     }
 }

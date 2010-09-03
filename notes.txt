@@ -17,3 +17,5 @@
 - review rejection of whole pile swaps
 - check whether the new swap changes make CheckWholePileSwaps redundant
 - review scoring of all swaps
+- fix holding pile suits if not at a boundary
+- support cascading holding piles
