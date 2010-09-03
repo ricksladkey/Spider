@@ -83,13 +83,7 @@ namespace Spider
             {
                 FaceLists[i] = new PileList();
             }
-            //Coefficients = new double[] { 100, 10, 1, 90, 10, 1, -1 };
-            //Coefficients = new double[] { 100, 6.6, 1, 90, 23.7, 6.6, -1 };
-#if false
-            Coefficients = new double[] { 6.6, 0, 1, 90, 0, 23.7, 6.6, 0, -1 };
-#else
-            Coefficients = new double[] { 8.9835, 9.3244, -0.076368 };
-#endif
+            Coefficients = new double[] { 7.2969, 31.094, -0.1637 };
         }
 
         public void Play()
@@ -349,7 +343,7 @@ namespace Spider
                 }
 
                 // Check for buried free-cell preserving moves.
-                CheckBuried(from, fromPile, maxExtraSuits, holdingPile, holdingPileIndex);
+                CheckBuried(from, maxExtraSuits, holdingPile, holdingPileIndex);
             }
 
             return ChooseMove();
@@ -437,52 +431,61 @@ namespace Spider
             }
         }
 
-        private void CheckBuried(int from, Pile fromPile, int maxExtraSuits, int holdingPile, int holdingPileIndex)
+        private void CheckBuried(int from, int maxExtraSuits, int holdingPile, int holdingPileIndex)
         {
-            // Check for buried sequences that can be uncovered.
-            if (DownPiles[from].Count != 0 || fromPile.Count == 0)
+            if (maxExtraSuits == 0)
             {
                 return;
             }
-            Card fromCard = fromPile[0];
-            if (fromCard.Face == Face.King)
+            Pile fromPile = UpPiles[from];
+            if (fromPile.Count == 0)
             {
+                // No cards.
                 return;
             }
-            bool canReach = false;
-            int fromIndex = fromPile.Count;
-            int fromRun = GetRunUp(from, fromIndex - 1);
-            fromIndex = fromIndex - fromRun;
+            if (DownPiles[from].Count != 0)
+            {
+                // Won't preserve free cells.
+                return;
+            }
+            int fromIndex = fromPile.Count - GetRunUpAnySuit(from, fromPile.Count - 1);
             if (fromIndex == 0)
             {
+                // All one run.
                 return;
             }
-            for (int extraSuitsFrom = 0; extraSuitsFrom < maxExtraSuits; extraSuitsFrom++)
+            if (fromPile[0].Face == Face.King)
             {
-                if (fromPile[fromIndex - 1].Face - 1 != fromPile[fromIndex].Face)
-                {
-                    // No longer a continuous run.
-                    break;
-                }
-                fromRun = GetRunUp(from, fromIndex - 1);
-                if (fromIndex - fromRun == 0)
-                {
-                    canReach = true;
-                    break;
-                }
-                fromIndex = fromIndex - fromRun;
-            }
-            if (!canReach)
-            {
-                // Can't reach the buried sequence.
+                // Cannot move a king.
                 return;
             }
-            if (fromPile[fromIndex - 1].Face - 1 == fromPile[fromIndex].Face)
+            int upperSuits = CountSuits(from, 0, fromIndex);
+            if (upperSuits == -1)
             {
-                // The pile is single continuous sequence.
+                // Upper portion is not a single run.
                 return;
             }
-            PileList piles = FaceLists[(int)fromCard.Face + 1];
+            int lowerSuits = CountSuits(from, fromIndex, fromPile.Count);
+
+            // Check for sufficient free cells.
+            if (upperSuits + lowerSuits - 1 > maxExtraSuits)
+            {
+                return;
+            }
+
+            // Check for inverted pile.
+            if (fromPile[0].Face + 1 == fromPile[fromIndex].Face)
+            {
+                // Add the first uncovering move.
+                Candidates.Add(new Move(from, fromIndex, FreeCells[0], 0, holdingPile, holdingPileIndex, SupplementaryMoves.Count));
+
+                // Add the supplementary move.
+                SupplementaryMoves.Add(new Move(from, 0, FreeCells[0], fromPile.Count - fromIndex));
+                return;
+            }
+
+            // Try other piles.
+            PileList piles = FaceLists[(int)fromPile[0].Face + 1];
             for (int i = 0; i < piles.Count; i++)
             {
                 int to = piles[i];
@@ -491,15 +494,6 @@ namespace Spider
                     continue;
                 }
                 Pile toPile = UpPiles[to];
-
-                Debug.Assert(fromPile.Count > 0);
-                Debug.Assert(fromIndex > 0);
-                Debug.Assert(fromIndex < fromPile.Count);
-                Debug.Assert(toPile.Count > 0);
-                Debug.Assert(CountSuits(from, 0, fromIndex) == 1);
-                Debug.Assert(CountSuits(from, fromIndex) >= 1);
-                Debug.Assert(fromPile[fromIndex - 1].Face - 1 != fromPile[fromIndex].Face);
-                Debug.Assert(fromPile[0].Face + 1 == toPile[toPile.Count - 1].Face);
 
                 // Add the first uncovering move.
                 Candidates.Add(new Move(from, fromIndex, FreeCells[0], 0, SupplementaryMoves.Count));
@@ -543,27 +537,38 @@ namespace Spider
             int to = move.To;
             int toIndex = move.ToIndex;
 
-#if false
-            if (Moves.Count == 87 && from == 3 && to == 4)
-            {
-                Console.WriteLine("Calculating zero score");
-            }
-#endif
-
             Pile fromPile = UpPiles[from];
             Pile toPile = UpPiles[to];
             Card fromCard = fromPile[fromIndex];
+
+#if false
+            if (toIndex != toPile.Count)
+            {
+                if (toIndex == 0 || fromIndex != 0 && toPile[toIndex].Suit == fromPile[fromIndex - 1].Suit)
+                {
+                    Move tmp = new Move(to, toIndex, from, fromIndex);
+                    from = move.From;
+                    fromIndex = move.FromIndex;
+                    to = move.To;
+                    toIndex = move.ToIndex;
+                }
+            }
+#endif
+
             if (toPile.Count == 0)
             {
-                double lastResortScore = 1;
+                double lastResortScore = 0;
                 if (fromIndex > 0)
                 {
                     Card exposedCard = fromPile[fromIndex - 1];
                     if (exposedCard.Face == Face.Ace)
                     {
-                        lastResortScore = 0;
+#if false
+                        // Doesn't seem to help.  Hmmm.
+                        lastResortScore--;
+#endif
                     }
-                    else if (fromPile[fromIndex - 1].Face - 1 != fromCard.Face)
+                    else if (exposedCard.Face - 1 != fromCard.Face)
                     {
                         // Check whether the exposed card will be useful.
                         int maxExtraSuits = FreeCells.Count * (FreeCells.Count + 1) / 2;
@@ -699,6 +704,10 @@ namespace Spider
                 return RejectScore;
             }
 
+            // Verify that we are not swapping piles without turning over cards.
+            Debug.Assert(fromIndex != 0 || toIndex == toPile.Count || DownPiles[from].Count == 0);
+            Debug.Assert(toIndex != 0 || toIndex == toPile.Count || DownPiles[to].Count == 0);
+
             int faceValue = (int)fromCard.Face;
             int wholePile = fromIndex == 0 && toIndex == toPile.Count ? 1 : 0;
             int moveRun = GetRunDown(from, fromIndex);
@@ -708,6 +717,15 @@ namespace Spider
             int splitsFrom = moveRun != fromRun ? 1 : 0;
             int downCount = fromIndex == 0 ? DownPiles[from].Count : 0;
             int runLength = 0;
+#if false
+            if (joinsTo == 0)
+            {
+                if (toIndex != toPile.Count && fromIndex > 0 && fromPile[fromIndex - 1].Suit == toPile[toIndex].Suit)
+                {
+                    joinsTo = 1;
+                }
+            }
+#endif
             if (joinsTo != 0)
             {
                 if (splitsFrom != 0)
@@ -727,16 +745,13 @@ namespace Spider
                     runLength = moveRun + toRun;
                 }
             }
-            else
+            else if (splitsFrom == 0)
             {
                 if (fromIndex != 0)
                 {
-                    splitsFrom = 0;
                     Card nextCard = fromPile[fromIndex - 1];
                     if (nextCard.Face - 1 == fromCard.Face)
                     {
-                        splitsFrom = 1;
-
                         // Prefer to leave longer runs exposed.
                         if (toIndex == toPile.Count &&
                             fromIndex > 0 &&
@@ -744,14 +759,16 @@ namespace Spider
                         {
                             int nextFromRun = GetRunUp(from, fromIndex - 1);
                             int nextToRun = GetRunUp(to, toIndex - 1);
-                            if (nextFromRun <= nextToRun)
-                            {
-                                // The other position is better.
-                                return RejectScore;
-                            }
 
                             // Break the tie.
-                            splitsFrom = 0;
+                            if (nextFromRun <= nextToRun)
+                            {
+                                splitsFrom = 1;
+                            }
+                        }
+                        else
+                        {
+                            splitsFrom = 1;
                         }
 
                     }
@@ -760,9 +777,14 @@ namespace Spider
                 {
                     if (toIndex != toPile.Count)
                     {
-                        return RejectScore;
+                        bool outOfOrder =
+                            fromIndex != 0 && fromPile[fromIndex - 1].Face - 1 != fromPile[fromIndex].Face ||
+                            toIndex != 0 && toPile[toIndex - 1].Face - 1 != toPile[toIndex].Face;
+                        if (!outOfOrder)
+                        {
+                            splitsFrom = 1;
+                        }
                     }
-                    splitsFrom = 0;
                 }
             }
 
@@ -772,23 +794,10 @@ namespace Spider
                 return RejectScore;
             }
 
-#if false
-            double score = 100 +
-                Coefficients[0] * faceValue +
-                Coefficients[1] * runLength +
-                Coefficients[2] * faceValue * runLength +
-                Coefficients[3] * joinsTo * faceValue +
-                Coefficients[4] * joinsTo * runLength +
-                Coefficients[5] * joinsTo * faceValue * runLength +
-                Coefficients[6] * wholePile +
-                Coefficients[7] * downCount +
-                Coefficients[8] * wholePile * downCount;
-#else
             double score = 100000 + faceValue +
                 Coefficients[0] * runLength +
                 Coefficients[1] * wholePile +
                 Coefficients[2] * wholePile * downCount;
-#endif
 
             return score;
         }
@@ -885,6 +894,23 @@ namespace Spider
             return runLength;
         }
 
+        private int GetRunUpAnySuit(int column, int row)
+        {
+            Pile pile = UpPiles[column];
+            int runLength = 1;
+            for (int index = row - 1; index >= 0; index--)
+            {
+                Card card = pile[index];
+                Card nextCard = pile[index + 1];
+                if (nextCard.Face + 1 != card.Face)
+                {
+                    break;
+                }
+                runLength++;
+            }
+            return runLength;
+        }
+
         private int GetRunDown(int column, int row)
         {
 #if true
@@ -916,6 +942,23 @@ namespace Spider
                 {
                     break;
                 }
+                if (previousCard.Face - 1 != card.Face)
+                {
+                    break;
+                }
+                runLength++;
+            }
+            return runLength;
+        }
+
+        private int GetRunDownAnySuit(int column, int row)
+        {
+            Pile pile = UpPiles[column];
+            int runLength = 1;
+            for (int index = row + 1; index < pile.Count; index++)
+            {
+                Card previousCard = pile[index - 1];
+                Card card = pile[index];
                 if (previousCard.Face - 1 != card.Face)
                 {
                     break;

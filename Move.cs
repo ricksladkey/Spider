@@ -18,32 +18,21 @@ namespace Spider
         public double Score { get; set; }
 
         public Move(int from, int fromIndex, int to, int toIndex)
-            : this()
+            : this(from, fromIndex, to, toIndex, -1, -1, -1)
         {
-            From = from;
-            FromIndex = fromIndex;
-            To = to;
-            ToIndex = toIndex;
-            HoldingPile = -1;
-            HoldingPileIndex = -1;
-            Next = -1;
-            Score = 0;
         }
 
         public Move(int from, int fromIndex, int to, int toIndex, int next)
-            : this()
+            : this(from, fromIndex, to, toIndex, -1, -1, next)
         {
-            From = from;
-            FromIndex = fromIndex;
-            To = to;
-            ToIndex = toIndex;
-            HoldingPile = -1;
-            HoldingPileIndex = -1;
-            Next = next;
-            Score = 0;
         }
 
         public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingPileIndex)
+            : this(from, fromIndex, to, toIndex, holdingPile, holdingPileIndex, -1)
+        {
+        }
+
+        public Move(int from, int fromIndex, int to, int toIndex, int holdingPile, int holdingPileIndex, int next)
             : this()
         {
             From = from;
@@ -52,7 +41,7 @@ namespace Spider
             ToIndex = toIndex;
             HoldingPile = holdingPile;
             HoldingPileIndex = holdingPile != -1 ? holdingPileIndex : -1;
-            Next = -1;
+            Next = next;
             Score = 0;
         }
 

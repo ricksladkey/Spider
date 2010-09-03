@@ -14,6 +14,6 @@
 - take holding pile into account for buried moves
 - emphasize last resort moves that turns over a new card
 - make console access threadsafe
-- review scoring of whole pile swaps
+- review rejection of whole pile swaps
 - check whether the new swap changes make CheckWholePileSwaps redundant
-- fix whole pile if it's a swap
+- review scoring of all swaps
