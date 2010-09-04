@@ -11,11 +11,14 @@
 - support finding buried multi-suit sequences
 - assess multi move sequences like regular moves
 - add asserts for buried inner runs
-- take holding pile into account for buried moves
-- emphasize last resort moves that turns over a new card
 - make console access threadsafe
-- review rejection of whole pile swaps
 - check whether the new swap changes make CheckWholePileSwaps redundant
+- score swaps both ways and return the higher result
 - review scoring of all swaps
 - fix holding pile suits if not at a boundary
 - support cascading holding piles
+- before playing onto a free cell search for a free cell preserving sequence
+- unify scoring of last resort moves with a single scoring system
+- take holding pile into account for buried moves
+- extending buried sequences to multiple upper runs
+- try removing infinite score for last resort moves because buried should have found it

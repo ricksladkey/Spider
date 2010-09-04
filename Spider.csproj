@@ -48,8 +48,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Card.cs" />
+    <Compile Include="Debug.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="Face.cs" />
+    <Compile Include="HoldingInfo.cs" />
+    <Compile Include="HoldingSet.cs" />
+    <Compile Include="HoldingStack.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveList.cs" />
     <Compile Include="Pile.cs" />

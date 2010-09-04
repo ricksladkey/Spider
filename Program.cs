@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -75,6 +76,10 @@ namespace Spider
                 if (arg.Substring(0, 2) == "--")
                 {
                     Console.WriteLine("invalid argument: " + arg);
+                    if (Debugger.IsAttached)
+                    {
+                        Debugger.Break();
+                    }
                     return;
                 }
                 break;

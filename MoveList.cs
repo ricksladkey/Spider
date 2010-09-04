@@ -76,6 +76,12 @@ namespace Spider
 
         public void Add(Move item)
         {
+            if (occupied == moves.Length)
+            {
+                Move[] newMoves = new Move[moves.Length * 2];
+                moves.CopyTo(newMoves, 0);
+                moves = newMoves;
+            }
             moves[occupied++] = item;
         }
 
