@@ -83,12 +83,12 @@ namespace Spider
             HoldingList = new List<HoldingInfo>();
             RunLengths = new int[NumberOfPiles];
             FreeCells = new PileList();
-            FaceLists = new PileList[(int)(Face.King + 1)];
+            FaceLists = new PileList[(int)Face.King + 1];
             for (int i = (int)Face.Ace; i <= (int)Face.King; i++)
             {
                 FaceLists[i] = new PileList();
             }
-            Coefficients = new double[] { 6.8083, 55.084, -0.1637 };
+            Coefficients = new double[] { 6.8083, 55.084, 1055.084 };
         }
 
         public void Play()
@@ -671,6 +671,8 @@ namespace Spider
             int runLengthTo = isSwap ? GetRunLength(move.To, move.ToIndex, move.From, move.FromIndex) : 0;
             int runLength = runLengthFrom + runLengthTo;
             int downCount = fromPile.Count;
+            int turnsOverCard = wholePile != 0 && DownPiles[move.From].Count != 0 ? 1 : 0;
+            int createsFreeCell = wholePile != 0 && DownPiles[move.From].Count == 0 ? 1 : 0;
             if (order == 0 && runLength < 0)
             {
                 return RejectScore;
@@ -678,8 +680,7 @@ namespace Spider
             if (order == 0 && runLength == 0)
             {
                 bool isBetter = false;
-#if true
-                if (!isSwap && oldOrderFrom == 1 && oldOrderTo == 1)
+                if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
                 {
                     if (move.FromIndex != 0 && move.ToIndex != 0)
                     {
@@ -691,7 +692,6 @@ namespace Spider
                         }
                     }
                 }
-#endif
                 if (!isBetter)
                 {
                     return RejectScore;
@@ -700,8 +700,8 @@ namespace Spider
 
             double score = 100000 + faceValue +
                 Coefficients[0] * runLength +
-                Coefficients[1] * wholePile +
-                Coefficients[2] * wholePile * downCount;
+                Coefficients[1] * turnsOverCard +
+                Coefficients[2] * createsFreeCell;
 
             return score;
         }
