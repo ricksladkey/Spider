@@ -26,6 +26,7 @@ namespace Spider
         public bool SimpleMoves { get; set; }
         public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
+        public int Instance { get; set; }
 
         public bool Won { get; private set; }
         public MoveList Moves { get; private set; }
@@ -63,6 +64,7 @@ namespace Spider
             SimpleMoves = false;
             RecordComplex = true;
             Diagnostics = false;
+            Instance = -1;
 
             Moves = new MoveList();
             Shuffled = new Pile();
@@ -620,6 +622,9 @@ namespace Spider
 
         private double CalculateScore(Move move)
         {
+#if true
+            return NewCalculateScore(move);
+#else
             double newScore = NewCalculateScore(move);
             double oldScore = OldCalculateScore(move);
             bool newScoreRejected = newScore == RejectScore;
@@ -643,6 +648,7 @@ namespace Spider
 #else
             return newScore;
 #endif
+#endif
         }
 
         private double NewCalculateScore(Move move)
@@ -664,7 +670,7 @@ namespace Spider
                 return RejectScore;
             }
             int faceFrom = (int)fromPile[move.FromIndex].Face;
-            int faceTo = isSwap ? (int)fromPile[move.ToIndex].Face : 0;
+            int faceTo = isSwap ? (int)toPile[move.ToIndex].Face : 0;
             int faceValue = Math.Max(faceFrom, faceTo);
             int wholePile = move.FromIndex == 0 && move.ToIndex == toPile.Count && move.OffloadIndex == -1 ? 1 : 0;
             int runLengthFrom = GetRunLength(move.From, move.FromIndex, move.To, move.ToIndex);

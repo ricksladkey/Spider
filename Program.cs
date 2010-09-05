@@ -11,6 +11,7 @@ namespace Spider
         static void Main(string[] args)
         {
             bool evaluate = false;
+            bool compare = false;
             Player player = new Player();
             int i = 0;
             while (i < args.Length)
@@ -73,6 +74,12 @@ namespace Spider
                     i++;
                     continue;
                 }
+                if (arg == "--compare")
+                {
+                    compare = true;
+                    i++;
+                    continue;
+                }
                 if (arg.Substring(0, 2) == "--")
                 {
                     Console.WriteLine("invalid argument: " + arg);
@@ -92,6 +99,10 @@ namespace Spider
             if (evaluate)
             {
                 player.EvaluateCoefficient();
+            }
+            else if (compare)
+            {
+                player.Compare();
             }
             else
             {

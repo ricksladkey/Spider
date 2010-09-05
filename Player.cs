@@ -30,12 +30,14 @@ namespace Spider
         public int Discards { get { return discards; } }
         public int Moves { get { return moves; } }
         public bool[] Results { get; private set; }
+        public int[] Instances { get; private set; }
 
         private int currentSeed;
         private int played;
         private int won;
         private int discards;
         private int moves;
+        private int instance;
         private Semaphore semaphore;
         private Queue<Game> gameQueue;
 
@@ -71,6 +73,11 @@ namespace Spider
 
             if (ShowResults)
             {
+                for (int i = 0; i < Instances.Length; i++)
+                {
+                    Console.Write(Instances[i]);
+                }
+                Console.WriteLine("");
                 for (int i = 0; i < Results.Length; i++)
                 {
                     Console.Write(Results[i] ? "W" : "-");
@@ -106,13 +113,39 @@ namespace Spider
             }
         }
 
+        public void Compare()
+        {
+            while (true)
+            {
+                PlayOneSet();
+                int won1 = Won;
+                bool[] results1 = Results;
+                int[] instances1 = Instances;
+                PlayOneSet();
+                int won2 = Won;
+                bool[] results2 = Results;
+                int[] instances2 = Instances;
+                if (won1 != won2)
+                {
+                    for (int i = 0; i < results1.Length; i++)
+                    {
+                        Console.WriteLine("Game: {0}, Seed: {1}, Instance: {2}/{3}, Won: {4}/{5}",
+                            i, Seed + i, instances1[i], instances2[i], results1[i] ? 1 : 0, results2[i] ? 1 : 0);
+                    }
+                    break;
+                }
+            }
+        }
+
         public void PlayOneSet()
         {
             played = 0;
             won = 0;
             discards = 0;
             moves = 0;
+            instance = 0;
             Results = new bool[Games];
+            Instances = new int[Games];
             currentSeed = Seed;
             int threads = Threads;
             if (threads == -1)
@@ -126,6 +159,7 @@ namespace Spider
             if (threads == 1)
             {
                 Game game = new Game();
+                game.Instance = instance;
                 for (int i = 0; i < Games; i++)
                 {
                     PlayOneGame(game);
@@ -178,6 +212,7 @@ namespace Spider
             Interlocked.Increment(ref played);
             Interlocked.Add(ref moves, game.Moves.Count);
             Results[game.Seed - Seed] = game.Won;
+            Instances[game.Seed - Seed] = game.Instance;
         }
 
         private void ThreadPlayOneGame(object state)
@@ -194,7 +229,9 @@ namespace Spider
             {
                 if (gameQueue.Count == 0)
                 {
-                    return new Game();
+                    Game game = new Game();
+                    game.Instance = instance++;
+                    return game;
                 }
                 return gameQueue.Dequeue();
             }
