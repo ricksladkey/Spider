@@ -88,7 +88,7 @@ namespace Spider
             {
                 FaceLists[i] = new PileList();
             }
-            Coefficients = new double[] { 7.2969, 0, 31.094, -0.1637 };
+            Coefficients = new double[] { 6.8083, 55.084, -0.1637 };
         }
 
         public void Play()
@@ -343,11 +343,12 @@ namespace Spider
                             // We've found a legal move.
                             Pile toPile = UpPiles[to];
                             Candidates.Add(new Move(from, fromIndex, to, toPile.Count, AddHolding(holdingSet)));
-
-                            // Only need to check the first free cell
-                            // since all free cells are the same
-                            // except for undealt cards.
+                            break;
                         }
+
+                        // Only need to check the first free cell
+                        // since all free cells are the same
+                        // except for undealt cards.
                         break;
                     }
 
@@ -424,7 +425,8 @@ namespace Spider
             {
                 foreach (HoldingSet holdingSet in HoldingStack.Sets)
                 {
-                    if (fromIndex == holdingSet.Index)
+                    int holdingIndex = holdingSet.Index;
+                    if (holdingIndex != -1 && fromIndex >= holdingIndex)
                     {
                         continue;
                     }
@@ -453,8 +455,9 @@ namespace Spider
                         if (toCard.Face - 1 == fromCard.Face &&
                             (fromCardParent.IsEmpty || fromCardParent.Face - 1 == toCardChild.Face))
                         {
-                            // We've found a legal move.
+                            // We've found a legal swap.
                             Candidates.Add(new Move(from, fromIndex, to, toIndex, AddHolding(holdingSet)));
+                            break;
                         }
                         if (toCard.Face - 1 != toCardChild.Face)
                         {
@@ -617,22 +620,139 @@ namespace Spider
 
         private double CalculateScore(Move move)
         {
-            double score = CalculateOneScore(move);
-#if false
-            if (move.ToIndex != UpPiles[move.To].Count)
+            double newScore = NewCalculateScore(move);
+            double oldScore = OldCalculateScore(move);
+            bool newScoreRejected = newScore == RejectScore;
+            bool oldScoreRejected = oldScore == RejectScore;
+#if true
+            if (newScoreRejected != oldScoreRejected)
             {
-                Move reversedMove = new Move(move.To, move.ToIndex, move.From, move.FromIndex);
-                double reversedScore = CalculateOneScore(reversedMove);
-                if (reversedScore > score)
+                if (Debugger.IsAttached)
                 {
-                    score = reversedScore;
+                    Console.WriteLine("newScore: {0}", newScore);
+                    Console.WriteLine("oldScore: {0}", oldScore);
+                    PrintMove(move);
+                    PrintGame();
+                    Debugger.Break();
+                    NewCalculateScore(move);
                 }
             }
 #endif
+#if false
+            return oldScore;
+#else
+            return newScore;
+#endif
+        }
+
+        private double NewCalculateScore(Move move)
+        {
+            Pile fromPile = UpPiles[move.From];
+            Pile toPile = UpPiles[move.To];
+            if (toPile.Count == 0)
+            {
+                return OldCalculateScore(move);
+            }
+            bool isSwap = move.OffloadIndex == -1 && move.ToIndex != UpPiles[move.To].Count;
+            int oldOrderFrom = GetOrder(move.From, move.FromIndex - 1, move.From, move.FromIndex);
+            int newOrderFrom = GetOrder(move.To, move.ToIndex - 1, move.From, move.FromIndex);
+            int oldOrderTo = isSwap ? GetOrder(move.To, move.ToIndex - 1, move.To, move.ToIndex) : 0;
+            int newOrderTo = isSwap ? GetOrder(move.From, move.FromIndex - 1, move.To, move.ToIndex) : 0;
+            int order = newOrderFrom + newOrderTo - oldOrderFrom - oldOrderTo;
+            if (order < 0)
+            {
+                return RejectScore;
+            }
+            int faceFrom = (int)fromPile[move.FromIndex].Face;
+            int faceTo = isSwap ? (int)fromPile[move.ToIndex].Face : 0;
+            int faceValue = Math.Max(faceFrom, faceTo);
+            int wholePile = move.FromIndex == 0 && move.ToIndex == toPile.Count && move.OffloadIndex == -1 ? 1 : 0;
+            int runLengthFrom = GetRunLength(move.From, move.FromIndex, move.To, move.ToIndex);
+            int runLengthTo = isSwap ? GetRunLength(move.To, move.ToIndex, move.From, move.FromIndex) : 0;
+            int runLength = runLengthFrom + runLengthTo;
+            int downCount = fromPile.Count;
+            if (order == 0 && runLength < 0)
+            {
+                return RejectScore;
+            }
+            if (order == 0 && runLength == 0)
+            {
+                bool isBetter = false;
+#if true
+                if (!isSwap && oldOrderFrom == 1 && oldOrderTo == 1)
+                {
+                    if (move.FromIndex != 0 && move.ToIndex != 0)
+                    {
+                        int nextFromRun = GetRunUp(move.From, move.FromIndex - 1);
+                        int nextToRun = GetRunUp(move.To, move.ToIndex - 1);
+                        if (nextFromRun > nextToRun)
+                        {
+                            isBetter = true;
+                        }
+                    }
+                }
+#endif
+                if (!isBetter)
+                {
+                    return RejectScore;
+                }
+            }
+
+            double score = 100000 + faceValue +
+                Coefficients[0] * runLength +
+                Coefficients[1] * wholePile +
+                Coefficients[2] * wholePile * downCount;
+
             return score;
         }
 
-        private double CalculateOneScore(Move move)
+        private int GetOrder(int parentPile, int parentIndex, int childPile, int childIndex)
+        {
+            Card parentCard = GetCard(parentPile, parentIndex);
+            Card childCard = GetCard(childPile, childIndex);
+            if (parentCard.Face - 1 != childCard.Face)
+            {
+                return 0;
+            }
+            if (parentCard.Suit != childCard.Suit)
+            {
+                return 1;
+            }
+            return 2;
+        }
+
+        private Card GetCard(int column, int index)
+        {
+            Pile pile = UpPiles[column];
+            if (index < 0 || index >= pile.Count)
+            {
+                return Card.Empty;
+            }
+            return pile[index];
+        }
+
+        private int GetRunLength(int from, int fromIndex, int to, int toIndex)
+        {
+            int moveRun = GetRunDown(from, fromIndex);
+            int fromRun = GetRunUp(from, fromIndex) + moveRun - 1;
+            if (GetOrder(to, toIndex - 1, from, fromIndex) != 2)
+            {
+                if (moveRun == fromRun)
+                {
+                    return 0;
+                }
+                return -fromRun;
+            }
+            int toRun = toIndex > 0 ? GetRunUp(to, toIndex - 1) : 0;
+            int newRun = moveRun + toRun;
+            if (moveRun == fromRun)
+            {
+                return newRun;
+            }
+            return newRun - fromRun;
+        }
+
+        private double OldCalculateScore(Move move)
         {
             if (move.Next != -1)
             {
@@ -810,7 +930,7 @@ namespace Spider
             int toRun = toIndex > 0 ? GetRunUp(to, toIndex - 1) : 0;
             int joinsTo = toIndex > 0 && fromCard.Suit == toPile[toIndex - 1].Suit ? 1 : 0;
             int splitsFrom = moveRun != fromRun ? 1 : 0;
-            int downCount = fromIndex == 0 ? DownPiles[from].Count : 0;
+            int downCount = fromPile.Count;
             int runLength = 0;
 #if false
             if (joinsTo == 0)
@@ -882,7 +1002,6 @@ namespace Spider
                     }
                 }
             }
-            int bearsOff = runLength == 13 ? 1 : 0;
 
             // Reject moves that are not a net advantange.
             if (joinsTo == 0 && splitsFrom != 0)
@@ -892,9 +1011,8 @@ namespace Spider
 
             double score = 100000 + faceValue +
                 Coefficients[0] * runLength +
-                Coefficients[1] * bearsOff +
-                Coefficients[2] * wholePile +
-                Coefficients[3] * wholePile * downCount;
+                Coefficients[1] * wholePile +
+                Coefficients[2] * wholePile * downCount;
 
             return score;
         }
