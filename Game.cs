@@ -92,7 +92,10 @@ namespace Spider
             {
                 FaceLists[i] = new PileList();
             }
-            Coefficients = new double[] { 6.8083, 55.084, 1000, -0.177 };
+            Coefficients = new double[] {
+                6.8083, 55.084, 1000, -0.177,
+                5.6586, -0.93303, -0.99,
+            };
         }
 
         public void Play()
@@ -728,72 +731,94 @@ namespace Spider
             Pile fromPile = UpPiles[move.From];
             Pile toPile = UpPiles[move.To];
             Card fromCard = fromPile[move.FromIndex];
-            double lastResortScore = 0;
+            int uses = 0;
+            int wholePile = 0;
+            int downCount = DownPiles[move.From].Count;
             if (move.FromIndex > 0)
             {
-                Card exposedCard = fromPile[move.FromIndex - 1];
-                if (exposedCard.Face - 1 != fromCard.Face)
-                {
-                    // Check whether the exposed card will be useful.
-                    int freeCells = FreeCells.Count - 1;
-                    int maxExtraSuits = ExtraSuits(freeCells);
-                    int fromSuits = CountSuits(move.From, move.FromIndex);
-                    for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
-                    {
-                        if (nextFrom == move.From || nextFrom == move.To)
-                        {
-                            // Inappropriate column.
-                            continue;
-                        }
-                        Pile nextFromPile = UpPiles[nextFrom];
-                        if (nextFromPile.Count == 0)
-                        {
-                            // Column is empty.
-                            continue;
-                        }
-                        int nextFromIndex = nextFromPile.Count - RunLengthsAnySuit[nextFrom];
-                        if (nextFromPile[nextFromIndex].Face + 1 != exposedCard.Face)
-                        {
-                            // Not the card we need.
-                            continue;
-                        }
-                        int extraSuits = CountSuits(nextFrom, nextFromIndex) - 1;
-                        if (extraSuits <= maxExtraSuits)
-                        {
-                            // Card leads to a useful move.
-                            lastResortScore++;
-                        }
-                    }
-                }
+                // Count potential uses of the exposed card.
+                uses += CountUses(move);
             }
             else
             {
                 // Prefer to move entire piles that
                 // are more likely to become free cells.
-                lastResortScore += 5 - DownPiles[move.From].Count;
+                wholePile = 1;
+            }
+            int isKing = 0;
+            int faceValue = (int)fromCard.Face;
+            if (fromCard.Face == Face.King)
+            {
+                isKing = 1;
             }
 
             if (move.FromIndex == 0)
             {
                 // Only move an entire pile if there
                 // are more cards to be turned over.
-                if (DownPiles[move.From].Count > 0)
+                if (DownPiles[move.From].Count == 0)
                 {
-                    return lastResortScore;
+                    return RejectScore;
                 }
+            }
+            else if (fromPile[move.FromIndex - 1].Face - 1 == fromCard.Face)
+            {
+                // No point in splitting consecutive cards
+                // unless they are part of a multi-move
+                // sequence.
                 return RejectScore;
             }
 
-            if (fromPile[move.FromIndex - 1].Face - 1 != fromCard.Face)
-            {
-                // This exposes a non-consecutive card.
-                return lastResortScore;
-            }
+            // This exposes a non-consecutive card.
+            double score = 0 + uses +
+                Coefficients[4] * wholePile +
+                Coefficients[5] * wholePile * downCount +
+                Coefficients[6] * isKing;
 
-            // No point in splitting consecutive cards
-            // unless they are part of a multi-move
-            // sequence.
-            return RejectScore;
+            return score;
+        }
+
+        private int CountUses(Move move)
+        {
+            int uses = 0;
+
+            Pile fromPile = UpPiles[move.From];
+            Card fromCard = fromPile[move.FromIndex];
+            Card exposedCard = fromPile[move.FromIndex - 1];
+            if (exposedCard.Face - 1 != fromCard.Face)
+            {
+                // Check whether the exposed card will be useful.
+                int freeCells = FreeCells.Count - 1;
+                int maxExtraSuits = ExtraSuits(freeCells);
+                int fromSuits = CountSuits(move.From, move.FromIndex);
+                for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
+                {
+                    if (nextFrom == move.From || nextFrom == move.To)
+                    {
+                        // Inappropriate column.
+                        continue;
+                    }
+                    Pile nextFromPile = UpPiles[nextFrom];
+                    if (nextFromPile.Count == 0)
+                    {
+                        // Column is empty.
+                        continue;
+                    }
+                    int nextFromIndex = nextFromPile.Count - RunLengthsAnySuit[nextFrom];
+                    if (nextFromPile[nextFromIndex].Face + 1 != exposedCard.Face)
+                    {
+                        // Not the card we need.
+                        continue;
+                    }
+                    int extraSuits = CountSuits(nextFrom, nextFromIndex) - 1;
+                    if (extraSuits <= maxExtraSuits)
+                    {
+                        // Card leads to a useful move.
+                        uses++;
+                    }
+                }
+            }
+            return uses;
         }
 
         private int GetOrder(Card parent, Card child)
