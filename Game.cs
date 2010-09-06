@@ -502,31 +502,28 @@ namespace Spider
             PileList roots = new PileList();
             roots.Clear();
             int upperSuits = 0;
-            int upperIndex = 0;
+            int upperIndex = fromIndex;
             int totalUpperSuits = 0;
-            while (upperIndex < fromIndex)
+            while (upperIndex > 0)
             {
+                int count = GetRunUpAnySuit(from, upperIndex);
+                upperIndex -= count;
                 if (fromPile[upperIndex].Face == Face.King)
                 {
                     // Cannot move a king.
                     return;
                 }
                 roots.Add(upperIndex);
-                int count = GetRunDownAnySuit(from, upperIndex);
                 int suits = CountSuits(from, upperIndex, upperIndex + count);
                 upperSuits = Math.Max(upperSuits, suits);
                 totalUpperSuits += suits;
-                upperIndex += count;
             }
+            Debug.Assert(upperIndex == 0);
             Debug.Assert(roots.Count > 0);
-            int lowerSuits = CountSuits(from, fromIndex, fromPile.Count);
-            if (lowerSuits == -1)
-            {
-                // Lower portion is not a single run.
-                return;
-            }
 
             // Lower suits does not depend on holding piles.
+            int lowerSuits = CountSuits(from, fromIndex, fromPile.Count);
+            Debug.Assert(lowerSuits > 0);
             int maxLowerSuits = ExtraSuits(freeCells);
             int offloadPile = FreeCells[0];
 
@@ -575,37 +572,65 @@ namespace Spider
             }
             else
             {
+                int firstFromIndex = -1;
+                int firstTo = -1;
+                PileList usedPiles = new PileList();
+                Face[] exposedFaces = new Face[NumberOfPiles];
                 foreach (HoldingSet holdingSet in HoldingStack.Sets)
                 {
-                    int found = 0;
-                    PileList usedPiles = new PileList();
+                    usedPiles.Clear();
                     for (int n = 0; n < roots.Count; n++)
                     {
+                        bool found = false;
                         int rootIndex = roots[n];
                         Card rootCard = fromPile[rootIndex];
                         PileList piles = FaceLists[(int)rootCard.Face + 1];
                         for (int i = 0; i < piles.Count; i++)
                         {
                             int to = piles[i];
-                            if (to == from || holdingSet.Contains(to))
+                            if (to == from || holdingSet.Contains(to) || usedPiles.Contains(to))
                             {
                                 continue;
                             }
-                            if (usedPiles.Contains(to))
+
+                            // Found a home for this run.
+                            if (usedPiles.Count == 0)
                             {
-                                continue;
+                                firstFromIndex = rootIndex;
+                                firstTo = to;
                             }
                             usedPiles.Add(to);
-                            found++;
+                            found = true;
                             break;
                         }
-                        if (found != n + 1)
+                        if (!found)
                         {
-                            break;
+#if true
+                            // Didn't find a home for this run.
+                            for (int i = 0; i < usedPiles.Count; i++)
+                            {
+                                int usedPile = usedPiles[i];
+                                Face exposedFace = exposedFaces[usedPile];
+                                if (exposedFace - 1 == rootCard.Face)
+                                {
+                                    usedPiles.Add(usedPile);
+                                    found = true;
+                                    break;
+                                }
+                            }
+#endif
+                            if (!found)
+                            {
+                                break;
+                            }
                         }
+                        int pile = usedPiles[usedPiles.Count - 1];
+                        int lastIndex = rootIndex + GetRunDownAnySuit(from, rootIndex) - 1;
+                        exposedFaces[pile] = fromPile[lastIndex].Face;
                     }
-                    if (found != roots.Count)
+                    if (usedPiles.Count != roots.Count)
                     {
+                        // Didn't find a home for all runs.
                         continue;
                     }
 
@@ -615,11 +640,22 @@ namespace Spider
                     int maxUpperSuits = ExtraSuits(freeCells - lowerFreeCellsUsed) + 1;
                     if (lowerSuitsHolding <= maxLowerSuits && upperSuits <= maxUpperSuits)
                     {
-                        int lastTo = usedPiles[0];
-                        Pile lastToPile = UpPiles[lastTo];
-                        Candidates.Add(new Move(from, 0, lastTo, lastToPile.Count, AddHolding(holdingSet), FreeCells[0], fromIndex, SupplementaryMoves.Count));
+#if false
+                        for (int i = 0; i < usedPiles.Count - 1; i++)
+                        {
+                            for (int j = i + 1; j < usedPiles.Count; j++)
+                            {
+                                if (usedPiles[i] == usedPiles[j])
+                                {
+                                    Debugger.Break();
+                                }
+                            }
+                        }
+#endif
+                        Pile firstToPile = UpPiles[firstTo];
+                        Candidates.Add(new Move(from, firstFromIndex, firstTo, firstToPile.Count, AddHolding(holdingSet), FreeCells[0], fromIndex, SupplementaryMoves.Count));
                         SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, -1, -1, SupplementaryMoves.Count + 1));
-                        for (int n = roots.Count - 1; n >= 0; n--)
+                        for (int n = 0; n < roots.Count; n++)
                         {
                             int rootIndex = roots[n];
                             int to = usedPiles[n];
@@ -1363,11 +1399,24 @@ namespace Spider
             }
 
 #if false
-            Console.Clear();
-            PrintMove(move);
-            PrintGame();
-            PrintCandidates();
-            Console.ReadKey();
+            bool found = false;
+            for (int i = 0; i < Candidates.Count; i++)
+            {
+                Move candidate = Candidates[i];
+                if (candidate.Next != -1)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (found)
+            {
+                Console.Clear();
+                PrintMove(move);
+                PrintGame();
+                PrintCandidates();
+                Console.ReadKey();
+            }
 #endif
 
             // The best move may not be worth making.
@@ -1375,6 +1424,7 @@ namespace Spider
             {
                 return false;
             }
+
 
             if (!SimpleMoves)
             {
@@ -1561,6 +1611,27 @@ namespace Spider
 
         private void OffloadUsingFreeCells(int from, int fromIndex, int to, int toIndex, int offloadPile, int offloadIndex, int first)
         {
+#if false
+            PileList usedPiles = new PileList();
+            for (int next = SupplementaryMoves[first].Next; SupplementaryMoves[next].Next != -1; next = SupplementaryMoves[next].Next)
+            {
+                Move subMove = SupplementaryMoves[next];
+                usedPiles.Add(subMove.To);
+            }
+            if (usedPiles.Count >= 2)
+            {
+                for (int i = 0; i < usedPiles.Count - 1; i++)
+                {
+                    for (int j = i + 1; j < usedPiles.Count; j++)
+                    {
+                        if (usedPiles[i] == usedPiles[j])
+                        {
+                            Debugger.Break();
+                        }
+                    }
+                }
+            }
+#endif
             if (Diagnostics)
             {
                 Console.WriteLine("OUFC: {0}/{1} -> {2}/{3} o{4}/{5}", from, fromIndex, to, toIndex, offloadPile, offloadIndex);
@@ -1798,7 +1869,7 @@ namespace Spider
                 Console.WriteLine("{0}", move);
                 for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
                 {
-                    Move nextMove = SupplementaryMoves[move.Next];
+                    Move nextMove = SupplementaryMoves[next];
                     Console.WriteLine("    {0}", nextMove);
                 }
                 PrintHolding(move);

@@ -1,13 +1,12 @@
-- consider multiple moves when preferring to expose a useful card when forced to play onto free cells
 - prefer composite moves that create a free cell, particularly after a deal
 - prefer last resort moves that lead to a discard
 - optimize scoring factors using designed experiments
-- support finding buried multi-suit sequences
-- assess multi move sequences like regular moves
-- add asserts for buried inner runs
 - make console access threadsafe
 - before playing onto a free cell search for a free cell preserving sequence
-- extend buried sequences to multiple upper runs
-- try removing infinite score for last resort moves because buried should have found it
 
 - make simple the default
+
+- support multi-root buried moves with from as a target
+
+- add compact game serialization
+- add unit tests
