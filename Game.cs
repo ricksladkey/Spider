@@ -526,19 +526,14 @@ namespace Spider
                 return;
             }
 
-            if (roots.Count != 1)
-            {
-                // Too many roots.
-                return;
-            }
-
+            // Lower suits does not depend on holding piles.
             int maxLowerSuits = ExtraSuits(freeCells);
+            int offloadPile = FreeCells[0];
 
             // Upper portion is a single run.
             if (roots.Count == 1)
             {
                 // Check for inverted pile.
-                int offloadPile = FreeCells[0];
                 if (fromPile[0].Face + 1 == fromPile[fromPile.Count - 1].Face)
                 {
                     // Note inversion is not compatible with holding piles.
@@ -620,25 +615,18 @@ namespace Spider
                     int maxUpperSuits = ExtraSuits(freeCells - lowerFreeCellsUsed) + 1;
                     if (lowerSuitsHolding <= maxLowerSuits && upperSuits <= maxUpperSuits)
                     {
-#if true
-                        int to = usedPiles[0];
-                        Pile toPile = UpPiles[to];
-                        Candidates.Add(new Move(from, 0, to, toPile.Count, AddHolding(holdingSet), FreeCells[0], fromIndex, -1));
-#else
-                        Candidates.Add(new Move(from, fromIndex, FreeCells[0], 0, -1, -1, -1, SupplementaryMoves.Count));
+                        int lastTo = usedPiles[0];
+                        Pile lastToPile = UpPiles[lastTo];
+                        Candidates.Add(new Move(from, 0, lastTo, lastToPile.Count, AddHolding(holdingSet), FreeCells[0], fromIndex, SupplementaryMoves.Count));
+                        SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, -1, -1, SupplementaryMoves.Count + 1));
                         for (int n = roots.Count - 1; n >= 0; n--)
                         {
-                            int next = SupplementaryMoves.Count + 1;
-                            if (n == 0)
-                            {
-                                next = -1;
-                            }
                             int rootIndex = roots[n];
                             int to = usedPiles[n];
                             Pile toPile = UpPiles[to];
-                            SupplementaryMoves.Add(new Move(from, rootIndex, to, toPile.Count, -1, -1, -1, next));
+                            SupplementaryMoves.Add(new Move(from, rootIndex, to, toPile.Count, -1, -1, -1, SupplementaryMoves.Count + 1));
                         }
-#endif
+                        SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0, -1, -1, -1, -1));
                         break;
                     }
                 }
@@ -1443,7 +1431,7 @@ namespace Spider
                 else
                 {
                     // Offloading move.
-                    OffloadUsingFreeCells(move.From, move.FromIndex, move.To, move.ToIndex, move.OffloadPile, move.OffloadIndex);
+                    OffloadUsingFreeCells(move.From, move.FromIndex, move.To, move.ToIndex, move.OffloadPile, move.OffloadIndex, move.Next);
                 }
             }
             else if (move.ToIndex != UpPiles[move.To].Count)
@@ -1571,7 +1559,7 @@ namespace Spider
             MakeMoveUsingFreeCells(from, 0, offloadPile);
         }
 
-        private void OffloadUsingFreeCells(int from, int fromIndex, int to, int toIndex, int offloadPile, int offloadIndex)
+        private void OffloadUsingFreeCells(int from, int fromIndex, int to, int toIndex, int offloadPile, int offloadIndex, int first)
         {
             if (Diagnostics)
             {
@@ -1579,30 +1567,23 @@ namespace Spider
             }
             Analyze();
             int freeCells = FreeCells.Count;
-            int upperSuits = CountSuits(from, 0, offloadIndex);
             int lowerSuits = CountSuits(from, offloadIndex);
             int maxLowerSuits = ExtraSuits(freeCells);
             Debug.Assert(lowerSuits <= maxLowerSuits);
-            int lowerFreeCellsUsed = FreeCellsUsed(freeCells, lowerSuits);
-            int maxUpperSuits = ExtraSuits(freeCells - lowerFreeCellsUsed) + 1;
-            Debug.Assert(upperSuits <= maxUpperSuits);
             Stack<Move> moveStack = new Stack<Move>();
-            for (int n = freeCells; n > 0 && upperSuits + lowerSuits > 1; n--)
+            for (int n = freeCells; n > 0 && lowerSuits != 0; n--)
             {
-                if (lowerSuits == 0)
-                {
-                    upperSuits -= MoveOffUsingFreeCells(from, 0, to, upperSuits - 1, n, moveStack);
-                }
-                else
-                {
-                    lowerSuits -= MoveOffUsingFreeCells(from, offloadIndex, from, lowerSuits, n, moveStack);
-                }
+                lowerSuits -= MoveOffUsingFreeCells(from, offloadIndex, from, lowerSuits, n, moveStack);
             }
-            if (upperSuits != 1 || lowerSuits != 0)
+            if (lowerSuits != 0)
             {
                 throw new Exception("insufficient free cells");
             }
-            MakeSimpleMove(from, 0, to);
+            for (int next = SupplementaryMoves[first].Next; SupplementaryMoves[next].Next != -1; next = SupplementaryMoves[next].Next)
+            {
+                Move subMove = SupplementaryMoves[next];
+                MakeMoveUsingFreeCells(subMove.From, subMove.FromIndex, subMove.To);
+            }
             while (moveStack.Count != 0)
             {
                 Move move = moveStack.Pop();
