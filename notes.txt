@@ -1,24 +1,13 @@
 - consider multiple moves when preferring to expose a useful card when forced to play onto free cells
 - prefer composite moves that create a free cell, particularly after a deal
-- break down composite moves when actually executing the move
 - prefer last resort moves that lead to a discard
 - optimize scoring factors using designed experiments
-- validate pile indexes, etc.
-- ensure last resort moves are scored less than all other moves
-- verify extra suits when moving to a free cell
-- make sure swaps where the from pile is at the root work
-- fix extra suits calculation for moving to a free cell
 - support finding buried multi-suit sequences
 - assess multi move sequences like regular moves
 - add asserts for buried inner runs
 - make console access threadsafe
-- check whether the new swap changes make CheckWholePileSwaps redundant
-- score swaps both ways and return the higher result
-- review scoring of all swaps
-- fix holding pile suits if not at a boundary
-- support cascading holding piles
 - before playing onto a free cell search for a free cell preserving sequence
-- unify scoring of last resort moves with a single scoring system
-- take holding pile into account for buried moves
-- extending buried sequences to multiple upper runs
+- extend buried sequences to multiple upper runs
 - try removing infinite score for last resort moves because buried should have found it
+
+- make simple the default

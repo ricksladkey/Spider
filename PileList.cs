@@ -91,7 +91,14 @@ namespace Spider
 
         public bool Contains(int item)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < occupied; i++)
+            {
+                if (piles[i] == item)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void CopyTo(int[] array, int arrayIndex)
