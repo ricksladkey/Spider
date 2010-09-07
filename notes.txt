@@ -7,6 +7,12 @@
 - make simple the default
 
 - support multi-root buried moves with from as a target
+- improve scoring of buried moves
+- consider enumerating all buried moves instead of one per stack
+- rename buried to offload
 
 - add compact game serialization
 - add unit tests
+
+- inverted offload moves don't need to move the entire lower run to a free cell if the suits match
+- offload moves no longer need the offload pile or offload index information
