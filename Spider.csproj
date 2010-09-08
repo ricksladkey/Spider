@@ -54,6 +54,7 @@
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
+    <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveList.cs" />
     <Compile Include="Pile.cs" />

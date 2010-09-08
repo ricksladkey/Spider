@@ -96,6 +96,13 @@ namespace Spider
 
         public void EvaluateCoefficient()
         {
+            if (Coefficient == -1)
+            {
+                lmmin.demo();
+                Console.ReadKey();
+                return;
+            }
+
             int iterations = 21;
             double factor = 2;
             double initialValue = InitialCoefficients[Coefficient];
