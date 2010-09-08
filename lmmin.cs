@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spider
+namespace LevenbergMarquardtLeastSquaresFitting
 {
     public static class lmmin
     {
@@ -111,14 +111,14 @@ namespace Spider
             int m = m_dat;
 
             fvec = new double[m];
-                diag = new double[n];
-                qtf  = new double[n];
-                fjac = new double[n*m];
-                wa1  = new double[n];
-                wa2  = new double[n];
-                wa3  = new double[n];
-                wa4  = new double[m];
-                ipvt = new int[m];
+            diag = new double[n];
+            qtf  = new double[n];
+            fjac = new double[n*m];
+            wa1  = new double[n];
+            wa2  = new double[n];
+            wa3  = new double[n];
+            wa4  = new double[m];
+            ipvt = new int[m];
 
         /*** perform fit. ***/
 
@@ -145,7 +145,7 @@ namespace Spider
 
         /*** the following messages are indexed by the variable info. ***/
 
-        private static string[] lm_infmsg = {
+        public static string[] lm_infmsg = {
             "fatal coding error (improper input parameters)",
             "success (the relative error in the sum of squares is at most tol)",
             "success (the relative error between x and the solution is at most tol)",
@@ -159,7 +159,7 @@ namespace Spider
             "exception (break requested within function evaluation)"
         };
 
-        private static string[] lm_shortmsg = {
+        public static string[] lm_shortmsg = {
             "invalid input",
             "success (f)",
             "success (p)",
@@ -1203,12 +1203,12 @@ namespace Spider
 
 
 
-        private static double lm_enorm(int n, double[] x)
+        public static double lm_enorm(int n, double[] x)
         {
             return lm_enorm(n, x, 0);
         }
 
-        private static double lm_enorm(int n, double[] x, int offset)
+        public static double lm_enorm(int n, double[] x, int offset)
         {
         /*     Given an n-vector x, this function calculates the
          *     euclidean norm of x.
@@ -1314,7 +1314,7 @@ namespace Spider
             for (i = 0; i < m_dat; i++)
                 fvec[i] = mydata.yvec[i] - mydata.f(mydata.tvec[i], par);
 
-            /* if <parameters drifted away> { *info = -1; } */
+            /* if <parameters drifted away> { info = -1; } */
         }
 
         public static void lm_print_default(int n_par, double[] par, int m_dat, double[] fvec,

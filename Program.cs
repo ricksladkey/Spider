@@ -10,6 +10,7 @@ namespace Spider
     {
         static void Main(string[] args)
         {
+            bool minimize = false;
             bool evaluate = false;
             bool compare = false;
             Player player = new Player();
@@ -46,6 +47,12 @@ namespace Spider
                     player.Coefficient = int.Parse(args[i + 1]);
                     i += 2;
                     evaluate = true;
+                    continue;
+                }
+                if (arg == "--minimize")
+                {
+                    i += 1;
+                    minimize = true;
                     continue;
                 }
                 if (arg == "--trace")
@@ -99,6 +106,10 @@ namespace Spider
             if (evaluate)
             {
                 player.EvaluateCoefficient();
+            }
+            else if (minimize)
+            {
+                player.Minimize();
             }
             else if (compare)
             {

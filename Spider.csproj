@@ -57,14 +57,19 @@
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveList.cs" />
+    <Compile Include="NelderMeadSimplex.cs" />
+    <Compile Include="NumUtilsTests.cs" />
     <Compile Include="Pile.cs" />
     <Compile Include="PileList.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="RegressionResult.cs" />
+    <Compile Include="SimplexConstant.cs" />
     <Compile Include="Suit.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Vector.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

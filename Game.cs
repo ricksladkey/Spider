@@ -93,8 +93,8 @@ namespace Spider
                 FaceLists[i] = new PileList();
             }
             Coefficients = new double[] {
-                /* 0 */ 6.8083, 55.084, 1000, -0.13, 0, -1.5157,
-                /* 6 */ 5.6586, 0.01, -0.93303, -0.99,
+                /* 0 */ 6.8999, 55.084, 1000, -0.17411, -2.4142,
+                /* 5 */ 2.2269, 0.012311, -0.2573, -0.86184,
             };
         }
 
@@ -876,8 +876,7 @@ namespace Spider
                 Coefficients[1] * (turnsOverCard ? 1 : 0) +
                 Coefficients[2] * (createsFreeCell ? 1 : 0) +
                 Coefficients[3] * (turnsOverCard ? 1 : 0) * downCount +
-                Coefficients[4] * (isSwap ? 1 : 0) +
-                Coefficients[5] * (isOffload ? 1 : 0);
+                Coefficients[4] * (isOffload ? 1 : 0);
 
             return score;
         }
@@ -932,10 +931,10 @@ namespace Spider
 
             // This exposes a non-consecutive card.
             double score = 0 + uses +
-                Coefficients[6] * wholePile +
-                Coefficients[7] * downCount +
-                Coefficients[8] * wholePile * downCount +
-                Coefficients[9] * isKing;
+                Coefficients[5] * wholePile +
+                Coefficients[6] * downCount +
+                Coefficients[7] * wholePile * downCount +
+                Coefficients[8] * isKing;
 
             return score;
         }
