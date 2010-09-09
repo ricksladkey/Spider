@@ -391,7 +391,7 @@ namespace Spider
         {
             if (extraSuits + 1 > maxExtraSuits + HoldingStack.Suits)
             {
-                // Need at least one free cell to swap.
+                // Need at least one free cell or a holding pile to swap.
                 return;
             }
             if (fromIndex == 0 && DownPiles[from].Count != 0)
@@ -462,11 +462,6 @@ namespace Spider
                     if (holdingSet.Contains(to))
                     {
                         // The pile is already in use.
-                        continue;
-                    }
-                    if (holdingSet.Index == fromIndex)
-                    {
-                        // All the from cards have already been moved off.
                         continue;
                     }
                     if (extraSuits + toSuits > maxExtraSuits + holdingSet.Suits)
@@ -798,43 +793,6 @@ namespace Spider
 
         private double CalculateScore(Move move)
         {
-#if true
-            return NewCalculateScore(move);
-#else
-            double newScore = NewCalculateScore(move);
-            double oldScore = OldCalculateScore(move);
-            bool newScoreRejected = newScore == RejectScore;
-            bool oldScoreRejected = oldScore == RejectScore;
-#if true
-            if (newScoreRejected != oldScoreRejected)
-            {
-                if (Debugger.IsAttached)
-                {
-                    Console.WriteLine("newScore: {0}", newScore);
-                    Console.WriteLine("oldScore: {0}", oldScore);
-                    PrintMove(move);
-                    PrintGame();
-                    Debugger.Break();
-                    NewCalculateScore(move);
-                }
-            }
-#endif
-#if false
-            return oldScore;
-#else
-            return newScore;
-#endif
-#endif
-        }
-
-        private double NewCalculateScore(Move move)
-        {
-#if false
-            if (move.Next != -1)
-            {
-                return InfiniteScore;
-            }
-#endif
             int from = move.From;
             int fromIndex = move.FromIndex;
             int to = move.To;
@@ -868,8 +826,8 @@ namespace Spider
             int netRunLengthTo = isSwap ? GetNetRunLength(newOrderTo, to, toIndex, from, fromIndex) : 0;
             int netRunLength = netRunLengthFrom + netRunLengthTo;
             int downCount = DownPiles[from].Count;
-            bool turnsOverCard = wholePile && DownPiles[from].Count != 0;
-            bool createsFreeCell = wholePile && DownPiles[from].Count == 0;
+            bool turnsOverCard = wholePile && downCount != 0;
+            bool createsFreeCell = wholePile && downCount == 0;
             bool isOffload = move.OffloadIndex != -1;
             bool noFreeCells = FreeCells.Count == 0;
             if (order == 0 && netRunLength < 0)
@@ -1020,280 +978,22 @@ namespace Spider
             int fromRun = GetRunUp(from, fromIndex + 1) + moveRun - 1;
             if (order != 2)
             {
+                // The from card's suit doesn't match the to card's suit.
                 if (moveRun == fromRun)
                 {
+                    // The from card's suit doesn't its parent.
                     return 0;
                 }
                 return -fromRun;
             }
-            int toRun = toIndex > 0 ? GetRunUp(to, toIndex) : 0;
+            int toRun = GetRunUp(to, toIndex);
             int newRun = moveRun + toRun;
             if (moveRun == fromRun)
             {
+                // The from card's suit doesn't its parent.
                 return newRun;
             }
             return newRun - fromRun;
-        }
-
-        private double OldCalculateScore(Move move)
-        {
-            int from = move.From;
-            int fromIndex = move.FromIndex;
-            int to = move.To;
-            int toIndex = move.ToIndex;
-
-            Pile fromPile = UpPiles[from];
-            Pile toPile = UpPiles[to];
-            Card fromCard = fromPile[fromIndex];
-
-            if (toPile.Count == 0)
-            {
-                double lastResortScore = 0;
-                if (fromIndex > 0)
-                {
-                    Card exposedCard = fromPile[fromIndex - 1];
-                    if (exposedCard.Face == Face.Ace)
-                    {
-#if false
-                        // Doesn't seem to help.  Hmmm.
-                        lastResortScore--;
-#endif
-                    }
-                    else if (exposedCard.Face - 1 != fromCard.Face)
-                    {
-                        // Check whether the exposed card will be useful.
-                        int freeCells = FreeCells.Count;
-                        int maxExtraSuits = ExtraSuits(freeCells);
-                        int fromSuits = CountSuits(from, fromIndex);
-                        for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
-                        {
-                            if (nextFrom == from || nextFrom == to)
-                            {
-                                // Inappropriate column.
-                                continue;
-                            }
-                            Pile nextFromPile = UpPiles[nextFrom];
-                            int nextFromIndex = nextFromPile.Count;
-                            if (nextFromIndex == 0)
-                            {
-                                // Column is empty.
-                                continue;
-                            }
-                            for (int extraSuits = fromSuits; extraSuits <= maxExtraSuits; extraSuits++)
-                            {
-                                int nextFromRun = GetRunUp(nextFrom, nextFromIndex);
-                                nextFromIndex = nextFromIndex - nextFromRun;
-                                if (nextFromIndex == 0)
-                                {
-                                    // Card has no next to expose.
-                                    break;
-                                }
-                                Card nextFromCard = nextFromPile[nextFromIndex];
-                                if (nextFromCard.Face + 1 == nextFromPile[nextFromIndex - 1].Face)
-                                {
-                                    // Card is already on its successor.
-                                    continue;
-                                }
-                                if (nextFromCard.Face + 1 != exposedCard.Face)
-                                {
-                                    // Card isn't the card we need.
-                                    break;
-                                }
-
-                                // Card leads to additional useful moves.
-                                lastResortScore++;
-
-#if true
-                                // Try to find a target for the rest of the pile.
-                                int restFromIndex = 0;
-                                Card restFromCard = nextFromPile[restFromIndex];
-                                int restSuits = CountSuits(nextFrom, 0, nextFromIndex);
-                                if (restSuits == -1)
-                                {
-                                    // The rest isn't a single run.
-                                    break;
-                                }
-                                if (extraSuits + restSuits > maxExtraSuits)
-                                {
-                                    // Not enough free cells.
-                                    break;
-                                }
-
-                                for (int restTo = 0; restTo < NumberOfPiles; restTo++)
-                                {
-                                    if (restTo == to)
-                                    {
-                                        // Inappropriate column.
-                                        continue;
-                                    }
-                                    Pile restToPile = UpPiles[restTo];
-                                    int restToIndex = restToPile.Count;
-                                    if (restToIndex == 0)
-                                    {
-                                        // Column is empty.
-                                        continue;
-                                    }
-                                    Card restToCard = restToPile[restToIndex - 1];
-                                    if (restToCard.Face - 1 != restFromCard.Face)
-                                    {
-                                        // Card isn't the card we need.
-                                        continue;
-                                    }
-
-                                    // Found a home for the rest.
-                                    lastResortScore = InfiniteScore;
-#if false
-                                    PrintMove(move);
-                                    Console.WriteLine("next move: {0}", new Move(nextFrom, nextFromIndex, from, fromIndex));
-                                    Console.WriteLine("rest move: {0}", new Move(nextFrom, restFromIndex, restTo, restToIndex));
-                                    PrintGame();
-                                    Debugger.Break();
-#endif
-
-                                    break;
-                                }
-#endif
-
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Prefer to move entire piles that
-                    // are more likely to become free cells.
-                    lastResortScore += 5 - DownPiles[from].Count;
-                }
-
-#if false
-                // Don't move to an empty pile unless we
-                // are out of stock.
-                if (StockPile.Count > 0)
-                {
-                    return RejectScore;
-                }
-#endif
-
-                if (fromIndex == 0)
-                {
-                    // Only move an entire pile if there
-                    // are more cards to be turned over.
-                    if (DownPiles[from].Count > 0)
-                    {
-                        return lastResortScore;
-                    }
-                    return RejectScore;
-                }
-
-                if (fromPile[fromIndex - 1].Face - 1 != fromCard.Face)
-                {
-                    // This exposes a non-consecutive card.
-                    return lastResortScore;
-                }
-
-                // No point in splitting consecutive cards
-                // unless they are part of a multi-move
-                // sequence.
-                return RejectScore;
-            }
-
-            // Verify that we are not swapping piles without turning over cards.
-            Debug.Assert(fromIndex != 0 || toIndex == toPile.Count || DownPiles[from].Count == 0);
-            Debug.Assert(toIndex != 0 || toIndex == toPile.Count || DownPiles[to].Count == 0);
-
-            int faceValue = (int)fromCard.Face;
-            int wholePile = fromIndex == 0 && toIndex == toPile.Count && move.OffloadIndex == -1 ? 1 : 0;
-            int moveRun = GetRunDown(from, fromIndex);
-            int fromRun = GetRunUp(from, fromIndex + 1) + moveRun - 1;
-            int toRun = toIndex > 0 ? GetRunUp(to, toIndex) : 0;
-            int joinsTo = toIndex > 0 && fromCard.Suit == toPile[toIndex - 1].Suit ? 1 : 0;
-            int splitsFrom = moveRun != fromRun ? 1 : 0;
-            int downCount = DownPiles[move.From].Count;
-            int runLength = 0;
-#if false
-            if (joinsTo == 0)
-            {
-                if (toIndex != toPile.Count && fromIndex > 0 && fromPile[fromIndex - 1].Suit == toPile[toIndex].Suit)
-                {
-                    joinsTo = 1;
-                }
-            }
-#endif
-            if (joinsTo != 0)
-            {
-                if (splitsFrom != 0)
-                {
-                    int oldMax = Math.Max(fromRun, toRun);
-                    int newFromMax = Math.Max(moveRun, fromRun - moveRun);
-                    int newMax = Math.Max(newFromMax, moveRun + toRun);
-                    if (newMax > oldMax)
-                    {
-                        runLength = newMax;
-                    }
-                    else
-                        return RejectScore;
-                }
-                else
-                {
-                    runLength = moveRun + toRun;
-                }
-            }
-            else if (splitsFrom == 0)
-            {
-                if (fromIndex != 0)
-                {
-                    Card nextCard = fromPile[fromIndex - 1];
-                    if (nextCard.Face - 1 == fromCard.Face)
-                    {
-                        // Prefer to leave longer runs exposed.
-                        if (toIndex == toPile.Count &&
-                            fromIndex > 0 &&
-                            fromCard.Suit != fromPile[fromIndex - 1].Suit)
-                        {
-                            int nextFromRun = GetRunUp(from, fromIndex);
-                            int nextToRun = GetRunUp(to, toIndex);
-
-                            // Break the tie.
-                            if (nextFromRun <= nextToRun)
-                            {
-                                splitsFrom = 1;
-                            }
-                        }
-                        else
-                        {
-                            splitsFrom = 1;
-                        }
-
-                    }
-                }
-                else
-                {
-                    if (toIndex != toPile.Count)
-                    {
-                        bool outOfOrder =
-                            fromIndex != 0 && fromPile[fromIndex - 1].Face - 1 != fromPile[fromIndex].Face ||
-                            toIndex != 0 && toPile[toIndex - 1].Face - 1 != toPile[toIndex].Face;
-                        if (!outOfOrder)
-                        {
-                            splitsFrom = 1;
-                        }
-                    }
-                }
-            }
-
-            // Reject moves that are not a net advantange.
-            if (joinsTo == 0 && splitsFrom != 0)
-            {
-                return RejectScore;
-            }
-
-            double score = 100000 + faceValue +
-                Coefficients[0] * runLength +
-                Coefficients[1] * wholePile +
-                Coefficients[3] * wholePile * downCount;
-
-            return score;
         }
 
         private int CountSuits(int column, int row)
