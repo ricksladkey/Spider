@@ -31,6 +31,8 @@ namespace Spider
         public int Won { get { return won; } }
         public int Discards { get { return discards; } }
         public int Moves { get { return moves; } }
+        public int MovesWon { get { return movesWon; } }
+        public int MovesLost { get { return movesLost; } }
         public bool[] Results { get; private set; }
         public int[] Instances { get; private set; }
 
@@ -39,6 +41,8 @@ namespace Spider
         private int won;
         private int discards;
         private int moves;
+        private int movesWon;
+        private int movesLost;
         private int instance;
         private Semaphore semaphore;
         private Queue<Game> gameQueue;
@@ -46,8 +50,8 @@ namespace Spider
         public Player()
         {
             Game game = new Game();
-            InitialCoefficients = game.Coefficients;
-            Coefficients = InitialCoefficients;
+            InitialCoefficients = new List<double>(game.Coefficients).ToArray();
+            Coefficients = new List<double>(game.Coefficients).ToArray();
             TraceStartFinish = game.TraceStartFinish;
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
@@ -87,8 +91,8 @@ namespace Spider
                 Console.WriteLine("");
             }
 
-            Console.WriteLine("games played: {0}, games won: {1:G4}%, games with discards: {2:G4}%", Played, 100.0 * Won / Played, 100.0 * Discards / Played);
-            Console.WriteLine("average moves: {0:G4}", (double)Moves / Played);
+            Console.WriteLine("games played: {0}, games won: {1:G5}%, games with discards: {2:G5}%", Played, 100.0 * Won / Played, 100.0 * Discards / Played);
+            Console.WriteLine("average moves: {0:G5} (won: {1:G5}, lost: {2:G5})", (double)Moves / Played, (double)MovesWon / Won, (double)MovesLost / (Played - Won));
 
             if (Debugger.IsAttached)
             {
@@ -98,21 +102,46 @@ namespace Spider
 
         public void EvaluateCoefficient()
         {
+            if (Coefficient == -1)
+            {
+                for (int i = 0; i < Coefficients.Length; i++)
+                {
+                    EvaluateCoefficient(i);
+                    PrintCoefficients(Coefficients);
+                    Console.WriteLine("");
+                }
+            }
+            else
+            {
+                EvaluateCoefficient(Coefficient);
+            }
+        }
+
+        public void EvaluateCoefficient(int coefficient)
+        {
             int iterations = 21;
-            double factor = 2;
-            double initialValue = InitialCoefficients[Coefficient];
+            double factor = 1.5;
+            double initialValue = InitialCoefficients[coefficient];
             double minValue = initialValue / factor;
             double maxValue = initialValue * factor;
             double multipler = Math.Exp((Math.Log(Math.Abs(maxValue)) - Math.Log(Math.Abs(minValue))) / (iterations - 1));
             double value = minValue;
+            double maxPercentage = 0;
+            double bestValue = 0;
             for (int i = 0; i < iterations; i++)
             {
-                Coefficients[Coefficient] = value;
+                Coefficients[coefficient] = value;
                 PlayOneSet();
                 double percentage = 100.0 * won / played;
-                Console.WriteLine("Coefficient[{0}] = {1,-8:G5} {2,-8:G5}", Coefficient, value, percentage);
+                if (percentage > maxPercentage)
+                {
+                    maxPercentage = percentage;
+                    bestValue = value;
+                }
+                Console.WriteLine("Coefficient[{0}] = {1,-12:G6} {2,-8:G5}", coefficient, value, percentage);
                 value *= multipler;
             }
+            Coefficients[coefficient] = bestValue;
         }
 
         public void Minimize()
@@ -147,7 +176,7 @@ namespace Spider
             Console.Write("Coefficients = new double[] {");
             for (int i = 0; i < coefficients.Length; i++)
             {
-                if (i == 0 || i == 5)
+                if (i == 0 || i == 6)
                 {
                     Console.WriteLine();
                     Console.Write("    /* {0} */", i);
@@ -317,6 +346,8 @@ namespace Spider
             won = 0;
             discards = 0;
             moves = 0;
+            movesWon = 0;
+            movesLost = 0;
             instance = 0;
             Results = new bool[Games];
             Instances = new int[Games];
@@ -385,6 +416,14 @@ namespace Spider
             }
             Interlocked.Increment(ref played);
             Interlocked.Add(ref moves, game.Moves.Count);
+            if (game.Won)
+            {
+                Interlocked.Add(ref movesWon, game.Moves.Count);
+            }
+            else
+            {
+                Interlocked.Add(ref movesLost, game.Moves.Count);
+            }
             Results[game.Seed - Seed] = game.Won;
             Instances[game.Seed - Seed] = game.Instance;
         }

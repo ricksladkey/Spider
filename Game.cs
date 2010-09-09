@@ -87,14 +87,14 @@ namespace Spider
             RunLengths = new int[NumberOfPiles];
             RunLengthsAnySuit = new int[NumberOfPiles];
             FreeCells = new PileList();
-            FaceLists = new PileList[(int)Face.King + 1];
-            for (int i = (int)Face.Ace; i <= (int)Face.King; i++)
+            FaceLists = new PileList[(int)Face.King + 2];
+            for (int i = 0; i < FaceLists.Length; i++)
             {
                 FaceLists[i] = new PileList();
             }
             Coefficients = new double[] {
-                /* 0 */ 6.8999, 55.084, 1000, -0.17411, -2.4142,
-                /* 5 */ 2.2269, 0.012311, -0.2573, -0.86184,
+                /* 0 */ 6.362452378, 55.084, 1000, -0.1480427732, -3.079129829, -0.75786,
+                /* 6 */ 2.2269, 0.012311, -0.218777816, -0.7947094824,
             };
         }
 
@@ -123,12 +123,14 @@ namespace Spider
                     {
                         if (StockPile.Count > 0)
                         {
+                            PrepareToDeal();
                             if (TraceDeals)
                             {
                                 PrintGame();
                                 Console.WriteLine("dealing");
                             }
                             Deal();
+                            RespondToDeal();
                             continue;
                         }
                         if (TraceStartFinish)
@@ -362,6 +364,14 @@ namespace Spider
             return ChooseMove();
         }
 
+        private void PrepareToDeal()
+        {
+        }
+
+        private void RespondToDeal()
+        {
+        }
+
         private int AddHolding(HoldingSet holdingSet)
         {
             int first = holdingSet.Count == 0 ? -1 : HoldingList.Count;
@@ -499,6 +509,13 @@ namespace Spider
                 // All one run.
                 return;
             }
+#if false
+            if (FaceLists[(int)fromPile[fromIndex].Face + 1].Count != 0)
+            {
+                // A simple move for the lower run exists.
+                return;
+            }
+#endif
             PileList roots = new PileList();
             roots.Clear();
             int upperSuits = 0;
@@ -854,6 +871,7 @@ namespace Spider
             bool turnsOverCard = wholePile && DownPiles[from].Count != 0;
             bool createsFreeCell = wholePile && DownPiles[from].Count == 0;
             bool isOffload = move.OffloadIndex != -1;
+            bool noFreeCells = FreeCells.Count == 0;
             if (order == 0 && netRunLength < 0)
             {
                 return RejectScore;
@@ -876,7 +894,8 @@ namespace Spider
                 Coefficients[1] * (turnsOverCard ? 1 : 0) +
                 Coefficients[2] * (createsFreeCell ? 1 : 0) +
                 Coefficients[3] * (turnsOverCard ? 1 : 0) * downCount +
-                Coefficients[4] * (isOffload ? 1 : 0);
+                Coefficients[4] * (isOffload ? 1 : 0) +
+                Coefficients[5] * (noFreeCells ? 1 : 0) * downCount;
 
             return score;
         }
@@ -931,10 +950,10 @@ namespace Spider
 
             // This exposes a non-consecutive card.
             double score = 0 + uses +
-                Coefficients[5] * wholePile +
-                Coefficients[6] * downCount +
-                Coefficients[7] * wholePile * downCount +
-                Coefficients[8] * isKing;
+                Coefficients[6] * wholePile +
+                Coefficients[7] * downCount +
+                Coefficients[8] * wholePile * downCount +
+                Coefficients[9] * isKing;
 
             return score;
         }

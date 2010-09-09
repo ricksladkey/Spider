@@ -16,3 +16,10 @@
 
 - inverted offload moves don't need to move the entire lower run to a free cell if the suits match
 - offload moves no longer need the offload pile or offload index information
+
+- prefer long exposed runs even if it means splitting a run
+- test adding noFreeCells * downCount
+
+- alternate Nelder-Mead implementation:
+  http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
+
