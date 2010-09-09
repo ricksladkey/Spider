@@ -17,7 +17,8 @@ namespace Spider
         public bool TraceStartFinish { get; set; }
         public bool TraceDeals { get; set; }
         public bool TraceMoves { get; set; }
-        public bool SimpleMoves { get; set; }
+        public bool ComplexMoves { get; set; }
+        public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
 
         public bool ShowResults { get; set; }
@@ -55,6 +56,7 @@ namespace Spider
             TraceStartFinish = game.TraceStartFinish;
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
+            RecordComplex = game.RecordComplex;
             ShowResults = false;
 
 #if true
@@ -176,7 +178,7 @@ namespace Spider
             Console.Write("Coefficients = new double[] {");
             for (int i = 0; i < coefficients.Length; i++)
             {
-                if (i == 0 || i == 6)
+                if (i == Game.Group0 || i == Game.Group1)
                 {
                     Console.WriteLine();
                     Console.Write("    /* {0} */", i);
@@ -320,10 +322,12 @@ namespace Spider
         {
             while (true)
             {
+                ComplexMoves = false;
                 PlayOneSet();
                 int won1 = Won;
                 bool[] results1 = Results;
                 int[] instances1 = Instances;
+                ComplexMoves = true;
                 PlayOneSet();
                 int won2 = Won;
                 bool[] results2 = Results;
@@ -332,11 +336,15 @@ namespace Spider
                 {
                     for (int i = 0; i < results1.Length; i++)
                     {
-                        Console.WriteLine("Game: {0}, Seed: {1}, Instance: {2}/{3}, Won: {4}/{5}",
-                            i, Seed + i, instances1[i], instances2[i], results1[i] ? 1 : 0, results2[i] ? 1 : 0);
+                        if (results1[i] != results2[i])
+                        {
+                            Console.WriteLine("Game: {0}, Seed: {1}, Instance: {2}/{3}, Won: {4}/{5}",
+                                i, Seed + i, instances1[i], instances2[i], results1[i] ? 1 : 0, results2[i] ? 1 : 0);
+                        }
                     }
                     break;
                 }
+                break;
             }
         }
 
@@ -399,7 +407,8 @@ namespace Spider
             game.TraceStartFinish = TraceStartFinish;
             game.TraceDeals = TraceDeals;
             game.TraceMoves = TraceMoves;
-            game.SimpleMoves = SimpleMoves;
+            game.ComplexMoves = ComplexMoves;
+            game.RecordComplex = RecordComplex;
             game.Diagnostics = Diagnostics;
 
             game.Coefficients = Coefficients;

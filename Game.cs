@@ -8,8 +8,22 @@ namespace Spider
 {
     public class Game
     {
+        public static double[] TwoSuitCoefficients = new double[] {
+            /* 0 */ 6.362452378, 55.084, 1000, -0.1547993791, -3.011181958, -0.75786, 9.77933,
+            /* 7 */ 1.904862825, 0.0098488, -0.1871398485, -0.6357675859,
+        };
+
+        public static double[] FourSuitCoefficients = new double[] {
+            /* 0 */ 9.137560762, 44.11268861, 934.6355127, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
+            /* 7 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
+        };
+
         public const int NumberOfPiles = 10;
         public const int MaximumMoves = 1000;
+
+        public const int Group0 = 0;
+        public const int Group1 = 7;
+
         public const double InfiniteScore = double.MaxValue;
         public const double RejectScore = double.MinValue;
 
@@ -23,7 +37,7 @@ namespace Spider
         public bool TraceStartFinish { get; set; }
         public bool TraceDeals { get; set; }
         public bool TraceMoves { get; set; }
-        public bool SimpleMoves { get; set; }
+        public bool ComplexMoves { get; set; }
         public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
         public int Instance { get; set; }
@@ -62,8 +76,8 @@ namespace Spider
             TraceStartFinish = false;
             TraceDeals = false;
             TraceMoves = false;
-            SimpleMoves = false;
-            RecordComplex = true;
+            ComplexMoves = false;
+            RecordComplex = false;
             Diagnostics = false;
             Instance = -1;
 
@@ -92,10 +106,7 @@ namespace Spider
             {
                 FaceLists[i] = new PileList();
             }
-            Coefficients = new double[] {
-                /* 0 */ 6.362452378, 55.084, 1000, -0.1480427732, -3.079129829, -0.75786,
-                /* 6 */ 2.2269, 0.012311, -0.218777816, -0.7947094824,
-            };
+            Coefficients = new List<double>(TwoSuitCoefficients).ToArray();
         }
 
         public void Play()
@@ -804,7 +815,8 @@ namespace Spider
             {
                 return CalculateLastResortScore(move);
             }
-            bool isSwap = move.OffloadIndex == -1 && toIndex != toPile.Count;
+            bool isOffload = move.OffloadIndex != -1;
+            bool isSwap = !isOffload && toIndex != toPile.Count;
             Card fromParent = fromIndex != 0 ? fromPile[fromIndex - 1] : Card.Empty;
             Card fromChild = fromPile[fromIndex];
             Card toParent = toIndex != 0 ? toPile[toIndex - 1] : Card.Empty;
@@ -814,6 +826,7 @@ namespace Spider
             int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
             int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
             int order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
+            int oneRunDelta = !isSwap && !isOffload ? GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
             if (order < 0)
             {
                 return RejectScore;
@@ -828,7 +841,6 @@ namespace Spider
             int downCount = DownPiles[from].Count;
             bool turnsOverCard = wholePile && downCount != 0;
             bool createsFreeCell = wholePile && downCount == 0;
-            bool isOffload = move.OffloadIndex != -1;
             bool noFreeCells = FreeCells.Count == 0;
             if (order == 0 && netRunLength < 0)
             {
@@ -848,14 +860,43 @@ namespace Spider
             }
 
             double score = 100000 + faceValue +
-                Coefficients[0] * netRunLength +
-                Coefficients[1] * (turnsOverCard ? 1 : 0) +
-                Coefficients[2] * (createsFreeCell ? 1 : 0) +
-                Coefficients[3] * (turnsOverCard ? 1 : 0) * downCount +
-                Coefficients[4] * (isOffload ? 1 : 0) +
-                Coefficients[5] * (noFreeCells ? 1 : 0) * downCount;
+                Coefficients[Group0 + 0] * netRunLength +
+                Coefficients[Group0 + 1] * (turnsOverCard ? 1 : 0) +
+                Coefficients[Group0 + 2] * (createsFreeCell ? 1 : 0) +
+                Coefficients[Group0 + 3] * (turnsOverCard ? 1 : 0) * downCount +
+                Coefficients[Group0 + 4] * (isOffload ? 1 : 0) +
+                Coefficients[Group0 + 5] * (noFreeCells ? 1 : 0) * downCount +
+                Coefficients[Group0 + 6] * oneRunDelta;
 
             return score;
+        }
+
+        private int GetOneRunDelta(int oldOrder, int newOrder, Move move)
+        {
+            bool fromFree = DownPiles[move.From].Count == 0;
+            bool toFree = DownPiles[move.To].Count == 0;
+            bool fromUpper = GetRunUp(move.From, move.FromIndex) == move.FromIndex;
+            bool fromLower = move.HoldingNext == -1;
+            bool toUpper = GetRunUp(move.To, move.ToIndex) == move.ToIndex;
+            bool oldFrom = move.FromIndex == 0 ?
+                (fromFree && fromLower) :
+                (fromFree && fromUpper && fromLower && oldOrder == 2);
+            bool newFrom = fromFree && fromUpper;
+            bool oldTo = toFree && toUpper;
+            bool newTo = move.ToIndex == 0 ?
+                (toFree && fromLower) :
+                (toFree && toUpper && fromLower && newOrder == 2);
+            int oneRunDelta = (newFrom ? 1 : 0) - (oldFrom ? 1 : 0) + (newTo ? 1 : 0) - (oldTo ? 1 : 0);
+#if false
+            if (oneRunDelta != 0)
+            {
+                Console.Clear();
+                PrintMove(move);
+                PrintGame();
+                Debugger.Break();
+            }
+#endif
+            return oneRunDelta > 0 ? 1 : 0;
         }
 
         private int GetRunDelta(int from, int fromIndex, int to, int toIndex)
@@ -907,11 +948,12 @@ namespace Spider
             }
 
             // This exposes a non-consecutive card.
-            double score = 0 + uses +
-                Coefficients[6] * wholePile +
-                Coefficients[7] * downCount +
-                Coefficients[8] * wholePile * downCount +
-                Coefficients[9] * isKing;
+            double score = 0 +
+                uses +
+                Coefficients[Group1 + 0] * wholePile +
+                Coefficients[Group1 + 1] * downCount +
+                Coefficients[Group1 + 2] * wholePile * downCount +
+                Coefficients[Group1 + 3] * isKing;
 
             return score;
         }
@@ -954,6 +996,16 @@ namespace Spider
                         // Card leads to a useful move.
                         uses++;
                     }
+
+#if false
+                    // Check whether the exposed run will be useful.
+                    int upperFromIndex = move.FromIndex - GetRunUp(move.From, move.FromIndex);
+                    if (upperFromIndex != move.FromIndex)
+                    {
+                        Card upperFromCard = fromPile[upperFromIndex];
+                        uses += FaceLists[(int)upperFromCard.Face + 1].Count;
+                    }
+#endif
                 }
             }
             return uses;
@@ -1157,17 +1209,7 @@ namespace Spider
             }
 
 #if false
-            bool found = false;
-            for (int i = 0; i < Candidates.Count; i++)
-            {
-                Move candidate = Candidates[i];
-                if (candidate.Next != -1)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (found)
+            if (Debugger.IsAttached && Moves.Count >= 63)
             {
                 Console.Clear();
                 PrintMove(move);
@@ -1184,17 +1226,19 @@ namespace Spider
             }
 
 
-            if (!SimpleMoves)
-            {
-                MakeMove(move);
-                return true;
-            }
-
             if (RecordComplex)
             {
                 AddMove(move);
             }
-            ConvertToSimpleMoves(move);
+
+            if (ComplexMoves)
+            {
+                MakeMove(move);
+            }
+            else
+            {
+                ConvertToSimpleMoves(move);
+            }
 
             return true;
         }
@@ -1277,6 +1321,20 @@ namespace Spider
                     MakeMoveUsingFreeCells(undo.From, undo.FromIndex, undo.To);
                 }
             }
+        }
+
+        private void MakeMove(Move move)
+        {
+            if (move.Next != -1)
+            {
+                for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
+                {
+                    Move subMove = SupplementaryMoves[next];
+                    MakeSingleMove(subMove);
+                }
+                return;
+            }
+            MakeSingleMove(move);
         }
 
         private void SwapUsingFreeCells(int from, int fromIndex, int to, int toIndex)
@@ -1478,22 +1536,14 @@ namespace Spider
             MakeMove(new Move(from, fromIndex, to, UpPiles[to].Count));
         }
 
-        private void MakeMove(Move move)
-        {
-            if (move.Next != -1)
-            {
-                for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
-                {
-                    Move subMove = SupplementaryMoves[next];
-                    MakeSingleMove(subMove);
-                }
-                return;
-            }
-            MakeSingleMove(move);
-        }
-
         private void MakeSingleMove(Move move)
         {
+            // Record the move.
+            if (!RecordComplex)
+            {
+                AddMove(move);
+            }
+
             // Make the moves.
             Pile fromPile = UpPiles[move.From];
             Pile toPile = UpPiles[move.To];
@@ -1523,10 +1573,6 @@ namespace Spider
             move.HoldingNext = -1;
             Discard();
             TurnOverCards();
-            if (!SimpleMoves || !RecordComplex)
-            {
-                AddMove(move);
-            }
         }
 
         private void AddMove(Move move)

@@ -6,7 +6,6 @@
 
 - make simple the default
 
-- support multi-root buried moves with from as a target
 - improve scoring of buried moves
 - consider enumerating all buried moves instead of one per stack
 - rename buried to offload
@@ -19,6 +18,20 @@
 
 - prefer long exposed runs even if it means splitting a run
 
+- figure out why simple consistently gets better results than complex
+- theory: prefer to have a single run on a free cell
+- calculate oneRunDelta correctly for swaps
+- check whether moves with oneRunDelta > 0 are rejected
+
 - alternate Nelder-Mead implementation:
   http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
 
+Four-suit coefficients (before oneRunDelta):
+
+Coefficients = new double[] {
+    /* 0 */ 9.137560762, 44.11268861, 934.6355127, -0.1107699821, -3.227980575, -0.1357842696,
+    /* 6 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
+};
+
+spider --games 1 --seed 39983 --simple --suits 4
+spider: seed: 39983, message: maximum moves exceeded

@@ -63,9 +63,9 @@ namespace Spider
                     i++;
                     continue;
                 }
-                if (arg == "--simple")
+                if (arg == "--complex_moves")
                 {
-                    player.SimpleMoves = true;
+                    player.ComplexMoves = true;
                     i++;
                     continue;
                 }
@@ -78,6 +78,12 @@ namespace Spider
                 if (arg == "--show_results")
                 {
                     player.ShowResults = true;
+                    i++;
+                    continue;
+                }
+                if (arg == "--record_complex")
+                {
+                    player.RecordComplex = true;
                     i++;
                     continue;
                 }
