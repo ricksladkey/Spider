@@ -51,11 +51,10 @@ namespace Spider
         public Player()
         {
             Game game = new Game();
-            InitialCoefficients = new List<double>(game.Coefficients).ToArray();
-            Coefficients = new List<double>(game.Coefficients).ToArray();
             TraceStartFinish = game.TraceStartFinish;
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
+            ComplexMoves = game.ComplexMoves;
             RecordComplex = game.RecordComplex;
             ShowResults = false;
 
@@ -75,8 +74,29 @@ namespace Spider
             Threads = -1;
         }
 
+        private void SetCoefficients()
+        {
+            double[] coefficients = null;
+            if (Suits == 1)
+            {
+                coefficients = Game.OneSuitCoefficients;
+            }
+            else if (Suits == 2)
+            {
+                coefficients = Game.TwoSuitCoefficients;
+            }
+            else if (Suits == 4)
+            {
+                coefficients = Game.FourSuitCoefficients;
+            }
+            InitialCoefficients = new List<double>(coefficients).ToArray();
+            Coefficients = new List<double>(coefficients).ToArray();
+        }
+
         public void Play()
         {
+            SetCoefficients();
+
             PlayOneSet();
 
             if (ShowResults)
@@ -104,6 +124,8 @@ namespace Spider
 
         public void EvaluateCoefficient()
         {
+            SetCoefficients();
+
             if (Coefficient == -1)
             {
                 for (int i = 0; i < Coefficients.Length; i++)
@@ -148,6 +170,8 @@ namespace Spider
 
         public void Minimize()
         {
+            SetCoefficients();
+
             Console.WriteLine("Starting minimization...");
             SimplexConstant[] constants = new SimplexConstant[Coefficients.Length];
             for (int i = 0; i < Coefficients.Length; i++)
@@ -320,6 +344,8 @@ namespace Spider
 
         public void Compare()
         {
+            SetCoefficients();
+
             while (true)
             {
                 ComplexMoves = false;

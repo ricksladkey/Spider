@@ -8,15 +8,17 @@ namespace Spider
 {
     public class Game
     {
-        public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 6.362452378, 55.084, 1000, -0.1547993791, -3.011181958, -0.75786, 9.77933,
-            /* 7 */ 1.904862825, 0.0098488, -0.1871398485, -0.6357675859,
-        };
-
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 9.137560762, 44.11268861, 934.6355127, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
+            /* 0 */ 9.137560762, 44.11268861, 1000, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
             /* 7 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
         };
+
+        public static double[] TwoSuitCoefficients = new double[] {
+            /* 0 */ 6.362452378, 52.89520976, 1000, -0.2056047273, -3.011181958, -0.75786, 9.77933,
+            /* 7 */ 2.151250994, 0.006565866667, -0.1725631349, -0.6357675859,
+        };
+
+        public static double[] OneSuitCoefficients = TwoSuitCoefficients;
 
         public const int NumberOfPiles = 10;
         public const int MaximumMoves = 1000;
@@ -106,7 +108,7 @@ namespace Spider
             {
                 FaceLists[i] = new PileList();
             }
-            Coefficients = new List<double>(TwoSuitCoefficients).ToArray();
+            Coefficients = null;
         }
 
         public void Play()
@@ -187,14 +189,17 @@ namespace Spider
         {
             if (Suits == 1)
             {
+                SetDefaultCoefficients(OneSuitCoefficients);
                 Deck = OneSuitDeck;
             }
             else if (Suits == 2)
             {
+                SetDefaultCoefficients(TwoSuitCoefficients);
                 Deck = TwoSuitDeck;
             }
             else if (Suits == 4)
             {
+                SetDefaultCoefficients(FourSuitCoefficients);
                 Deck = FourSuitDeck;
             }
             else
@@ -218,6 +223,14 @@ namespace Spider
                 pile = (pile + 1) % NumberOfPiles;
             }
             Deal();
+        }
+
+        private void SetDefaultCoefficients(double[] coefficients)
+        {
+            if (Coefficients == null)
+            {
+                Coefficients = new List<double>(coefficients).ToArray();
+            }
         }
 
         private void Deal()
@@ -997,7 +1010,6 @@ namespace Spider
                         uses++;
                     }
 
-#if false
                     // Check whether the exposed run will be useful.
                     int upperFromIndex = move.FromIndex - GetRunUp(move.From, move.FromIndex);
                     if (upperFromIndex != move.FromIndex)
@@ -1005,7 +1017,6 @@ namespace Spider
                         Card upperFromCard = fromPile[upperFromIndex];
                         uses += FaceLists[(int)upperFromCard.Face + 1].Count;
                     }
-#endif
                 }
             }
             return uses;
