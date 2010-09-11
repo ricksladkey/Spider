@@ -81,6 +81,15 @@ namespace Spider
             }
         }
 
+        public int EmptyFreeCells
+        {
+            get
+            {
+                Analyze();
+                return FreeCells.Count;
+            }
+        }
+
         static Game()
         {
             OneSuitDeck = new Deck(2, 1);
