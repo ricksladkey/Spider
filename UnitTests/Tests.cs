@@ -33,14 +33,14 @@ namespace UnitTests
             Game game1 = new Game(data1);
             Game game2 = new Game(game1.ToAsciiString());
             string data2 = game2.ToAsciiString();
-            Assert.IsTrue(Strip(data1) == Strip(data2));
+            Assert.AreEqual(Strip(data1), Strip(data2));
         }
 
         [Test]
         public void EmptyTest1()
         {
             // No cards: we win.
-            string data = "@2||---------|---------|@";
+            string data = "@2||||@";
             game = new Game(data);
             Assert.IsTrue(game.Move());
         }
@@ -49,7 +49,7 @@ namespace UnitTests
         public void EmptyTest2()
         {
             // No useful move: we lose.
-            string data = "@2||---------|AS---------|@";
+            string data = "@2|||AS|@";
             game = new Game(data);
             Assert.False(game.Move());
         }
@@ -58,18 +58,42 @@ namespace UnitTests
         public void BuriedTest1()
         {
             // A simple buried move available with one free cell.
-            string data = "@2||---------|4S8S-5S--KS-KS-KS-KS-KS-KS-KS|@";
-            game = new Game(data);
+            string data1 = "@2|||4S8S-5S--KS-KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||8S-5S4S--KS-KS-KS-KS-KS-KS-KS|@";
+            game = new Game(data1);
             Assert.IsTrue(game.Move());
+            Assert.AreEqual(game.ToAsciiString(), data2);
         }
 
         [Test]
         public void BuriedTest2()
         {
             // A simple buried move available but no free cells.
-            string data = "@2||---------|4S8S-5S-KS-KS-KS-KS-KS-KS-KS-KS|@";
+            string data = "@2|||4S8S-5S-KS-KS-KS-KS-KS-KS-KS-KS|@";
             game = new Game(data);
             Assert.IsFalse(game.Move());
+            Assert.AreEqual(game.ToAsciiString(), data);
+        }
+
+        [Test]
+        public void BuriedTest3()
+        {
+            // A simple inversion move available with one free cell.
+            string data1 = "@2|||4S5S-8S--KS-KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||-8S-5S4S-KS-KS-KS-KS-KS-KS-KS|@";
+            game = new Game(data1);
+            Assert.IsTrue(game.Move());
+            Assert.AreEqual(game.ToAsciiString(), data2);
+        }
+
+        [Test]
+        public void BuriedTest4()
+        {
+            // A simple inversion move available but no free cells.
+            string data = "@2|||4S5S-8S-KS-KS-KS-KS-KS-KS-KS-KS|@";
+            game = new Game(data);
+            Assert.IsFalse(game.Move());
+            Assert.AreEqual(game.ToAsciiString(), data);
         }
 
         private string Strip(string s)

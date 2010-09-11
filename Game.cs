@@ -68,6 +68,19 @@ namespace Spider
         private PileList FreeCells { get; set; }
         private PileList[] FaceLists { get; set; }
 
+        public List<ComplexMove> ComplexCandidates
+        {
+            get
+            {
+                List<ComplexMove> result = new List<ComplexMove>();
+                for (int index = 0; index < Candidates.Count; index++)
+                {
+                    result.Add(new ComplexMove(index, Moves, SupplementaryMoves, HoldingList));
+                }
+                return result;
+            }
+        }
+
         static Game()
         {
             OneSuitDeck = new Deck(2, 1);
@@ -185,6 +198,7 @@ namespace Spider
         {
             Won = false;
             Moves.Clear();
+            Candidates.Clear();
             Shuffled.Clear();
             StockPile.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
@@ -1725,7 +1739,12 @@ namespace Spider
         private static string ToAsciiString(Pile[] rows)
         {
             string s = "";
-            for (int i = 0; i < rows.Length; i++)
+            int n = rows.Length;
+            while (n > 0 && rows[n - 1].Count == 0)
+            {
+                n--;
+            }
+            for (int i = 0; i < n; i++)
             {
                 if (i != 0)
                 {
@@ -1791,11 +1810,11 @@ namespace Spider
             {
                 throw new Exception("too many discard piles");
             }
-            if (downPiles.Length != NumberOfPiles)
+            if (downPiles.Length > NumberOfPiles)
             {
                 throw new Exception("wrong number of down piles");
             }
-            if (upPiles.Length != NumberOfPiles)
+            if (upPiles.Length > NumberOfPiles)
             {
                 throw new Exception("wrong number of up piles");
             }
@@ -1816,9 +1835,12 @@ namespace Spider
                 }
                 DiscardPiles.Add(discardPile);
             }
-            for (int pile = 0; pile < NumberOfPiles; pile++)
+            for (int pile = 0; pile < downPiles.Length; pile++)
             {
                 DownPiles[pile] = downPiles[pile];
+            }
+            for (int pile = 0; pile < upPiles.Length; pile++)
+            {
                 UpPiles[pile] = upPiles[pile];
             }
             StockPile = stock;
