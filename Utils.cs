@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -184,6 +185,20 @@ namespace Spider
                 Console.Write(text.Substring(next - 1, 2));
                 Console.ResetColor();
                 position = next + 1;
+            }
+        }
+
+        public static void WriteLine(object obj)
+        {
+            WriteLine("{0}", obj);
+        }
+
+        public static void WriteLine(string format, params object[] args)
+        {
+            Console.WriteLine(format, args);
+            if (Debugger.IsAttached)
+            {
+                Trace.WriteLine(string.Format(format, args));
             }
         }
     }

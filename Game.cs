@@ -125,7 +125,7 @@ namespace Spider
         {
             try
             {
-                Clear();
+                Initialize();
                 Start();
                 if (TraceStartFinish)
                 {
@@ -138,7 +138,7 @@ namespace Spider
                         if (TraceStartFinish)
                         {
                             PrintGame();
-                            Console.WriteLine("maximum moves exceeded");
+                            Utils.WriteLine("maximum moves exceeded");
                         }
                         throw new Exception("maximum moves exceeded");
                     }
@@ -150,7 +150,7 @@ namespace Spider
                             if (TraceDeals)
                             {
                                 PrintGame();
-                                Console.WriteLine("dealing");
+                                Utils.WriteLine("dealing");
                             }
                             Deal();
                             RespondToDeal();
@@ -159,7 +159,7 @@ namespace Spider
                         if (TraceStartFinish)
                         {
                             PrintGame();
-                            Console.WriteLine("lost - no moves");
+                            Utils.WriteLine("lost - no moves");
                         }
                         break;
                     }
@@ -168,7 +168,7 @@ namespace Spider
                         if (TraceStartFinish)
                         {
                             PrintGame();
-                            Console.WriteLine("won");
+                            Utils.WriteLine("won");
                         }
                         break;
                     }
@@ -176,12 +176,12 @@ namespace Spider
             }
             catch (Exception exception)
             {
-                Console.WriteLine("spider: seed: {0}, message: {1}", Seed, exception.Message);
+                Utils.WriteLine("spider: seed: {0}, message: {1}", Seed, exception.Message);
                 throw;
             }
         }
 
-        public void Clear()
+        public void Initialize()
         {
             Won = false;
             Moves.Clear();
@@ -193,10 +193,7 @@ namespace Spider
                 UpPiles[i].Clear();
             }
             DiscardPiles.Clear();
-        }
 
-        public void Start()
-        {
             if (Suits == 1)
             {
                 SetDefaultCoefficients(OneSuitCoefficients);
@@ -216,7 +213,10 @@ namespace Spider
             {
                 throw new Exception("Invalid number of suits");
             }
+        }
 
+        public void Start()
+        {
             if (Seed == -1)
             {
                 Random random = new Random();
@@ -1268,7 +1268,7 @@ namespace Spider
         {
             if (Diagnostics)
             {
-                Console.WriteLine("CTSM: {0}", move);
+                Utils.WriteLine("CTSM: {0}", move);
                 PrintHolding(move);
             }
 
@@ -1362,7 +1362,7 @@ namespace Spider
         {
             if (Diagnostics)
             {
-                Console.WriteLine("SWUFC: {0}/{1} -> {2}/{3}", from, fromIndex, to, toIndex);
+                Utils.WriteLine("SWUFC: {0}/{1} -> {2}/{3}", from, fromIndex, to, toIndex);
             }
             Analyze();
             int freeCells = FreeCells.Count;
@@ -1407,7 +1407,7 @@ namespace Spider
             int suits = Math.Min(remainingSuits, n);
             if (Diagnostics)
             {
-                Console.WriteLine("MOUFC: {0} -> {1}: {2}", from, to, suits);
+                Utils.WriteLine("MOUFC: {0} -> {1}: {2}", from, to, suits);
             }
             for (int i = n - suits; i < n; i++)
             {
@@ -1433,7 +1433,7 @@ namespace Spider
         {
             if (Diagnostics)
             {
-                Console.WriteLine("IUFC: {0}/{1} -> {2}/{3} o{4}/{5}", from, fromIndex, to, toIndex, offloadPile, offloadIndex);
+                Utils.WriteLine("IUFC: {0}/{1} -> {2}/{3} o{4}/{5}", from, fromIndex, to, toIndex, offloadPile, offloadIndex);
             }
             for (int next = first; next != -1; next = SupplementaryMoves[next].Next)
             {
@@ -1446,7 +1446,7 @@ namespace Spider
         {
             if (Diagnostics)
             {
-                Console.WriteLine("OUFC: {0}/{1} -> {2}/{3} o{4}/{5}", from, fromIndex, to, toIndex, offloadPile, offloadIndex);
+                Utils.WriteLine("OUFC: {0}/{1} -> {2}/{3} o{4}/{5}", from, fromIndex, to, toIndex, offloadPile, offloadIndex);
             }
             Analyze();
             int freeCells = FreeCells.Count;
@@ -1478,7 +1478,7 @@ namespace Spider
         {
             if (Diagnostics)
             {
-                Console.WriteLine("MMUFC: {0}/{1} -> {2}", from, fromIndex, to);
+                Utils.WriteLine("MMUFC: {0}/{1} -> {2}", from, fromIndex, to);
             }
             Analyze();
             int toIndex = UpPiles[to].Count;
@@ -1548,7 +1548,7 @@ namespace Spider
             }
             if (Diagnostics)
             {
-                Console.WriteLine("    MSM: {0}/{1} -> {2}", from, fromIndex, to);
+                Utils.WriteLine("    MSM: {0}/{1} -> {2}", from, fromIndex, to);
             }
             Debug.Assert(UpPiles[from].Count != 0);
             Debug.Assert(fromIndex < UpPiles[from].Count);
@@ -1601,7 +1601,7 @@ namespace Spider
             move.Score = 0;
             if (TraceMoves)
             {
-                Console.WriteLine("Move {0}: {1}", Moves.Count, move);
+                Utils.WriteLine("Move {0}: {1}", Moves.Count, move);
             }
             Moves.Add(move);
         }
@@ -1657,7 +1657,7 @@ namespace Spider
         {
             foreach (Move move in Moves)
             {
-                Console.WriteLine("{0}", move);
+                Utils.WriteLine("{0}", move);
                 PrintHolding(move);
             }
         }
@@ -1666,11 +1666,11 @@ namespace Spider
         {
             foreach (Move move in Candidates)
             {
-                Console.WriteLine("{0}", move);
+                Utils.WriteLine("{0}", move);
                 for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
                 {
                     Move nextMove = SupplementaryMoves[next];
-                    Console.WriteLine("    {0}", nextMove);
+                    Utils.WriteLine("    {0}", nextMove);
                 }
                 PrintHolding(move);
             }
@@ -1678,14 +1678,14 @@ namespace Spider
 
         public void PrintMove(Move move)
         {
-            Console.WriteLine(move);
+            Utils.WriteLine(move);
         }
 
         public void PrintHolding(Move move)
         {
             for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
             {
-                Console.WriteLine("    holding {0}", HoldingList[holdingNext]);
+                Utils.WriteLine("    holding {0}", HoldingList[holdingNext]);
             }
         }
 
@@ -1701,6 +1701,7 @@ namespace Spider
             string s = "";
             
             s += Fence;
+            s += Suits.ToString() + PrimarySeparator;
             s += ToAsciiString(discardRow) + PrimarySeparator;
             s += ToAsciiString(DownPiles) + PrimarySeparator;
             s += ToAsciiString(UpPiles) + PrimarySeparator;
@@ -1747,6 +1748,7 @@ namespace Spider
 
         public void FromAsciiString(string s)
         {
+            // Parse string.
             StringBuilder b = new StringBuilder();
             int i;
             for (i = 0; i < s.Length && s[i] != Fence; i++)
@@ -1770,14 +1772,21 @@ namespace Spider
             }
             s = b.ToString();
             string[] sections = s.Split(PrimarySeparator);
-            if (sections.Length != 4)
+            if (sections.Length != 5)
             {
                 throw new Exception("wrong number of sections");
             }
-            Pile discards = GetPileFromAsciiString(sections[0]);
-            Pile[] downPiles = GetPilesFromAsciiString(sections[1]);
-            Pile[] upPiles = GetPilesFromAsciiString(sections[2]);
-            Pile stock = GetPileFromAsciiString(sections[3]);
+
+            // Parse sections.
+            int suits = int.Parse(sections[0]);
+            if (suits != 1 && suits != 2 && suits != 4)
+            {
+                throw new Exception("invalid number of suits");
+            }
+            Pile discards = GetPileFromAsciiString(sections[1]);
+            Pile[] downPiles = GetPilesFromAsciiString(sections[2]);
+            Pile[] upPiles = GetPilesFromAsciiString(sections[3]);
+            Pile stock = GetPileFromAsciiString(sections[4]);
             if (discards.Count > 8)
             {
                 throw new Exception("too many discard piles");
@@ -1794,7 +1803,10 @@ namespace Spider
             {
                 throw new Exception("too many stock pile cards");
             }
-            DiscardPiles.Clear();
+
+            // Prepare game.
+            Suits = suits;
+            Initialize();
             foreach (Card discardCard in discards)
             {
                 Pile discardPile = new Pile();
