@@ -26,6 +26,10 @@ namespace Spider
         public const int Group0 = 0;
         public const int Group1 = 7;
 
+        public static char Fence = '@';
+        public static char PrimarySeparator = '|';
+        public static char SecondarySepatrator = '-';
+
         public const double InfiniteScore = double.MaxValue;
         public const double RejectScore = double.MinValue;
 
@@ -109,6 +113,12 @@ namespace Spider
                 FaceLists[i] = new PileList();
             }
             Coefficients = null;
+        }
+
+        public Game(string game)
+            : this()
+        {
+            FromAsciiString(game);
         }
 
         public void Play()
@@ -1679,7 +1689,153 @@ namespace Spider
             }
         }
 
-        public override string ToString()
+        public string ToAsciiString()
+        {
+            Pile discardRow = new Pile();
+            for (int i = 0; i < DiscardPiles.Count; i++)
+            {
+                Pile discardPile = DiscardPiles[i];
+                discardRow.Add(discardPile[discardPile.Count - 1]);
+            }
+
+            string s = "";
+            
+            s += Fence;
+            s += ToAsciiString(discardRow) + PrimarySeparator;
+            s += ToAsciiString(DownPiles) + PrimarySeparator;
+            s += ToAsciiString(UpPiles) + PrimarySeparator;
+            s += ToAsciiString(StockPile);
+            s += Fence;
+
+            return WrapString(s, 60);
+        }
+
+        private string WrapString(string s, int columns)
+        {
+            string t = "";
+            while (s.Length > columns)
+            {
+                t += s.Substring(0, columns) + Environment.NewLine;
+                s = s.Substring(columns);
+            }
+            return t + s;
+        }
+
+        private static string ToAsciiString(Pile[] rows)
+        {
+            string s = "";
+            for (int i = 0; i < rows.Length; i++)
+            {
+                if (i != 0)
+                {
+                    s += SecondarySepatrator;
+                }
+                s += ToAsciiString(rows[i]);
+            }
+            return s;
+        }
+
+        private static string ToAsciiString(Pile row)
+        {
+            string s = "";
+            for (int i = 0; i < row.Count; i++)
+            {
+                s += row[i].ToAsciiString();
+            }
+            return s;
+        }
+
+        public void FromAsciiString(string s)
+        {
+            StringBuilder b = new StringBuilder();
+            int i;
+            for (i = 0; i < s.Length && s[i] != Fence; i++)
+            {
+            }
+            if (i == s.Length)
+            {
+                throw new Exception("missing opening fence");
+            }
+            for (i++; i < s.Length && s[i] != Fence; i++)
+            {
+                char c = s[i];
+                if (!char.IsWhiteSpace(c))
+                {
+                    b.Append(s[i]);
+                }
+            }
+            if (i == s.Length)
+            {
+                throw new Exception("missing closing fence");
+            }
+            s = b.ToString();
+            string[] sections = s.Split(PrimarySeparator);
+            if (sections.Length != 4)
+            {
+                throw new Exception("wrong number of sections");
+            }
+            Pile discards = GetPileFromAsciiString(sections[0]);
+            Pile[] downPiles = GetPilesFromAsciiString(sections[1]);
+            Pile[] upPiles = GetPilesFromAsciiString(sections[2]);
+            Pile stock = GetPileFromAsciiString(sections[3]);
+            if (discards.Count > 8)
+            {
+                throw new Exception("too many discard piles");
+            }
+            if (downPiles.Length != NumberOfPiles)
+            {
+                throw new Exception("wrong number of down piles");
+            }
+            if (upPiles.Length != NumberOfPiles)
+            {
+                throw new Exception("wrong number of up piles");
+            }
+            if (stock.Count > 50)
+            {
+                throw new Exception("too many stock pile cards");
+            }
+            DiscardPiles.Clear();
+            foreach (Card discardCard in discards)
+            {
+                Pile discardPile = new Pile();
+                for (Face face = Face.King; face >= Face.Ace; face--)
+                {
+                    discardPile.Add(new Card(face, discardCard.Suit));
+                }
+                DiscardPiles.Add(discardPile);
+            }
+            for (int pile = 0; pile < NumberOfPiles; pile++)
+            {
+                DownPiles[pile] = downPiles[pile];
+                UpPiles[pile] = upPiles[pile];
+            }
+            StockPile = stock;
+        }
+
+        private static Pile[] GetPilesFromAsciiString(string s)
+        {
+            string[] rows = s.Split(SecondarySepatrator);
+            int n = rows.Length;
+            Pile[] piles = new Pile[n];
+            for (int i = 0; i < n; i++)
+            {
+                piles[i] = GetPileFromAsciiString(rows[i]);
+            }
+            return piles;
+        }
+
+        private static Pile GetPileFromAsciiString(string s)
+        {
+            int n = s.Length / 2;
+            Pile pile = new Pile();
+            for (int i = 0; i < n; i++)
+            {
+                pile.Add(Utils.GetCard(s.Substring(2 * i, 2)));
+            }
+            return pile;
+        }
+
+        public string ToPrettyString()
         {
             string s = Environment.NewLine;
             s += "   Spider";
@@ -1692,28 +1848,30 @@ namespace Spider
                 Pile discardPile = DiscardPiles[i];
                 discardRow.Add(discardPile[discardPile.Count - 1]);
             }
-            s += ToString(-1, discardRow);
+            s += ToPrettyString(-1, discardRow);
             s += Environment.NewLine;
-            s += ToString(DownPiles);
+            s += ToPrettyString(DownPiles);
             s += Environment.NewLine;
             s += "   0  1  2  3  4  5  6  7  8  9";
             s += Environment.NewLine;
-            s += ToString(UpPiles);
+            s += ToPrettyString(UpPiles);
             s += Environment.NewLine;
             for (int i = 0; i < StockPile.Count / NumberOfPiles; i++)
             {
                 Pile row = new Pile();
                 for (int j = 0; j < NumberOfPiles; j++)
                 {
-                    row.Add(StockPile[i * NumberOfPiles + j]);
+                    int index = i * NumberOfPiles + j;
+                    int reverseIndex = StockPile.Count - index - 1;
+                    row.Add(StockPile[reverseIndex]);
                 }
-                s += ToString(i, row);
+                s += ToPrettyString(i, row);
             }
 
             return s;
         }
 
-        private static string ToString(Pile[] rows)
+        private static string ToPrettyString(Pile[] rows)
         {
             string s = "";
             int max = 0;
@@ -1735,12 +1893,12 @@ namespace Spider
                         row.Add(Card.Empty);
                     }
                 }
-                s += ToString(j, row);
+                s += ToPrettyString(j, row);
             }
             return s;
         }
 
-        private static string ToString(int index, Pile row)
+        private static string ToPrettyString(int index, Pile row)
         {
             string s = "";
             if (index == -1)
@@ -1760,6 +1918,11 @@ namespace Spider
                 s += (row[i].IsEmpty) ? "  " : row[i].ToString();
             }
             return s + Environment.NewLine;
+        }
+
+        public override string ToString()
+        {
+            return ToPrettyString();
         }
     }
 }

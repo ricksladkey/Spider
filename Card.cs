@@ -21,9 +21,19 @@ namespace Spider
             Suit = suit;
         }
 
+        public string ToPrettyString()
+        {
+            return Utils.GetString(Face) + Utils.GetPrettyString(Suit);
+        }
+
+        public string ToAsciiString()
+        {
+            return Utils.GetString(Face) + Utils.GetAsciiString(Suit);
+        }
+
         public override string ToString()
         {
-            return Utils.ToString(Face) + Utils.ToString(Suit);
+            return ToPrettyString();
         }
 
         #region IEquatable<Card> Members

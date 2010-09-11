@@ -4,8 +4,8 @@
 - make console access threadsafe
 - before playing onto a free cell search for a free cell preserving sequence
 
-- make simple the default
-
+- some buried moves work even if the pile is not a free cell, i.e. just out of order
+  (but not very many)
 - improve scoring of buried moves
 - consider enumerating all buried moves instead of one per stack
 - rename buried to offload
