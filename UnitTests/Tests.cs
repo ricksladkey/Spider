@@ -33,7 +33,7 @@ namespace UnitTests
             Game game1 = new Game(data1);
             Game game2 = new Game(game1.ToAsciiString());
             string data2 = game2.ToAsciiString();
-            Assert.AreEqual(Strip(data1), Strip(data2));
+            Assert.AreEqual(Strip(data2), Strip(data1));
         }
 
         [Test]
@@ -60,40 +60,59 @@ namespace UnitTests
             // A simple buried move available with one free cell.
             string data1 = "@2|||4S8S-5S--KS-KS-KS-KS-KS-KS-KS|@";
             string data2 = "@2|||8S-5S4S--KS-KS-KS-KS-KS-KS-KS|@";
-            game = new Game(data1);
-            Assert.IsTrue(game.Move());
-            Assert.AreEqual(game.ToAsciiString(), data2);
+            CheckMove(data1, data2);
         }
 
         [Test]
         public void BuriedTest2()
         {
-            // A simple buried move available but no free cells.
-            string data = "@2|||4S8S-5S-KS-KS-KS-KS-KS-KS-KS-KS|@";
-            game = new Game(data);
-            Assert.IsFalse(game.Move());
-            Assert.AreEqual(game.ToAsciiString(), data);
+            // A simple inversion move available with one free cell.
+            string data1 = "@2|||4S5S-8S--KS-KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||-8S-5S4S-KS-KS-KS-KS-KS-KS-KS|@";
+            CheckMove(data1, data2);
         }
 
         [Test]
         public void BuriedTest3()
         {
-            // A simple inversion move available with one free cell.
-            string data1 = "@2|||4S5S-8S--KS-KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||-8S-5S4S-KS-KS-KS-KS-KS-KS-KS|@";
-            game = new Game(data1);
-            Assert.IsTrue(game.Move());
-            Assert.AreEqual(game.ToAsciiString(), data2);
+            // A triple buried move available with one free cell.
+            string data1 = "@2|||AS3S2S6S-4S-2S--KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||6S-4S3S2S-2SAS--KS-KS-KS-KS-KS-KS|@";
+            CheckMove(data1, data2);
         }
 
         [Test]
         public void BuriedTest4()
         {
-            // A simple inversion move available but no free cells.
-            string data = "@2|||4S5S-8S-KS-KS-KS-KS-KS-KS-KS-KS|@";
+            // A triple inversion move available with one free cell.
+            string data1 = "@2|||AS2S3S--KS-KS-KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||-3S2SAS-KS-KS-KS-KS-KS-KS-KS-KS|@";
+            CheckMove(data1, data2);
+        }
+
+        private void CheckMoveSucceeds(string data1, string data2)
+        {
+            // Check that the only available move is made.
+            game = new Game(data1);
+            Assert.IsTrue(game.Move());
+            Assert.AreEqual(data2, game.ToAsciiString());
+        }
+
+        private void CheckMoveFails(string data)
+        {
+            // Check that the move is not made.
             game = new Game(data);
             Assert.IsFalse(game.Move());
-            Assert.AreEqual(game.ToAsciiString(), data);
+            Assert.AreEqual(data, game.ToAsciiString());
+        }
+
+        private void CheckMove(string data1, string data2)
+        {
+            // Check that the only available move is made.
+            CheckMoveSucceeds(data1, data2);
+
+            // Check that the move is not made with one fewer free cell.
+            CheckMoveFails(FillFreeCell(data1));
         }
 
         private string Strip(string s)
@@ -108,6 +127,11 @@ namespace UnitTests
                 }
             }
             return b.ToString();
+        }
+
+        private string FillFreeCell(string data)
+        {
+            return data.Replace("--", "-KS-");
         }
 
         private void PrintGame()

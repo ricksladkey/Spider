@@ -693,10 +693,8 @@ namespace Spider
                                     scoreTo = from;
                                     usedPiles.Add(from);
                                     found = true;
-                                    break;
                                 }
                             }
-                            break;
                         }
                         if (!found)
                         {
@@ -1665,6 +1663,10 @@ namespace Spider
         public void PrintGame()
         {
             Utils.ColorizeToConsole(ToString());
+            if (Debugger.IsAttached)
+            {
+                Trace.WriteLine(ToString());
+            }
         }
 
         private void PrintMoves()
