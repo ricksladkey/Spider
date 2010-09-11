@@ -47,7 +47,7 @@ namespace Spider
             {
                 if (Count == 0)
                 {
-                    return -1;
+                    return Stack.Index;
                 }
                 return Stack[Count - 1].Index;
             }

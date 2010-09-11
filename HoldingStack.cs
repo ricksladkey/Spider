@@ -16,6 +16,8 @@ namespace Spider
             Add(item);
         }
 
+        public int Index { get; set; }
+
         public int Suits
         {
             get

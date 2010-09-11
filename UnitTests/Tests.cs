@@ -90,8 +90,31 @@ namespace UnitTests
             CheckMove(data1, data2);
         }
 
+        [Test]
+        public void BuriedTest5()
+        {
+            // A triple mixed buried move available with one free cell.
+            string data1 = "@2|||4S2S3S-5S--KS-KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||-5S4S-3S2S-KS-KS-KS-KS-KS-KS-KS|@";
+            CheckMove(data1, data2);
+        }
+
+        [Test]
+        public void BuriedTest6()
+        {
+            // A triple inversion move available with one free cell
+            // with two holding cells.
+            string data1 = "@2|||2S3S4S3H2S-4H3H-5S4S--KS-KS-KS-KS-KS-KS|@";
+            string data2 = "@2|||-4H3H2S-5S4S3H-4S3S2S-KS-KS-KS-KS-KS-KS|@";
+            CheckMove(data1, data2);
+        }
+
         private void CheckMoveSucceeds(string data1, string data2)
         {
+#if false
+            PrintGame(new Game(data1));
+            PrintGame(new Game(data2));
+#endif
             // Check that the only available move is made.
             game = new Game(data1);
             Assert.IsTrue(game.Move());
@@ -135,6 +158,11 @@ namespace UnitTests
         }
 
         private void PrintGame()
+        {
+            PrintGame(game);
+        }
+
+        private void PrintGame(Game game)
         {
             Trace.WriteLine(game.ToString());
         }

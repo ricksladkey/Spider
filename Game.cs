@@ -285,8 +285,9 @@ namespace Spider
 
             for (int from = 0; from < NumberOfPiles; from++)
             {
-                HoldingStack.Clear();
                 Pile fromPile = UpPiles[from];
+                HoldingStack.Clear();
+                HoldingStack.Index = fromPile.Count;
                 int extraSuits = 0;
                 int runLength = 0;
                 for (int fromIndex = fromPile.Count - 1; fromIndex >= 0; fromIndex--)
@@ -687,7 +688,7 @@ namespace Spider
                             // Check whether the from pile will work.
                             if (!usedPiles.Contains(from))
                             {
-                                if (fromPile[fromPile.Count - 1].Face - 1 == rootCard.Face)
+                                if (fromPile[holdingSet.Index - 1].Face - 1 == rootCard.Face)
                                 {
                                     scoreFromIndex = rootIndex;
                                     scoreTo = from;
@@ -737,7 +738,8 @@ namespace Spider
 
                 // Add the scoring move and supplementary moves.
                 Pile scoreToPile = UpPiles[scoreTo];
-                Candidates.Add(new Move(from, scoreFromIndex, scoreTo, scoreToPile.Count, AddHolding(holdingSet), FreeCells[0], fromIndex, SupplementaryMoves.Count));
+                int scoreToIndex = invertPile ? holdingSet.Index : scoreToPile.Count;
+                Candidates.Add(new Move(from, scoreFromIndex, scoreTo, scoreToIndex, AddHolding(holdingSet), FreeCells[0], fromIndex, SupplementaryMoves.Count));
                 SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, -1, -1, SupplementaryMoves.Count + 1));
                 for (int n = 0; n < roots.Count; n++)
                 {
