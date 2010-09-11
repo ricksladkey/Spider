@@ -25,15 +25,15 @@ namespace UnitTests
         public void SerializationTest()
         {
             string data1 = @"
-                @2||KHTH3S5H9S-AH-5HKSAS7SKS-JH-7SKS8S8H-9HJH--6S3HQH-7S9S8H
-                JH-9S3HJH4S|7H6H5H4H3H2HAH-2S-7H6S5S4S-KHQSJSTS9S-2SAS-TH-JS
-                TS-2H-KH-2S|9HTSAS9H3SQSJS5STH4S8S3SQH9H8H2S5HQSAHTH3S4S5S2H
-                8SAH7H6H6S4H4H8HQH5SQSTSAS7SKH2H6HKS8S4HQHJS6S3H6H7H@
+                @2||KhTh3s5h9s-Ah-5hKsAs7sKs-Jh-7sKs8s8h-9hJh--6s3hQh-7s9s8h
+                Jh-9s3hJh4s|7h6h5h4h3h2hAh-2s-7h6s5s4s-KhQsJsTs9s-2sAs-Th-Js
+                Ts-2h-Kh-2s|9hTsAs9h3sQsJs5sTh4s8s3sQh9h8h2s5hQsAhTh3s4s5s2h
+                8sAh7h6h6s4h4h8hQh5sQsTsAs7sKh2h6hKs8s4hQhJs6s3h6h7h@
             ";
             Game game1 = new Game(data1);
             Game game2 = new Game(game1.ToAsciiString());
             string data2 = game2.ToAsciiString();
-            Assert.AreEqual(Strip(data2), Strip(data1));
+            Assert.AreEqual(Normalize(data2), Normalize(data1));
         }
 
         [Test]
@@ -55,57 +55,85 @@ namespace UnitTests
         }
 
         [Test]
-        public void BuriedTest1()
+        public void OffloadTest1()
         {
-            // A simple buried move available with one free cell.
-            string data1 = "@2|||4S8S-5S--KS-KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||8S-5S4S--KS-KS-KS-KS-KS-KS-KS|@";
+            // A simple offload move available with one free cell.
+            string data1 = "@2|||4s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||8s-5s4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void BuriedTest2()
+        public void OffloadTest2()
         {
             // A simple inversion move available with one free cell.
-            string data1 = "@2|||4S5S-8S--KS-KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||-8S-5S4S-KS-KS-KS-KS-KS-KS-KS|@";
+            string data1 = "@2|||4s5s-8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-8s-5s4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void BuriedTest3()
+        public void OffloadTest3()
         {
-            // A triple buried move available with one free cell.
-            string data1 = "@2|||AS3S2S6S-4S-2S--KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||6S-4S3S2S-2SAS--KS-KS-KS-KS-KS-KS|@";
+            // A triple offload move available with one free cell.
+            string data1 = "@2|||As3s2s6s-4s-2s--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||6s-4s3s2s-2sAs--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void BuriedTest4()
+        public void OffloadTest4()
         {
             // A triple inversion move available with one free cell.
-            string data1 = "@2|||AS2S3S--KS-KS-KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||-3S2SAS-KS-KS-KS-KS-KS-KS-KS-KS|@";
+            string data1 = "@2|||As2s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-3s2sAs-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void BuriedTest5()
+        public void OffloadTest5()
         {
-            // A triple mixed buried move available with one free cell.
-            string data1 = "@2|||4S2S3S-5S--KS-KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||-5S4S-3S2S-KS-KS-KS-KS-KS-KS-KS|@";
+            // A triple mixed offload move available with one free cell.
+            string data1 = "@2|||4s2s3s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5s4s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void BuriedTest6()
+        public void OffloadTest6()
+        {
+            // A triple inversion move available with one free cell
+            // with one holding cell.
+            string data1 = "@2|||2s3s4s3s2h-5h4h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5h4h3s2h-4s3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [Test]
+        public void OffloadTest7()
         {
             // A triple inversion move available with one free cell
             // with two holding cells.
-            string data1 = "@2|||2S3S4S3H2S-4H3H-5S4S--KS-KS-KS-KS-KS-KS|@";
-            string data2 = "@2|||-4H3H2S-5S4S3H-4S3S2S-KS-KS-KS-KS-KS-KS|@";
+            string data1 = "@2|||2s3s4s3h2s-4h3h-5s4s--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-4h3h2s-5s4s3h-4s3s2s-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [Test]
+        public void OffloadTest8()
+        {
+            // A triple lower offload move available with two free cells.
+            string data1 = "@2|||As8s7h6s-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||8s7h6s-2sAs---Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [Test]
+        public void OffloadTest9()
+        {
+            // A quadruple lower offload move available with three free cells.
+            string data1 = "@2|||As8s7h6s5h-2s----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||8s7h6s5h-2sAs----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -138,7 +166,7 @@ namespace UnitTests
             CheckMoveFails(FillFreeCell(data1));
         }
 
-        private string Strip(string s)
+        private string Normalize(string s)
         {
             StringBuilder b = new StringBuilder();
             for (int i = 0; i < s.Length; i++)
@@ -149,12 +177,12 @@ namespace UnitTests
                     b.Append(c);
                 }
             }
-            return b.ToString();
+            return b.ToString().ToUpperInvariant();
         }
 
         private string FillFreeCell(string data)
         {
-            return data.Replace("--", "-KS-");
+            return data.Replace("--", "-Ks-");
         }
 
         private void PrintGame()

@@ -406,8 +406,8 @@ namespace Spider
                     CheckSwaps(from, fromIndex, extraSuits, maxExtraSuits);
                 }
 
-                // Check for buried free-cell preserving moves.
-                CheckBuried(from);
+                // Check for free-cell preserving offload moves.
+                CheckOffload(from);
             }
 
             return ChooseMove();
@@ -528,12 +528,12 @@ namespace Spider
             }
         }
 
-        private void CheckBuried(int from)
+        private void CheckOffload(int from)
         {
             int freeCells = FreeCells.Count;
             if (freeCells == 0)
             {
-                // Buried moves require at least one free cell.
+                // Offload moves require at least one free cell.
                 return;
             }
             Pile fromPile = UpPiles[from];

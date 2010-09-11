@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    static class Utils
+    public static class Utils
     {
         public static string GetString(Face face)
         {
@@ -63,19 +63,20 @@ namespace Spider
             switch (suit)
             {
                 case Suit.Clubs:
-                    return "C";
+                    return "c";
                 case Suit.Diamonds:
-                    return "D";
+                    return "d";
                 case Suit.Hearts:
-                    return "H";
+                    return "h";
                 case Suit.Spades:
-                    return "S";
+                    return "s";
             }
             return "-";
         }
 
         public static Face GetFace(string s)
         {
+            s = s.ToUpperInvariant();
             if (s == "A")
             {
                 return Face.Ace;
@@ -133,19 +134,20 @@ namespace Spider
 
         public static Suit GetSuit(string s)
         {
-            if (s == "C")
+            s = s.ToLowerInvariant();
+            if (s == "c")
             {
                 return Suit.Clubs;
             }
-            if (s == "D")
+            if (s == "d")
             {
                 return Suit.Diamonds;
             }
-            if (s == "H")
+            if (s == "h")
             {
                 return Suit.Hearts;
             }
-            if (s == "S")
+            if (s == "s")
             {
                 return Suit.Spades;
             }
