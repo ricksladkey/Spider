@@ -127,6 +127,24 @@ namespace UnitTests
         }
 
         [Test]
+        public void SwapTest9()
+        {
+            // A 1/1 out-of-order swap move, 0 free cells, 1 holding pile.
+            string data1 = "@2|||9s3h-4h8s-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||9s8s-4h3h-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [Test]
+        public void SwapTest10()
+        {
+            // A 1/1 in-order swap move, 0 free cells, 1 holding pile.
+            string data1 = "@4|||4s3h-4h3s-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@4|||4s3s-4h3h-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [Test]
         public void OffloadTest1()
         {
             // A 1/1 offload move, 1 free cell.
@@ -254,6 +272,27 @@ namespace UnitTests
             CheckMove(data1, data2);
         }
 
+        [Test]
+        public void OffloadTest15()
+        {
+            // A 1/1/1/1 offload move with reused piles, 1 free cell.
+            string data1 = "@2|||3s4s2s3s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5s4s3s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        private void AreEqual(string expected, string actual)
+        {
+            if (expected != actual)
+            {
+                PrintGame();
+                PrintCandidates();
+                Utils.WriteLine("expected: {0}", expected);
+                Utils.WriteLine("actual:   {0}", actual);
+            }
+            Assert.AreEqual(expected, actual);
+        }
+
         private void CheckMoveSucceeds(string initial, string expected)
         {
             // Check that the only available move is made.
@@ -261,16 +300,6 @@ namespace UnitTests
             Assert.IsTrue(game.Move());
             string actual = game.ToAsciiString();
             AreEqual(expected, actual);
-        }
-
-        private static void AreEqual(string expected, string actual)
-        {
-            if (expected != actual)
-            {
-                Utils.WriteLine("expected: {0}", expected);
-                Utils.WriteLine("actual:   {0}", actual);
-            }
-            Assert.AreEqual(expected, actual);
         }
 
         private void CheckMoveFails(string initial)
@@ -326,7 +355,31 @@ namespace UnitTests
 
         private void PrintGame(Game game)
         {
+            Utils.ColorizeToConsole(game.ToString());
             Trace.WriteLine(game.ToString());
+        }
+
+        private void PrintCandidates()
+        {
+            PrintCandidates(game);
+        }
+
+        private void PrintCandidates(Game game)
+        {
+            int count = 0;
+            foreach (ComplexMove move in game.ComplexCandidates)
+            {
+                Utils.WriteLine("move[{0}] = {1}", count, move.ScoreMove);
+                foreach (Move subMove in move.SupplementaryMoves)
+                {
+                    Utils.WriteLine("    supplementary: {0}", subMove);
+                }
+                foreach (HoldingInfo holding in move.HoldingList)
+                {
+                    Utils.WriteLine("    holding: {0}", holding);
+                }
+                count++;
+            }
         }
     }
 }

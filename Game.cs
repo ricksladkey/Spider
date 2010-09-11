@@ -345,17 +345,14 @@ namespace Spider
                                 Candidates.Add(new Move(from, fromIndex, to, toPile.Count, AddHolding(holdingSet)));
 
                                 // Update the holding pile move.
-                                if (fromIndex > 0 && fromPile[fromIndex - 1].Face - 1 == fromCard.Face)
+                                int holdingSuits = extraSuits;
+                                if (fromIndex > 0 && (fromPile[fromIndex - 1].Face - 1 != fromCard.Face || fromCard.Suit != fromPile[fromIndex - 1].Suit))
                                 {
-                                    int holdingSuits = extraSuits;
-                                    if (fromCard.Suit != fromPile[fromIndex - 1].Suit)
-                                    {
-                                        holdingSuits++;
-                                    }
-                                    if (holdingSuits > HoldingStack.Suits)
-                                    {
-                                        HoldingStack.Push(new HoldingInfo(to, fromIndex, holdingSuits));
-                                    }
+                                    holdingSuits++;
+                                }
+                                if (holdingSuits > HoldingStack.Suits)
+                                {
+                                    HoldingStack.Push(new HoldingInfo(to, fromIndex, holdingSuits));
                                 }
 
                                 break;
@@ -394,8 +391,14 @@ namespace Spider
 
                         foreach (HoldingSet holdingSet in HoldingStack.Sets)
                         {
+                            if (holdingSet.Index == fromIndex)
+                            {
+                                // No cards left to move.
+                                continue;
+                            }
                             if (extraSuits > maxExtraSuitsToFreeCell + holdingSet.Suits)
                             {
+                                // Not enough free cells.
                                 continue;
                             }
 
@@ -416,7 +419,7 @@ namespace Spider
                 }
 
                 // Check for free-cell preserving offload moves.
-                CheckOffload(from);
+                CheckOffloads(from);
             }
 
             return ChooseMove();
@@ -537,7 +540,7 @@ namespace Spider
             }
         }
 
-        private void CheckOffload(int from)
+        private void CheckOffloads(int from)
         {
             int freeCells = FreeCells.Count;
             if (freeCells == 0)
@@ -651,6 +654,11 @@ namespace Spider
             Face[] exposedFaces = new Face[NumberOfPiles];
             foreach (HoldingSet holdingSet in HoldingStack.Sets)
             {
+                if (holdingSet.Index == fromIndex)
+                {
+                    // No cards left in upper run.
+                    continue;
+                }
                 usedPiles.Clear();
                 for (int n = 0; n < roots.Count; n++)
                 {
