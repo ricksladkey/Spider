@@ -166,8 +166,8 @@ namespace UnitTests
         public void OffloadTest3()
         {
             // A 1/1/1 offload move, 1 free cell.
-            string data1 = "@2|||As3s2s6s-4s-2s--Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||6s-4s3s2s-2sAs--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data1 = "@2|||Ts3s2s6s-4s-Js--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||6s-4s3s2s-JsTs--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -281,12 +281,31 @@ namespace UnitTests
             CheckMove(data1, data2);
         }
 
-        private void AreEqual(string expected, string actual)
+        [Test]
+        public void OffloadTest16()
+        {
+            // A 1/1 offload move, 0 free cells.
+            string data1 = "@2|||4s8s-5s-9s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5s4s-9s8s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [Test]
+        public void OffloadTest17()
+        {
+            // A 1/1/1 offload move with reused pile, 1 free cell.
+            string data1 = "@2|||As3s2s6s-4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||6s-4s3s2sAs--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)
             {
-                PrintGame();
+                PrintGame(new Game(initial));
                 PrintCandidates();
+                PrintGame();
                 Utils.WriteLine("expected: {0}", expected);
                 Utils.WriteLine("actual:   {0}", actual);
             }
@@ -299,7 +318,7 @@ namespace UnitTests
             game = new Game(initial);
             Assert.IsTrue(game.Move());
             string actual = game.ToAsciiString();
-            AreEqual(expected, actual);
+            CheckResults(initial, expected, actual);
         }
 
         private void CheckMoveFails(string initial)
@@ -308,15 +327,22 @@ namespace UnitTests
             // or that a last resort move was made.
             game = new Game(initial);
             int before = game.EmptyFreeCells;
-            if (game.Move())
+            bool moved = game.Move();
+            if (moved)
             {
                 int after = game.EmptyFreeCells;
+                if (!(after < before))
+                {
+                    PrintGame(new Game(initial));
+                    PrintCandidates();
+                    PrintGame();
+                }
                 Assert.IsTrue(after < before);
             }
             else
             {
                 string actual = game.ToAsciiString();
-                AreEqual(initial, actual);
+                CheckResults(initial, initial, actual);
             }
         }
 

@@ -14,26 +14,41 @@ namespace UnitTests
     {
         static void Main(string[] args)
         {
-            RunTests(typeof(Tests));
+            RunTests(typeof(Tests), args);
         }
 
-        static void RunTests(Type type)
+        static void RunTests(Type type, string[] tests)
         {
             int count = 0;
-            ConstructorInfo ctor = type.GetConstructor(Type.EmptyTypes);
             object[] args = new object[0];
+            ConstructorInfo ctor = type.GetConstructor(Type.EmptyTypes);
             object obj = ctor.Invoke(args);
+            foreach (MethodInfo methodInfo in GetMethods(type, tests))
+            {
+                methodInfo.Invoke(obj, args);
+                count++;
+            }
+            Utils.WriteLine("Class: {0}, tests: {1}", type.Name, count);
+        }
+
+        static List<MethodInfo> GetMethods(Type type, string[] tests)
+        {
+            List<MethodInfo> list = new List<MethodInfo>();
             MethodInfo[] methods = type.GetMethods();
             foreach (MethodInfo methodInfo in methods)
             {
+                if (tests.Length > 0 && !tests.Contains(methodInfo.Name))
+                {
+                    continue;
+                }
                 object[] attributeArray = methodInfo.GetCustomAttributes(typeof(TestAttribute), false);
                 foreach (TestAttribute attribute in attributeArray)
                 {
-                    methodInfo.Invoke(obj, args);
-                    count++;
+                    list.Add(methodInfo);
+                    break;
                 }
             }
-            Utils.WriteLine("Class: {0}, tests: {1}", type.Name, count);
+            return list;
         }
     }
 }
