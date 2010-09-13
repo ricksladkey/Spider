@@ -113,8 +113,13 @@ namespace Spider
                 Console.WriteLine("");
             }
 
-            Console.WriteLine("games played: {0}, games won: {1:G5}%, games with discards: {2:G5}%", Played, 100.0 * Won / Played, 100.0 * Discards / Played);
-            Console.WriteLine("average moves: {0:G5} (won: {1:G5}, lost: {2:G5})", (double)Moves / Played, (double)MovesWon / Won, (double)MovesLost / (Played - Won));
+            double wonPercent = 100.0 * Won / Played;
+            double discardPercent = 100.0 * Discards / Played;
+            double averageMoves = (double)Moves / Played;
+            double wonMoves = (double)MovesWon / Math.Max(1, Won);
+            double lostMoves = (double)MovesLost / Math.Max(1, Played - Won);
+            Console.WriteLine("games played: {0}, games won: {1:G5}%, games with discards: {2:G5}%", Played, wonPercent, discardPercent);
+            Console.WriteLine("average moves: {0:G5} (won: {1:G5}, lost: {2:G5})", averageMoves, wonMoves, lostMoves);
 
             if (Debugger.IsAttached)
             {

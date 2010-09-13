@@ -445,6 +445,7 @@ namespace Spider
                 move.Next = i < count - 1 ? first + i + 1 : -1;
                 SupplementaryList.Add(move);
             }
+            SupplementaryMoves.Clear();
             return first;
         }
 
@@ -627,7 +628,6 @@ namespace Spider
                     if (upperSuits <= maxSuits && lowerSuits <= maxSuits)
                     {
                         int offloadCount = fromPile.Count - fromIndex;
-                        SupplementaryMoves.Clear();
                         SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile));
                         SupplementaryMoves.Add(new Move(from, 0, offloadPile, offloadCount));
                         Candidates.Add(new Move(MoveType.Inverting, from, 0, from, 0, -1, AddSupplementary()));
@@ -653,7 +653,6 @@ namespace Spider
                         if (lowerSuitsHolding <= maxLowerSuits && upperSuits <= maxUpperSuits)
                         {
                             Pile toPile = UpPiles[to];
-                            SupplementaryMoves.Clear();
                             SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
                             SupplementaryMoves.Add(new Move(from, 0, to, toPile.Count));
                             SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
@@ -779,11 +778,16 @@ namespace Spider
                     }
                 }
 
+                // Convert holding set into an ordinary moves.
+                foreach (HoldingInfo holding in holdingSet)
+                {
+                    Pile holdingPile = UpPiles[holding.Pile];
+                    SupplementaryMoves.Add(new Move(from, holding.Index, holding.Pile, holdingPile.Count));
+                }
+
                 if (createsFreeCell)
                 {
                     Pile holdingPile = UpPiles[holdingSet.Pile];
-                    SupplementaryMoves.Clear();
-                    SupplementaryMoves.Add(new Move(from, fromIndex, holdingSet.Pile, holdingPile.Count));
                     for (int n = 0; n < roots.Count; n++)
                     {
                         Move move = moves[n];
@@ -793,10 +797,10 @@ namespace Spider
                     break;
                 }
 
-                // Add the scoring move and supplementary moves.
+                // Add the supplementary moves.
                 int offloadPile = FreeCells[0];
                 MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
-                SupplementaryMoves.Clear();
+
                 SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
                 for (int n = 0; n < roots.Count; n++)
                 {
@@ -812,7 +816,9 @@ namespace Spider
                 {
                     SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
                 }
-                Candidates.Add(new Move(type, from, 0, from, 0, AddHolding(holdingSet), AddSupplementary()));
+
+                // Add the scoring move.
+                Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
                 break;
             }
         }
@@ -1535,10 +1541,24 @@ namespace Spider
             {
                 Utils.WriteLine("OUFC");
             }
+
+            // Advance past any holding moves.
+            int offloadIndex = -1;
+            for (int next = first; next != -1; next = SupplementaryList[next].Next)
+            {
+                Move move = SupplementaryList[next];
+                if (move.ToIndex == 0)
+                {
+                    offloadIndex = move.FromIndex;
+                    first = next;
+                    break;
+                }
+                MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
+            }
+
             Analyze();
             int freeCells = FreeCells.Count;
             int from = SupplementaryList[first].From;
-            int offloadIndex = SupplementaryList[first].FromIndex;
             int lowerSuits = CountSuits(from, offloadIndex);
             int maxLowerSuits = ExtraSuits(freeCells);
             Debug.Assert(lowerSuits <= maxLowerSuits);
