@@ -11,14 +11,14 @@ namespace Spider
         public MoveList SupplementaryMoves { get; set; }
         public List<HoldingInfo> HoldingList { get; set; }
 
-        public ComplexMove(int index, MoveList moves, MoveList supplementaryMoves, List<HoldingInfo> holdingList)
+        public ComplexMove(int index, MoveList moves, MoveList supplementaryList, List<HoldingInfo> holdingList)
         {
             Move scoreMove = moves[index];
             ScoreMove = scoreMove;
             SupplementaryMoves = new MoveList();
-            for (int next = scoreMove.Next; next != -1; next = supplementaryMoves[next].Next)
+            for (int next = scoreMove.Next; next != -1; next = supplementaryList[next].Next)
             {
-                SupplementaryMoves.Add(supplementaryMoves[next]);
+                SupplementaryMoves.Add(supplementaryList[next]);
             }
             HoldingList = new List<HoldingInfo>();
             for (int next = scoreMove.HoldingNext; next != -1; next = holdingList[next].Next)

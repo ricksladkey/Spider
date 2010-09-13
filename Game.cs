@@ -61,6 +61,7 @@ namespace Spider
         private Pile ScratchPile { get; set; }
         private MoveList Candidates { get; set; }
         private MoveList SupplementaryMoves { get; set; }
+        private MoveList SupplementaryList { get; set; }
         private HoldingStack HoldingStack { get; set; }
         private List<HoldingInfo> HoldingList { get; set; }
         private int[] RunLengths { get; set; }
@@ -75,7 +76,7 @@ namespace Spider
                 List<ComplexMove> result = new List<ComplexMove>();
                 for (int index = 0; index < Candidates.Count; index++)
                 {
-                    result.Add(new ComplexMove(index, Candidates, SupplementaryMoves, HoldingList));
+                    result.Add(new ComplexMove(index, Candidates, SupplementaryList, HoldingList));
                 }
                 return result;
             }
@@ -124,6 +125,7 @@ namespace Spider
             ScratchPile = new Pile();
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
+            SupplementaryList = new MoveList();
             HoldingStack = new HoldingStack();
             HoldingList = new List<HoldingInfo>();
             RunLengths = new int[NumberOfPiles];
@@ -277,7 +279,7 @@ namespace Spider
         public bool Move()
         {
             Candidates.Clear();
-            SupplementaryMoves.Clear();
+            SupplementaryList.Clear();
             HoldingList.Clear();
 
             Analyze();
@@ -431,6 +433,19 @@ namespace Spider
 
         private void RespondToDeal()
         {
+        }
+
+        private int AddSupplementary()
+        {
+            int first = SupplementaryList.Count;
+            int count = SupplementaryMoves.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Move move = SupplementaryMoves[i];
+                move.Next = i < count - 1 ? first + i + 1 : -1;
+                SupplementaryList.Add(move);
+            }
+            return first;
         }
 
         private int AddHolding(HoldingSet holdingSet)
@@ -602,6 +617,8 @@ namespace Spider
             // Upper portion is a single run.
             if (roots.Count == 1 && freeCells > 0)
             {
+                int offloadPile = FreeCells[0];
+
                 // Check for inverted pile.
                 if (fromPile[0].Face + 1 == fromPile[fromPile.Count - 1].Face)
                 {
@@ -609,11 +626,11 @@ namespace Spider
                     int maxSuits = ExtraSuits(freeCells - 1) + 1;
                     if (upperSuits <= maxSuits && lowerSuits <= maxSuits)
                     {
-                        int offloadPile = FreeCells[0];
                         int offloadCount = fromPile.Count - fromIndex;
-                        Candidates.Add(new Move(from, 0, from, fromPile.Count, -1, offloadPile, fromIndex, SupplementaryMoves.Count));
-                        SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, -1, -1, SupplementaryMoves.Count + 1));
-                        SupplementaryMoves.Add(new Move(from, 0, offloadPile, offloadCount, 0, -1, -1, -1));
+                        SupplementaryMoves.Clear();
+                        SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile));
+                        SupplementaryMoves.Add(new Move(from, 0, offloadPile, offloadCount));
+                        Candidates.Add(new Move(MoveType.Inverting, from, 0, from, 0, -1, AddSupplementary()));
                         return;
                     }
                 }
@@ -636,10 +653,11 @@ namespace Spider
                         if (lowerSuitsHolding <= maxLowerSuits && upperSuits <= maxUpperSuits)
                         {
                             Pile toPile = UpPiles[to];
-                            Candidates.Add(new Move(from, 0, to, toPile.Count, AddHolding(holdingSet), offloadPile, fromIndex, SupplementaryMoves.Count));
-                            SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, -1, -1, SupplementaryMoves.Count + 1));
-                            SupplementaryMoves.Add(new Move(from, 0, to, toPile.Count, -1, -1, -1, SupplementaryMoves.Count + 1));
-                            SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0, -1, -1, -1, -1));
+                            SupplementaryMoves.Clear();
+                            SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
+                            SupplementaryMoves.Add(new Move(from, 0, to, toPile.Count));
+                            SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
+                            Candidates.Add(new Move(MoveType.Offload, from, 0, from, 0, AddHolding(holdingSet), AddSupplementary()));
                             return;
                         }
                     }
@@ -763,25 +781,23 @@ namespace Spider
 
                 if (createsFreeCell)
                 {
-                    Candidates.Add(new Move(MoveType.Emptying, from, 0, from, 0, AddHolding(holdingSet), SupplementaryMoves.Count));
+                    Pile holdingPile = UpPiles[holdingSet.Pile];
+                    SupplementaryMoves.Clear();
+                    SupplementaryMoves.Add(new Move(from, fromIndex, holdingSet.Pile, holdingPile.Count));
                     for (int n = 0; n < roots.Count; n++)
                     {
                         Move move = moves[n];
-                        int next = SupplementaryMoves.Count + 1;
-                        if (n == roots.Count - 1)
-                        {
-                            next = -1;
-                        }
-                        SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex, -1, next));
+                        SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
                     }
+                    Candidates.Add(new Move(MoveType.Emptying, from, 0, from, 0, -1, AddSupplementary()));
                     break;
                 }
 
                 // Add the scoring move and supplementary moves.
                 int offloadPile = FreeCells[0];
                 MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
-                Candidates.Add(new Move(type, from, 0, from, 0, AddHolding(holdingSet), SupplementaryMoves.Count));
-                SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0, -1, SupplementaryMoves.Count + 1));
+                SupplementaryMoves.Clear();
+                SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
                 for (int n = 0; n < roots.Count; n++)
                 {
                     Move move = moves[n];
@@ -790,18 +806,13 @@ namespace Spider
                     {
                         to = offloadPile;
                     }
-                    Pile toPile = UpPiles[to];
-                    int next = SupplementaryMoves.Count + 1;
-                    if (invertsPile && n == roots.Count - 1)
-                    {
-                        next = -1;
-                    }
-                    SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex, -1, next));
+                    SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex));
                 }
                 if (!invertsPile)
                 {
                     SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
                 }
+                Candidates.Add(new Move(type, from, 0, from, 0, AddHolding(holdingSet), AddSupplementary()));
                 break;
             }
         }
@@ -949,7 +960,7 @@ namespace Spider
         private double CalculateOffloadScore(Move move)
         {
             ScoreInfo score = new ScoreInfo(Coefficients, Group0);
-            Move firstMove = SupplementaryMoves[move.Next];
+            Move firstMove = SupplementaryList[move.Next];
 
             score.FaceValue = (int)UpPiles[firstMove.From][firstMove.FromIndex].Face;
             score.NetRunLength = 0;
@@ -1415,9 +1426,9 @@ namespace Spider
         {
             if (move.Next != -1)
             {
-                for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
+                for (int next = move.Next; next != -1; next = SupplementaryList[next].Next)
                 {
-                    Move subMove = SupplementaryMoves[next];
+                    Move subMove = SupplementaryList[next];
                     MakeSingleMove(subMove);
                 }
                 return;
@@ -1511,9 +1522,9 @@ namespace Spider
             {
                 Utils.WriteLine("IUFC");
             }
-            for (int next = first; next != -1; next = SupplementaryMoves[next].Next)
+            for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
-                Move move = SupplementaryMoves[next];
+                Move move = SupplementaryList[next];
                 MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
             }
         }
@@ -1526,8 +1537,8 @@ namespace Spider
             }
             Analyze();
             int freeCells = FreeCells.Count;
-            int from = SupplementaryMoves[first].From;
-            int offloadIndex = SupplementaryMoves[first].FromIndex;
+            int from = SupplementaryList[first].From;
+            int offloadIndex = SupplementaryList[first].FromIndex;
             int lowerSuits = CountSuits(from, offloadIndex);
             int maxLowerSuits = ExtraSuits(freeCells);
             Debug.Assert(lowerSuits <= maxLowerSuits);
@@ -1540,9 +1551,9 @@ namespace Spider
             {
                 throw new Exception("insufficient free cells");
             }
-            for (int next = SupplementaryMoves[first].Next; SupplementaryMoves[next].Next != -1; next = SupplementaryMoves[next].Next)
+            for (int next = SupplementaryList[first].Next; SupplementaryList[next].Next != -1; next = SupplementaryList[next].Next)
             {
-                Move move = SupplementaryMoves[next];
+                Move move = SupplementaryList[next];
                 MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
             }
             while (moveStack.Count != 0)
@@ -1554,9 +1565,9 @@ namespace Spider
 
         private void MakeMovesUsingFreeCells(int first)
         {
-            for (int next = first; next != -1; next = SupplementaryMoves[next].Next)
+            for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
-                Move move = SupplementaryMoves[next];
+                Move move = SupplementaryList[next];
                 MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
             }
         }
@@ -1763,9 +1774,9 @@ namespace Spider
         public void PrintMove(Move move)
         {
             Utils.WriteLine(move);
-            for (int next = move.Next; next != -1; next = SupplementaryMoves[next].Next)
+            for (int next = move.Next; next != -1; next = SupplementaryList[next].Next)
             {
-                Move nextMove = SupplementaryMoves[next];
+                Move nextMove = SupplementaryList[next];
                 Utils.WriteLine("    {0}", nextMove);
             }
             for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)

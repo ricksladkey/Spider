@@ -4,14 +4,21 @@
 - make console access threadsafe
 - before playing onto a free cell search for a free cell preserving sequence
 
-- some buried moves work even if the pile is not a free cell, i.e. just out of order
-  (but not very many)
-- improve scoring of buried moves
-- consider enumerating all buried moves instead of one per stack
-- rename buried to offload
+- improve scoring of offload moves
+- consider enumerating all offload moves instead of one per pile
+- match suit and face for offload moves
+- convert lower stack into yet another root
+- permit inner run to be the offload
+- count homeless runs allowing them as long as free cells permit
+- no homeless at the end makes an emptying move
+- no homeless anywhere else makes a free-cell preserving move
+- one homeless at the end makes a free-cell perserving move
+- use SupplementaryMoves instead of local list moves
 
-- add compact game serialization
-- add unit tests
+- convert last resort scoring to new model
+
+- add basic unit tests
+- add holding unit tests
 
 - inverted offload moves don't need to move the entire lower run to a free cell if the suits match
 - offload moves no longer need the offload pile or offload index information
