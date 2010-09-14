@@ -68,6 +68,7 @@ namespace Spider
         private int[] RunLengthsAnySuit { get; set; }
         private PileList FreeCells { get; set; }
         private PileList[] FaceLists { get; set; }
+        private Game LastGame { get; set; }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -145,8 +146,15 @@ namespace Spider
             FromAsciiString(game);
         }
 
+        public Game(Game game)
+            : this()
+        {
+            FromGame(game);
+        }
+
         public void Play()
         {
+            LastGame = Debugger.IsAttached ? new Game() : null;
             try
             {
                 Initialize();
@@ -176,6 +184,7 @@ namespace Spider
                                 PrintGame();
                                 Utils.WriteLine("dealing");
                             }
+                            CopyGame();
                             Deal();
                             RespondToDeal();
                             continue;
@@ -187,6 +196,7 @@ namespace Spider
                         }
                         break;
                     }
+                    CopyGame();
                     if (Won)
                     {
                         if (TraceStartFinish)
@@ -265,6 +275,14 @@ namespace Spider
             if (Coefficients == null)
             {
                 Coefficients = new List<double>(coefficients).ToArray();
+            }
+        }
+
+        private void CopyGame()
+        {
+            if (LastGame != null)
+            {
+                LastGame.FromGame(this);
             }
         }
 
@@ -985,32 +1003,18 @@ namespace Spider
             Pile fromPile = UpPiles[move.From];
             Pile toPile = UpPiles[move.To];
             Card fromCard = fromPile[move.FromIndex];
-            int uses = 0;
-            int wholePile = 0;
+            bool wholePile = move.FromIndex == 0;
+            bool turnsOverCard = wholePile && DownPiles[move.From].Count != 0;
             int downCount = DownPiles[move.From].Count;
-            if (move.FromIndex > 0)
-            {
-                // Count potential uses of the exposed card.
-                uses += CountUses(move);
-            }
-            else
-            {
-                // Prefer to move entire piles that
-                // are more likely to become free cells.
-                wholePile = 1;
-            }
-            int isKing = 0;
             int faceValue = (int)fromCard.Face;
-            if (fromCard.Face == Face.King)
-            {
-                isKing = 1;
-            }
+            bool isKing = fromCard.Face == Face.King;
+            int uses = CountUses(move);
 
-            if (move.FromIndex == 0)
+            if (wholePile)
             {
                 // Only move an entire pile if there
                 // are more cards to be turned over.
-                if (DownPiles[move.From].Count == 0)
+                if (!turnsOverCard)
                 {
                     return RejectScore;
                 }
@@ -1023,13 +1027,12 @@ namespace Spider
                 return RejectScore;
             }
 
-            // This exposes a non-consecutive card.
             double score = 0 +
                 uses +
-                Coefficients[Group1 + 0] * wholePile +
+                Coefficients[Group1 + 0] * (turnsOverCard ? 1 : 0) +
                 Coefficients[Group1 + 1] * downCount +
-                Coefficients[Group1 + 2] * wholePile * downCount +
-                Coefficients[Group1 + 3] * isKing;
+                Coefficients[Group1 + 2] * (turnsOverCard ? 1 : 0) * downCount +
+                Coefficients[Group1 + 3] * (isKing ? 1 : 0);
 
             return score;
         }
@@ -1069,6 +1072,12 @@ namespace Spider
 
         private int CountUses(Move move)
         {
+            if (move.FromIndex == 0)
+            {
+                // No exposed card, no uses.
+                return 0;
+            }
+
             int uses = 0;
 
             Pile fromPile = UpPiles[move.From];
@@ -1412,15 +1421,28 @@ namespace Spider
                 {
                     Move undo = moveStack.Pop();
                     int undoToIndex = UpPiles[undo.To].Count;
-                    if (undoToIndex == 0 || undo.FromIndex >= UpPiles[undo.From].Count || UpPiles[undo.From][undo.FromIndex].Face + 1 != UpPiles[undo.To][undoToIndex - 1].Face)
+                    if (undo.FromIndex >= UpPiles[undo.From].Count ||
+                        undoToIndex != 0 && UpPiles[undo.From][undo.FromIndex].Face + 1 != UpPiles[undo.To][undoToIndex - 1].Face)
                     {
-                        // The pile has changed since we moved to the holding pile.
+                        // The pile has changed since we moved due to a discard.
+#if false
+                        Console.Clear();
+                        PrintGames();
+                        PrintMove(move);
+                        Console.ReadKey();
+#endif
                         break;
                     }
                     int extraSuits = CountSuits(undo.From, undo.FromIndex) - 1;
                     if (extraSuits > maxExtraSuits)
                     {
                         // The number of free cells has decreased due to the main move.
+#if false
+                        Console.Clear();
+                        PrintGames();
+                        PrintMove(move);
+                        Console.ReadKey();
+#endif
                         break;
                     }
                     MakeMoveUsingFreeCells(undo.From, undo.FromIndex, undo.To);
@@ -1768,11 +1790,45 @@ namespace Spider
 
         public void PrintGame()
         {
-            Utils.ColorizeToConsole(ToString());
-            if (Debugger.IsAttached)
+            PrintGame(this);
+        }
+
+        public static void PrintGame(Game game)
+        {
+            if (game == null)
             {
-                Trace.WriteLine(ToString());
+                return;
             }
+            Utils.ColorizeToConsole(game.ToString());
+        }
+
+        public void PrintGames()
+        {
+            if (LastGame == null)
+            {
+                PrintGame();
+                return;
+            }
+            PrintGamesSideBySide(LastGame, this);
+        }
+
+        public static void PrintGamesSideBySide(Game game1, Game game2)
+        {
+            string[] v1 = game1.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            string[] v2 = game2.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            int max = 0;
+            for (int i = 0; i < v1.Length; i++)
+            {
+                max = Math.Max(max, v1[i].Length);
+            }
+            string text = "";
+            for (int i = 0; i < v1.Length || i < v2.Length; i++)
+            {
+                string s1 = i < v1.Length ? v1[i] : "";
+                string s2 = i < v2.Length ? v2[i] : "";
+                text += s1.PadRight(max + 1) + s2 + Environment.NewLine;
+            }
+            Utils.ColorizeToConsole(text);
         }
 
         private void PrintMoves()
@@ -1969,6 +2025,25 @@ namespace Spider
                 pile.Add(Utils.GetCard(s.Substring(2 * i, 2)));
             }
             return pile;
+        }
+
+        public void FromGame(Game game)
+        {
+            Suits = game.Suits;
+            Initialize();
+            foreach (Pile pile in game.DiscardPiles)
+            {
+                DiscardPiles.Add(pile);
+            }
+            for (int pile = 0; pile < NumberOfPiles; pile++)
+            {
+                DownPiles[pile].Copy((game.DownPiles[pile]));
+            }
+            for (int pile = 0; pile < NumberOfPiles; pile++)
+            {
+                UpPiles[pile].Copy((game.UpPiles[pile]));
+            }
+            StockPile.Copy((game.StockPile));
         }
 
         public string ToPrettyString()

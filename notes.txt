@@ -14,6 +14,8 @@
 - no homeless anywhere else makes a free-cell preserving move
 - one homeless at the end makes a free-cell perserving move
 - use SupplementaryMoves instead of local list moves
+- intermediate offload runs could use holding piles as well
+- for offload consider trying to find homes for homeless runs by moving piles
 
 - convert last resort scoring to new model
 
@@ -33,12 +35,13 @@
 - alternate Nelder-Mead implementation:
   http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
 
-Four-suit coefficients (before oneRunDelta):
-
 Coefficients = new double[] {
-    /* 0 */ 9.137560762, 44.11268861, 934.6355127, -0.1107699821, -3.227980575, -0.1357842696,
-    /* 6 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
+    /* 0 */ 7.792380919, 48.7750914, 666.6666667, -0.1895897457, -4.33729671, -0
+.7892200528, 7.984789509,
+    /* 7 */ 2.151250994, 0.004377244445, -0.1725631349, -0.6357675859,
 };
+
+
 
 spider --games 1 --seed 39983 --simple --suits 4
 spider: seed: 39983, message: maximum moves exceeded

@@ -40,6 +40,15 @@ namespace Spider
             pile = new Card[52 * 2];
         }
 
+        public Pile(IEnumerable<Card> other)
+            : this()
+        {
+            foreach (Card card in other)
+            {
+                Add(card);
+            }
+        }
+
         public void Shuffle(int seed)
         {
             Random random = new Random(seed);
@@ -53,6 +62,12 @@ namespace Spider
                 this[i + swap] = this[i];
                 this[i] = tmp;
             }
+        }
+
+        public void Copy(Pile other)
+        {
+            Clear();
+            AddRange(other, 0, other.Count);
         }
 
         public void AddRange(IEnumerable<Card> cards)

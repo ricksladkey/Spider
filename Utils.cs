@@ -188,6 +188,10 @@ namespace Spider
                 Console.ResetColor();
                 position = next + 1;
             }
+            if (Debugger.IsAttached)
+            {
+                Trace.WriteLine(text);
+            }
         }
 
         public static void WriteLine(object obj)
