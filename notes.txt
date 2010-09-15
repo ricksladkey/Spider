@@ -1,12 +1,12 @@
 - prefer composite moves that create a free cell, particularly after a deal
 - prefer last resort moves that lead to a discard
 - optimize scoring factors using designed experiments
-- make console access threadsafe
 - before playing onto a free cell search for a free cell preserving sequence
+
+- prefer holding moves that match suit
 
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
-- match suit and face for offload moves
 - convert lower stack into yet another root
 - permit inner run to be the offload
 - count homeless runs allowing them as long as free cells permit
@@ -35,11 +35,6 @@
 - alternate Nelder-Mead implementation:
   http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
 
-Coefficients = new double[] {
-    /* 0 */ 7.792380919, 48.7750914, 666.6666667, -0.1895897457, -4.33729671, -0
-.7892200528, 7.984789509,
-    /* 7 */ 2.151250994, 0.004377244445, -0.1725631349, -0.6357675859,
-};
 
 
 

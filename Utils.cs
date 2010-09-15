@@ -8,6 +8,8 @@ namespace Spider
 {
     public static class Utils
     {
+        private static object ConsoleMutex { get; set; }
+
         public static string GetString(Face face)
         {
             switch (face)
@@ -160,6 +162,14 @@ namespace Spider
         }
 
         public static void ColorizeToConsole(string text)
+        {
+            lock (ConsoleMutex)
+            {
+                UnsafeColorizeToConsole(text);
+            }
+        }
+
+        public static void UnsafeColorizeToConsole(string text)
         {
             char black1 = Utils.GetPrettyString(Suit.Spades)[0];
             char black2 = Utils.GetPrettyString(Suit.Clubs)[0];

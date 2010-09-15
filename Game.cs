@@ -9,13 +9,13 @@ namespace Spider
     public class Game
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 9.137560762, 44.11268861, 1000, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
-            /* 7 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
+            /* 0 */ 9.137560762, 44.11268861, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
+            /* 6 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 6.362452378, 52.89520976, 1000, -0.2056047273, -3.011181958, -0.75786, 9.77933,
-            /* 7 */ 2.151250994, 0.006565866667, -0.1725631349, -0.6357675859,
+            /* 0 */ 7.792380919, 48.7750914, -0.1820563025, -6.24742809, -0.75786, 7.984789509,
+            /* 6 */ 2.151250994, 0.002918162963, -0.1725631349, -0.6357675859,
         };
 
         public static double[] OneSuitCoefficients = TwoSuitCoefficients;
@@ -24,11 +24,11 @@ namespace Spider
         public const int MaximumMoves = 1000;
 
         public const int Group0 = 0;
-        public const int Group1 = 7;
+        public const int Group1 = 6;
 
         public static char Fence = '@';
         public static char PrimarySeparator = '|';
-        public static char SecondarySepatrator = '-';
+        public static char SecondarySeparator = '-';
 
         public const double InfiniteScore = double.MaxValue;
         public const double RejectScore = double.MinValue;
@@ -711,10 +711,10 @@ namespace Spider
                 moves.Clear();
                 for (int n = 0; n < roots.Count; n++)
                 {
-                    bool found = false;
                     int rootIndex = roots[n];
                     Card rootCard = fromPile[rootIndex];
                     PileList piles = FaceLists[(int)rootCard.Face + 1];
+                    int bestTo = -1;
                     for (int to = 0; to < NumberOfPiles; to++)
                     {
                         if (createsFreeCell && to == from)
@@ -722,18 +722,19 @@ namespace Spider
                             continue;
                         }
 
-                        // XXX: Could try match suit first.
                         if (map[to].Card.Face - 1 == rootCard.Face)
                         {
-                            found = true;
-                            moves.Add(new Move(from, rootIndex, to, map[to].Count));
-                            break;
+                            if (map[to].Card.Suit == rootCard.Suit || bestTo == -1)
+                            {
+                                bestTo = to;
+                            }
                         }
                     }
-                    if (!found)
+                    if (bestTo == -1)
                     {
                         break;
                     }
+                    moves.Add(new Move(from, rootIndex, bestTo, map[bestTo].Count));
                     int runLength = GetRunDownAnySuit(from, rootIndex);
                     int pile = moves[moves.Count - 1].To;
                     map[pile].Card = fromPile[rootIndex + runLength - 1];
@@ -1000,21 +1001,23 @@ namespace Spider
 
         private double CalculateLastResortScore(Move move)
         {
+            ScoreInfo score = new ScoreInfo(Coefficients, Group1);
+
             Pile fromPile = UpPiles[move.From];
             Pile toPile = UpPiles[move.To];
             Card fromCard = fromPile[move.FromIndex];
             bool wholePile = move.FromIndex == 0;
-            bool turnsOverCard = wholePile && DownPiles[move.From].Count != 0;
-            int downCount = DownPiles[move.From].Count;
-            int faceValue = (int)fromCard.Face;
-            bool isKing = fromCard.Face == Face.King;
-            int uses = CountUses(move);
+            score.TurnsOverCard = wholePile && DownPiles[move.From].Count != 0;
+            score.DownCount = DownPiles[move.From].Count;
+            score.FaceValue = (int)fromCard.Face;
+            score.IsKing = fromCard.Face == Face.King;
+            score.Uses = CountUses(move);
 
             if (wholePile)
             {
                 // Only move an entire pile if there
                 // are more cards to be turned over.
-                if (!turnsOverCard)
+                if (!score.TurnsOverCard)
                 {
                     return RejectScore;
                 }
@@ -1027,14 +1030,7 @@ namespace Spider
                 return RejectScore;
             }
 
-            double score = 0 +
-                uses +
-                Coefficients[Group1 + 0] * (turnsOverCard ? 1 : 0) +
-                Coefficients[Group1 + 1] * downCount +
-                Coefficients[Group1 + 2] * (turnsOverCard ? 1 : 0) * downCount +
-                Coefficients[Group1 + 3] * (isKing ? 1 : 0);
-
-            return score;
+            return score.LastResortScore;
         }
 
         private int GetOneRunDelta(int oldOrder, int newOrder, Move move)
@@ -1906,7 +1902,7 @@ namespace Spider
             {
                 if (i != 0)
                 {
-                    s += SecondarySepatrator;
+                    s += SecondarySeparator;
                 }
                 s += ToAsciiString(rows[i]);
             }
@@ -2006,7 +2002,7 @@ namespace Spider
 
         private static Pile[] GetPilesFromAsciiString(string s)
         {
-            string[] rows = s.Split(SecondarySepatrator);
+            string[] rows = s.Split(SecondarySeparator);
             int n = rows.Length;
             Pile[] piles = new Pile[n];
             for (int i = 0; i < n; i++)

@@ -5,15 +5,23 @@ using System.Text;
 
 namespace Spider
 {
-    public class HoldingStack : List<HoldingInfo>
+    public class HoldingStack : SmallList<HoldingInfo>
     {
         public HoldingStack()
+            : base(10)
         {
         }
 
         public void Push(HoldingInfo item)
         {
             Add(item);
+        }
+
+        public HoldingInfo Pop()
+        {
+            HoldingInfo item = this[Count - 1];
+            RemoveAt(Count - 1);
+            return item;
         }
 
         public int Index { get; set; }

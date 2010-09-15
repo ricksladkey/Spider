@@ -7,6 +7,10 @@ namespace Spider
 {
     public struct ScoreInfo
     {
+        public const int CreatesFreeCellScore = 1000;
+        public const int BaseScore = 0;
+        public const int UsesFreeCellScore = -1000;
+
         public double[] Coefficients { get; private set; }
         public int Coefficient0 { get; private set; }
 
@@ -18,19 +22,37 @@ namespace Spider
         public bool IsOffload { get; set; }
         public bool NoFreeCells { get; set; }
         public int OneRunDelta { get; set; }
+        public int Uses { get; set; }
+        public bool IsKing { get; set; }
 
         public double Score
         {
             get
             {
-                double score = 100000 + FaceValue +
+                double score = BaseScore +
+                    CreatesFreeCellScore * (CreatesFreeCell ? 1 : 0) +
+                    FaceValue +
                     Coefficients[Coefficient0 + 0] * NetRunLength +
                     Coefficients[Coefficient0 + 1] * (TurnsOverCard ? 1 : 0) +
-                    Coefficients[Coefficient0 + 2] * (CreatesFreeCell ? 1 : 0) +
-                    Coefficients[Coefficient0 + 3] * (TurnsOverCard ? 1 : 0) * DownCount +
-                    Coefficients[Coefficient0 + 4] * (IsOffload ? 1 : 0) +
-                    Coefficients[Coefficient0 + 5] * (NoFreeCells ? 1 : 0) * DownCount +
-                    Coefficients[Coefficient0 + 6] * OneRunDelta;
+                    Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
+                    Coefficients[Coefficient0 + 3] * (IsOffload ? 1 : 0) +
+                    Coefficients[Coefficient0 + 4] * (NoFreeCells ? 1 : 0) * DownCount +
+                    Coefficients[Coefficient0 + 5] * OneRunDelta;
+
+                return score;
+            }
+        }
+
+        public double LastResortScore
+        {
+            get
+            {
+                double score = UsesFreeCellScore +
+                    Uses +
+                    Coefficients[Coefficient0 + 0] * (TurnsOverCard ? 1 : 0) +
+                    Coefficients[Coefficient0 + 1] * DownCount +
+                    Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
+                    Coefficients[Coefficient0 + 3] * (IsKing ? 1 : 0);
 
                 return score;
             }

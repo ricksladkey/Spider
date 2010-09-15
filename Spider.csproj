@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Card.cs" />
+    <Compile Include="CollectionDebugView.cs" />
     <Compile Include="ComplexMove.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Deck.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="RegressionResult.cs" />
     <Compile Include="ScoreInfo.cs" />
     <Compile Include="SimplexConstant.cs" />
+    <Compile Include="SmallList.cs" />
     <Compile Include="Suit.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Vector.cs" />
