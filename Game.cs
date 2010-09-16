@@ -574,6 +574,177 @@ namespace Spider
             }
         }
 
+#if false
+        private void CheckOffloads(int from)
+        {
+            int freeCells = FreeCells.Count;
+            Pile fromPile = UpPiles[from];
+            if (fromPile.Count == 0)
+            {
+                // No cards.
+                return;
+            }
+            int fromIndex = fromPile.Count - GetRunUpAnySuit(from, fromPile.Count);
+            PileList roots = new PileList();
+            roots.Clear();
+            int index = fromPile.Count;
+            roots.Add(index);
+            while (index > 0)
+            {
+                int count = GetRunUpAnySuit(from, index);
+                index -= count;
+                if (fromPile[index].Face == Face.King)
+                {
+                    // Cannot move a king.
+                    return;
+                }
+                roots.Add(index);
+            }
+            if (roots.Count == 1)
+            {
+                // All one run.
+                return;
+            }
+
+            int freeCellsLeft = freeCells;
+            PileList homeless = new PileList();
+            List<Move> moves = new List<Move>();
+            PileInfo[] map = new PileInfo[NumberOfPiles];
+
+            // Initialize the pile map.
+            for (int pile = 0; pile < NumberOfPiles; pile++)
+            {
+                map[pile].Update(UpPiles[pile]);
+            }
+
+            for (int n = 1; n < roots.Count; n++)
+            {
+                int rootIndex = roots[n];
+                Card rootCard = fromPile[rootIndex];
+                int runLength = roots[n - 1] - roots[n];
+                int suits = CountSuits(from, rootIndex, rootIndex + runLength);
+                int to = -1;
+                PileList piles = FaceLists[(int)rootCard.Face + 1];
+                for (int i = 0; i < NumberOfPiles; i++)
+                {
+                    if (map[i].Last.Face - 1 == rootCard.Face)
+                    {
+                        if (map[i].Last.Suit == rootCard.Suit || to == -1)
+                        {
+                            to = i;
+                        }
+                    }
+                }
+                if (to == -1)
+                {
+                    // Try to offload this run.
+                    int freeCellsNeeded = FreeCellsUsed(freeCells, suits);
+                    if (freeCellsNeeded > freeCellsLeft)
+                    {
+                        // Not enough free cells.
+                        return;
+                    }
+
+                    freeCellsLeft -= freeCellsNeeded;
+                    to = freeCellsLeft;
+                    homeless.Add(to);
+                    map[to].First = fromPile[rootIndex];
+                }
+                else
+                {
+                    // Try to move this run.
+                    if (ExtraSuits(freeCellsLeft) > suits - 1)
+                    {
+                        // Not enough free cells.
+                        return;
+                    }
+                }
+
+                // Add the move.
+                moves.Add(new Move(from, rootIndex, to, map[to].Count));
+
+                // Update the map.
+                map[to].Last = fromPile[rootIndex + runLength - 1];
+                map[to].Count += runLength;
+
+                // Check the homeless.
+                bool foundHome;
+                do
+                {
+                    foundHome = false;
+                    for (int j = 0; j < homeless.Count; j++)
+                    {
+                        int i = homeless[j];
+                        if (map[i].First.Face + 1 == map[to].Last.Face)
+                        {
+                            // Found a home for the homeless.
+                            moves.Add(new Move(i, 0, to, map[to].Count));
+                            map[to].Last = map[i].Last;
+                            map[to].Count += map[i].Count;
+                            map[i] = new PileInfo();
+                            homeless.RemoveAt(j);
+                            foundHome = true;
+                            break;
+                        }
+                    }
+                }
+                while (foundHome);
+            }
+
+            if (homeless.Count > 1)
+            {
+                // Didn't find a home for enough runs.
+                return;
+            }
+
+            // Detect special cases.
+            bool createsFreeCell = homeless.Count == 0;
+            bool invertsPile = false;
+            for (int i = 0; i < moves.Count; i++)
+            {
+                Move move = moves[i];
+                if (move.To == from)
+                {
+                    invertsPile = true;
+                }
+            }
+
+            if (createsFreeCell)
+            {
+                for (int n = 0; n < roots.Count; n++)
+                {
+                    Move move = moves[n];
+                    SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
+                }
+                Candidates.Add(new Move(MoveType.Emptying, from, 0, from, 0, -1, AddSupplementary()));
+            }
+            else
+            {
+                // Add the supplementary moves.
+                int offloadPile = FreeCells[0];
+                MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
+
+                SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
+                for (int n = 0; n < roots.Count; n++)
+                {
+                    Move move = moves[n];
+                    int to = move.To;
+                    if (to == from)
+                    {
+                        to = offloadPile;
+                    }
+                    SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex));
+                }
+                if (!invertsPile)
+                {
+                    SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
+                }
+
+                // Add the scoring move.
+                Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
+            }
+        }
+#else
         private void CheckOffloads(int from)
         {
             int freeCells = FreeCells.Count;
@@ -599,13 +770,6 @@ namespace Spider
                 // All one run.
                 return;
             }
-#if false
-            if (FaceLists[(int)fromPile[fromIndex].Face + 1].Count != 0)
-            {
-                // A simple move for the lower run exists.
-                return;
-            }
-#endif
             PileList roots = new PileList();
             roots.Clear();
             int upperSuits = 0;
@@ -632,57 +796,6 @@ namespace Spider
             int lowerSuits = CountSuits(from, fromIndex, fromPile.Count);
             Debug.Assert(lowerSuits > 0);
 
-#if false
-            // Upper portion is a single run.
-            if (roots.Count == 1 && freeCells > 0)
-            {
-                int offloadPile = FreeCells[0];
-
-                // Check for inverted pile.
-                if (fromPile[0].Face + 1 == fromPile[fromPile.Count - 1].Face)
-                {
-                    // Note inversion is not compatible with holding piles.
-                    int maxSuits = ExtraSuits(freeCells - 1) + 1;
-                    if (upperSuits <= maxSuits && lowerSuits <= maxSuits)
-                    {
-                        int offloadCount = fromPile.Count - fromIndex;
-                        SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile));
-                        SupplementaryMoves.Add(new Move(from, 0, offloadPile, offloadCount));
-                        Candidates.Add(new Move(MoveType.Inverting, from, 0, from, 0, -1, AddSupplementary()));
-                        return;
-                    }
-                }
-
-                // Try other piles.
-                int maxLowerSuits = ExtraSuits(freeCells);
-                PileList piles = FaceLists[(int)fromPile[0].Face + 1];
-                for (int i = 0; i < piles.Count; i++)
-                {
-                    int to = piles[i];
-                    foreach (HoldingSet holdingSet in HoldingStack.Sets)
-                    {
-                        if (to == from || holdingSet.Contains(to))
-                        {
-                            continue;
-                        }
-                        int lowerSuitsHolding = lowerSuits - holdingSet.Suits;
-                        int lowerFreeCellsUsed = FreeCellsUsed(freeCells, lowerSuitsHolding);
-                        int maxUpperSuits = ExtraSuits(freeCells - lowerFreeCellsUsed) + 1;
-                        if (lowerSuitsHolding <= maxLowerSuits && upperSuits <= maxUpperSuits)
-                        {
-                            Pile toPile = UpPiles[to];
-                            SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
-                            SupplementaryMoves.Add(new Move(from, 0, to, toPile.Count));
-                            SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
-                            Candidates.Add(new Move(MoveType.Offload, from, 0, from, 0, AddHolding(holdingSet), AddSupplementary()));
-                            return;
-                        }
-                    }
-                }
-                return;
-            }
-#endif
-
             List<Move> moves = new List<Move>();
             PileInfo[] map = new PileInfo[NumberOfPiles];
             foreach (HoldingSet holdingSet in HoldingStack.Sets)
@@ -703,7 +816,7 @@ namespace Spider
                 foreach (HoldingInfo holding in holdingSet)
                 {
                     int pile = holding.Pile;
-                    map[pile].Card = fromPile[holdingIndex - 1];
+                    map[pile].Last = fromPile[holdingIndex - 1];
                     map[pile].Count += holding.Index - holdingIndex;
                     holdingIndex = holding.Index;
                 }
@@ -722,9 +835,9 @@ namespace Spider
                             continue;
                         }
 
-                        if (map[to].Card.Face - 1 == rootCard.Face)
+                        if (map[to].Last.Face - 1 == rootCard.Face)
                         {
-                            if (map[to].Card.Suit == rootCard.Suit || bestTo == -1)
+                            if (map[to].Last.Suit == rootCard.Suit || bestTo == -1)
                             {
                                 bestTo = to;
                             }
@@ -737,7 +850,7 @@ namespace Spider
                     moves.Add(new Move(from, rootIndex, bestTo, map[bestTo].Count));
                     int runLength = GetRunDownAnySuit(from, rootIndex);
                     int pile = moves[moves.Count - 1].To;
-                    map[pile].Card = fromPile[rootIndex + runLength - 1];
+                    map[pile].Last = fromPile[rootIndex + runLength - 1];
                     map[pile].Count += runLength;
                 }
                 if (moves.Count != roots.Count)
@@ -747,7 +860,6 @@ namespace Spider
                 }
 
                 // Detect special cases.
-                int scoreMoveIndex = -1;
                 bool invertsPile = false;
                 for (int i = 0; i < moves.Count; i++)
                 {
@@ -755,14 +867,8 @@ namespace Spider
                     if (move.To == from)
                     {
                         invertsPile = true;
-                        scoreMoveIndex = i;
-                    }
-                    if (scoreMoveIndex == -1)
-                    {
-                        scoreMoveIndex = i;
                     }
                 }
-                Move scoreMove = moves[scoreMoveIndex];
 
                 // Check for sufficient free cells.
                 int lowerSuitsHolding = lowerSuits - holdingSet.Suits;
@@ -806,41 +912,45 @@ namespace Spider
 
                 if (createsFreeCell)
                 {
-                    Pile holdingPile = UpPiles[holdingSet.Pile];
+                    // Add the supplementary moves.
                     for (int n = 0; n < roots.Count; n++)
                     {
                         Move move = moves[n];
                         SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
                     }
+
+                    // Add the scoring move.
                     Candidates.Add(new Move(MoveType.Emptying, from, 0, from, 0, -1, AddSupplementary()));
-                    break;
                 }
-
-                // Add the supplementary moves.
-                int offloadPile = FreeCells[0];
-                MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
-
-                SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
-                for (int n = 0; n < roots.Count; n++)
+                else
                 {
-                    Move move = moves[n];
-                    int to = move.To;
-                    if (to == from)
+                    // Add the supplementary moves.
+                    int offloadPile = FreeCells[0];
+                    MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
+
+                    SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
+                    for (int n = 0; n < roots.Count; n++)
                     {
-                        to = offloadPile;
+                        Move move = moves[n];
+                        int to = move.To;
+                        if (to == from)
+                        {
+                            to = offloadPile;
+                        }
+                        SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex));
                     }
-                    SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex));
-                }
-                if (!invertsPile)
-                {
-                    SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
-                }
+                    if (!invertsPile)
+                    {
+                        SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
+                    }
 
-                // Add the scoring move.
-                Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
+                    // Add the scoring move.
+                    Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
+                }
                 break;
             }
         }
+#endif
 
         private int ExtraSuits(int freeCells)
         {
