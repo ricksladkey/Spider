@@ -8,7 +8,7 @@ namespace Spider
     public class HoldingStack : SmallList<HoldingInfo>
     {
         public HoldingStack()
-            : base(10)
+            : base(Game.NumberOfPiles)
         {
         }
 

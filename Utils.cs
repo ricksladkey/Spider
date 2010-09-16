@@ -8,7 +8,7 @@ namespace Spider
 {
     public static class Utils
     {
-        private static object ConsoleMutex { get; set; }
+        private static object ConsoleMutex = new object();
 
         public static string GetString(Face face)
         {

@@ -184,8 +184,8 @@ namespace UnitTests
         public void OffloadTest5()
         {
             // A 1/1/1 mixed offload move, 1 free cell.
-            string data1 = "@2|||4s2s3s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||-5s4s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data1 = "@2|||5s2s3s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-6s5s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -276,8 +276,8 @@ namespace UnitTests
         public void OffloadTest15()
         {
             // A 1/1/1/1 offload move with reused piles, 1 free cell.
-            string data1 = "@2|||3s4s2s3s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||-5s4s3s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data1 = "@2|||3s4s7s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5s4s3s-8s7s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 

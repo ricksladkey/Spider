@@ -25,7 +25,13 @@ namespace UnitTests
             object obj = ctor.Invoke(args);
             foreach (MethodInfo methodInfo in GetMethods(type, tests))
             {
-                methodInfo.Invoke(obj, args);
+                try
+                {
+                    methodInfo.Invoke(obj, args);
+                }
+                catch (TargetInvocationException)
+                {
+                }
                 count++;
             }
             Utils.WriteLine("Class: {0}, tests: {1}", type.Name, count);

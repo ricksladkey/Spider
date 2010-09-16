@@ -7,18 +7,21 @@ namespace Spider
 {
     public struct PileInfo
     {
-        public static PileInfo Empty = new PileInfo(0, Card.Empty, Card.Empty);
+        public static PileInfo Empty = new PileInfo(Card.Empty, 0);
 
-        public int Count { get; set; }
-        public Card First { get; set; }
-        public Card Last { get; set; }
-
-        public PileInfo(int count, Card first, Card last)
+        public PileInfo(Card last, int count)
             : this()
         {
-            Count = count;
-            First = first;
+            Update(last, count);
+        }
+
+        public Card Last { get; set; }
+        public int Count { get; set; }
+
+        public void Update(Card last, int count)
+        {
             Last = last;
+            Count = count;
         }
 
         public void Update(Pile pile)
@@ -31,19 +34,17 @@ namespace Spider
             Count = count;
             if (Count == 0)
             {
-                First = Card.Empty;
                 Last = Card.Empty;
             }
             else
             {
-                First = pile[0];
                 Last = pile[Count - 1];
             }
         }
 
         public override string ToString()
         {
-            return string.Format("Count: {0}, First: {1}, Last: {2}", Count, First, Last);
+            return string.Format("Count: {0}, Last: {1}", Count, Last);
         }
     }
 }

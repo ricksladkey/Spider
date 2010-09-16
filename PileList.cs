@@ -11,7 +11,7 @@ namespace Spider
     public class PileList : SmallList<int>
     {
         public PileList()
-            : base(10)
+            : base(Game.NumberOfPiles)
         {
         }
     }

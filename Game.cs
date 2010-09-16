@@ -584,9 +584,9 @@ namespace Spider
                 // No cards.
                 return;
             }
-            int fromIndex = fromPile.Count - GetRunUpAnySuit(from, fromPile.Count);
+
+            // Find roots.
             PileList roots = new PileList();
-            roots.Clear();
             int index = fromPile.Count;
             roots.Add(index);
             while (index > 0)
@@ -600,31 +600,38 @@ namespace Spider
                 }
                 roots.Add(index);
             }
-            if (roots.Count == 1)
+            if (roots.Count <= 2)
             {
-                // All one run.
+                // Not at least two runs.
                 return;
             }
 
+            // Prepare data structures.
             int freeCellsLeft = freeCells;
-            PileList homeless = new PileList();
+            bool invertsPile = false;
+            OffloadInfo offload = OffloadInfo.Empty;
             List<Move> moves = new List<Move>();
             PileInfo[] map = new PileInfo[NumberOfPiles];
 
             // Initialize the pile map.
             for (int pile = 0; pile < NumberOfPiles; pile++)
             {
-                map[pile].Update(UpPiles[pile]);
+                if (pile != from)
+                {
+                    map[pile].Update(UpPiles[pile]);
+                }
             }
 
+            // Check all the roots.
             for (int n = 1; n < roots.Count; n++)
             {
                 int rootIndex = roots[n];
                 Card rootCard = fromPile[rootIndex];
                 int runLength = roots[n - 1] - roots[n];
                 int suits = CountSuits(from, rootIndex, rootIndex + runLength);
+
+                // Try to find the best matching target.
                 int to = -1;
-                PileList piles = FaceLists[(int)rootCard.Face + 1];
                 for (int i = 0; i < NumberOfPiles; i++)
                 {
                     if (map[i].Last.Face - 1 == rootCard.Face)
@@ -635,25 +642,44 @@ namespace Spider
                         }
                     }
                 }
+
                 if (to == -1)
                 {
+                    if (!offload.IsEmpty)
+                    {
+                        // Already have an offload.
+                        return;
+                    }
+
+                    // XXX: Found homes for all the upper
+                    // runs so far.  This could be a move already.
+
                     // Try to offload this run.
-                    int freeCellsNeeded = FreeCellsUsed(freeCells, suits);
-                    if (freeCellsNeeded > freeCellsLeft)
+                    if (suits > ExtraSuits(freeCellsLeft))
                     {
                         // Not enough free cells.
                         return;
                     }
-
-                    freeCellsLeft -= freeCellsNeeded;
-                    to = freeCellsLeft;
-                    homeless.Add(to);
-                    map[to].First = fromPile[rootIndex];
+                    to = FreeCells[0];
+                    int freeCellsUsed = FreeCellsUsed(freeCellsLeft, suits);
+                    freeCellsLeft -= freeCellsUsed;
+                    offload = new OffloadInfo(n, to, suits, freeCellsUsed);
                 }
                 else
                 {
+                    // Check for inverting.
+                    if (!offload.IsEmpty && to == offload.Pile)
+                    {
+                        if (offload.FreeCells != 1)
+                        {
+                            // Not enough free cells to invert.
+                            return;
+                        }
+                        invertsPile = true;
+                    }
+
                     // Try to move this run.
-                    if (ExtraSuits(freeCellsLeft) > suits - 1)
+                    if (ExtraSuits(freeCellsLeft) < suits - 1)
                     {
                         // Not enough free cells.
                         return;
@@ -667,82 +693,57 @@ namespace Spider
                 map[to].Last = fromPile[rootIndex + runLength - 1];
                 map[to].Count += runLength;
 
-                // Check the homeless.
-                bool foundHome;
-                do
+                if (offload.IsEmpty)
                 {
-                    foundHome = false;
-                    for (int j = 0; j < homeless.Count; j++)
-                    {
-                        int i = homeless[j];
-                        if (map[i].First.Face + 1 == map[to].Last.Face)
-                        {
-                            // Found a home for the homeless.
-                            moves.Add(new Move(i, 0, to, map[to].Count));
-                            map[to].Last = map[i].Last;
-                            map[to].Count += map[i].Count;
-                            map[i] = new PileInfo();
-                            homeless.RemoveAt(j);
-                            foundHome = true;
-                            break;
-                        }
-                    }
+                    // No offload to check.
+                    continue;
                 }
-                while (foundHome);
+
+                int offloadRootIndex = roots[offload.Root];
+                Card offloadRootCard = fromPile[offloadRootIndex];
+                if (offloadRootCard.Face + 1 != map[to].Last.Face)
+                {
+                    // Cards don't match.
+                    continue;
+                }
+                if (invertsPile && offload.Suits - 1 > ExtraSuits(freeCellsLeft))
+                {
+                    // Can't move the offload due to inverting.
+                    continue;
+                }
+
+                // Found a home for the offload.
+                int offloadRunLength = roots[offload.Root - 1] - offloadRootIndex;
+                Card offloadLastCard = fromPile[offloadRootIndex + offloadRunLength - 1];
+                moves.Add(new Move(offload.Pile, 0, to, map[to].Count));
+                map[to].Last = offloadLastCard;
+                map[to].Count += offloadRunLength;
+                freeCellsLeft += offload.FreeCells;
+                offload = OffloadInfo.Empty;
+                invertsPile = false;
             }
 
-            if (homeless.Count > 1)
+            if (!offload.IsEmpty && !invertsPile)
             {
-                // Didn't find a home for enough runs.
-                return;
+                // Reload the offload onto the now empty pile.
+                moves.Add(new Move(offload.Pile, 0, from, 0));
             }
 
             // Detect special cases.
-            bool createsFreeCell = homeless.Count == 0;
-            bool invertsPile = false;
+            bool createsFreeCell = offload.IsEmpty;
+
+            MoveType type = createsFreeCell ? MoveType.Emptying :
+                (invertsPile ? MoveType.Inverting : MoveType.Offload);
+
+            // Add the supplementary moves.
             for (int i = 0; i < moves.Count; i++)
             {
                 Move move = moves[i];
-                if (move.To == from)
-                {
-                    invertsPile = true;
-                }
+                SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
             }
 
-            if (createsFreeCell)
-            {
-                for (int n = 0; n < roots.Count; n++)
-                {
-                    Move move = moves[n];
-                    SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
-                }
-                Candidates.Add(new Move(MoveType.Emptying, from, 0, from, 0, -1, AddSupplementary()));
-            }
-            else
-            {
-                // Add the supplementary moves.
-                int offloadPile = FreeCells[0];
-                MoveType type = invertsPile ? MoveType.Inverting : MoveType.Offload;
-
-                SupplementaryMoves.Add(new Move(from, fromIndex, offloadPile, 0));
-                for (int n = 0; n < roots.Count; n++)
-                {
-                    Move move = moves[n];
-                    int to = move.To;
-                    if (to == from)
-                    {
-                        to = offloadPile;
-                    }
-                    SupplementaryMoves.Add(new Move(from, move.FromIndex, to, move.ToIndex));
-                }
-                if (!invertsPile)
-                {
-                    SupplementaryMoves.Add(new Move(offloadPile, 0, from, 0));
-                }
-
-                // Add the scoring move.
-                Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
-            }
+            // Add the scoring move.
+            Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
         }
 #else
         private void CheckOffloads(int from)
@@ -826,7 +827,6 @@ namespace Spider
                 {
                     int rootIndex = roots[n];
                     Card rootCard = fromPile[rootIndex];
-                    PileList piles = FaceLists[(int)rootCard.Face + 1];
                     int bestTo = -1;
                     for (int to = 0; to < NumberOfPiles; to++)
                     {

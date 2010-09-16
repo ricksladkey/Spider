@@ -11,7 +11,7 @@ namespace Spider
     public class MoveList : SmallList<Move>
     {
         public MoveList()
-            : base(1000)
+            : base(Game.MaximumMoves)
         {
         }
     }

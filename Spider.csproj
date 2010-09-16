@@ -62,6 +62,7 @@
     <Compile Include="MoveType.cs" />
     <Compile Include="NelderMeadSimplex.cs" />
     <Compile Include="NumUtilsTests.cs" />
+    <Compile Include="OffloadInfo.cs" />
     <Compile Include="Pile.cs" />
     <Compile Include="PileInfo.cs" />
     <Compile Include="PileList.cs" />
