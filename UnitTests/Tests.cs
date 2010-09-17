@@ -299,6 +299,15 @@ namespace UnitTests
             CheckMove(data1, data2);
         }
 
+        [Test]
+        public void OffloadTest18()
+        {
+            // A 1/1/1 part offload move, 1 free cell.
+            string data1 = "@2|||7sAs3s4s5s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||7sAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)
