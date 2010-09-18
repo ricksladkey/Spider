@@ -84,7 +84,12 @@ namespace Spider
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", Type, From, FromIndex, To, ToIndex, HoldingNext, Next, Score);
+            string type = Type.ToString();
+            if (Flags != MoveFlags.Empty)
+            {
+                type += "/" + Flags.ToString();
+            }
+            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", type, From, FromIndex, To, ToIndex, HoldingNext, Next, Score);
         }
     }
 }

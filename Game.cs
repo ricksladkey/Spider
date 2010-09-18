@@ -733,11 +733,10 @@ namespace Spider
 
                 // Found a home for the offload.
                 MoveType offloadType = invertsPile ? MoveType.Basic : MoveType.Reload;
-                int offloadRunLength = roots[offload.Root - 1] - offloadRootIndex;
-                Card offloadLastCard = fromPile[offloadRootIndex + offloadRunLength - 1];
-                moves.Add(new Move(offload.Pile, 0, to, map[to].Count));
-                map[to].Last = offloadLastCard;
-                map[to].Count += offloadRunLength;
+                moves.Add(new Move(offloadType, offload.Pile, 0, to, map[to].Count));
+                map[to].Last = map[offload.Pile].Last;
+                map[to].Count += map[offload.Pile].Count;
+                map[offload.Pile] = PileInfo.Empty;
                 freeCellsLeft += offload.FreeCells;
                 offload = OffloadInfo.Empty;
                 invertsPile = false;
@@ -1662,12 +1661,12 @@ namespace Spider
             {
                 Utils.WriteLine("OAUFC");
             }
-            Analyze();
-            int freeCells = FreeCells.Count;
             int offloadPile = -1;
             Stack<Move> moveStack = new Stack<Move>();
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
+                Analyze();
+                int freeCells = FreeCells.Count;
                 Move move = SupplementaryList[next];
                 if (move.Type == MoveType.Unload)
                 {

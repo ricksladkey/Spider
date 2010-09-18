@@ -5,6 +5,10 @@
 
 - prefer holding moves that match suit
 
+- clean up move printing including displaying flags
+- clean up diagnostics
+- convert holding list to use supplementary list instead
+- if the last run is the offload don't move it off and then move it right back
 - offload moves could potential have both inverting and offloading for different runs
 - need to differentiate between offload and inverting in emptying moves
 - fix actual target free cell when offloading or fix moves that move to that pile (game 381)
