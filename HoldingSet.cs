@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider
 {
+    [DebuggerDisplay("Count = {Count}, Pile = {Pile}, Index = {Index}, Suits = {Suits}, Length = {Length}")]
+    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public struct HoldingSet : IEnumerable<HoldingInfo>
     {
         public HoldingStack Stack { get; set; }
@@ -47,7 +50,7 @@ namespace Spider
             {
                 if (Count == 0)
                 {
-                    return Stack.Index;
+                    return Stack.StartingIndex;
                 }
                 return Stack[Count - 1].Index;
             }

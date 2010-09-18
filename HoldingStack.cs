@@ -27,7 +27,19 @@ namespace Spider
             return item;
         }
 
-        public int Index { get; set; }
+        public int StartingIndex { get; set; }
+
+        public int Index
+        {
+            get
+            {
+                if (Count == 0)
+                {
+                    return StartingIndex;
+                }
+                return this[Count - 1].Index;
+            }
+        }
 
         public int Suits
         {

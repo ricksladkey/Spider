@@ -73,6 +73,7 @@
     <Compile Include="ComplexMove.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Deck.cs" />
+    <Compile Include="EnumerableDebugView.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />

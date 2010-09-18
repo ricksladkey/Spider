@@ -316,7 +316,7 @@ namespace Spider
             {
                 Pile fromPile = UpPiles[from];
                 HoldingStack.Clear();
-                HoldingStack.Index = fromPile.Count;
+                HoldingStack.StartingIndex = fromPile.Count;
                 int extraSuits = 0;
                 int runLength = 0;
                 for (int fromIndex = fromPile.Count - 1; fromIndex >= 0; fromIndex--)
@@ -600,7 +600,8 @@ namespace Spider
                 }
                 roots.Add(index);
             }
-            if (roots.Count <= 2)
+            int runs = roots.Count - 1;
+            if (runs <= 1)
             {
                 // Not at least two runs.
                 return;
@@ -701,23 +702,28 @@ namespace Spider
                         return;
                     }
 
-#if true
+                    if (n == roots.Count - 1)
+                    {
+                        // It doesn't make sense to offload the last root.
+                        if (runs - 1 >= 2)
+                        {
+                            AddCompositeSinglePileMove(MoveFlags.Empty, from, moves);
+                        }
+                        return;
+                    }
+
                     // Check for partial offload.
                     if (offloads > 0)
                     {
-                        // Add the supplementary moves.
-                        for (int i = 0; i < moves.Count; i++)
-                        {
-                            Move move = moves[i];
-                            SupplementaryMoves.Add(move);
-                        }
-
-                        // Add the scoring move.
-                        Candidates.Add(new Move(MoveType.CompositeSinglePile, from, 0, from, 0, -1, AddSupplementary()));
+                        AddCompositeSinglePileMove(MoveFlags.Empty, from, moves);
                     }
-#endif
 
                     // Try to offload this run.
+                    if (freeCellsLeft == 0)
+                    {
+                        // Not enough free cells.
+                        return;
+                    }
                     to = FreeCells[0];
                     if (suits > maxExtraSuits)
                     {
@@ -725,41 +731,64 @@ namespace Spider
                         suits -= FindHolding(map, holdingStack, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
-                            // Not enough free cells.
+                            // Still not enough free cells.
                             return;
                         }
                     }
                     int freeCellsUsed = FreeCellsUsed(freeCellsLeft, suits);
                     freeCellsLeft -= freeCellsUsed;
-                    offload = new OffloadInfo(n, to, suits, freeCellsUsed, moves.Count);
+                    offload = new OffloadInfo(n, to, suits, freeCellsUsed, moves.Count + holdingStack.Count);
                     type = MoveType.Unload;
                     offloads++;
                 }
 
                 // Extract the holding set.
                 HoldingSet holdingSet = holdingStack.Set;
+                bool undoHolding = false;
+                int remainingLength = runLength - holdingSet.Length;
 
-                // Add moves to the holding piles.
-                foreach (HoldingInfo holding in holdingSet.Forwards)
+                if (undoHolding)
                 {
-                    moves.Add(new Move(MoveType.Holding, from, holding.Index, holding.Pile, map[holding.Pile].Count));
+                    // Add moves to the holding piles.
+                    foreach (HoldingInfo holding in holdingSet.Forwards)
+                    {
+                        moves.Add(new Move(MoveType.Holding, from, holding.Index, holding.Pile, map[holding.Pile].Count));
+                    }
+
+                    // Add the move.
+                    moves.Add(new Move(type, from, rootIndex, to, map[to].Count));
+
+                    // Undo moves to the holding piles.
+                    int toOffset = remainingLength;
+                    foreach (HoldingInfo holding in holdingSet.Backwards)
+                    {
+                        moves.Add(new Move(MoveType.Holding, holding.Pile, map[holding.Pile].Count, to, map[to].Count + toOffset));
+                        toOffset += holding.Length;
+                    }
+                    Debug.Assert(toOffset == runLength);
+
+                    // Update the map.
+                    map[to].Last = fromPile[rootIndex + runLength - 1];
+                    map[to].Count += runLength;
                 }
-
-                // Add the move.
-                moves.Add(new Move(type, from, rootIndex, to, map[to].Count));
-
-                // Undo moves to the holding piles.
-                int toOffset = runLength - holdingSet.Length;
-                foreach (HoldingInfo holding in holdingSet.Backwards)
+                else
                 {
-                    moves.Add(new Move(MoveType.Holding, holding.Pile, map[holding.Pile].Count, to, map[to].Count + toOffset));
-                    toOffset += holding.Length;
-                }
-                Debug.Assert(toOffset == runLength);
+                    // Add moves to the holding piles.
+                    foreach (HoldingInfo holding in holdingSet.Forwards)
+                    {
+                        moves.Add(new Move(MoveType.Holding, from, holding.Index, holding.Pile, map[holding.Pile].Count));
 
-                // Update the map.
-                map[to].Last = fromPile[rootIndex + runLength - 1];
-                map[to].Count += runLength;
+                        map[holding.Pile].Last = fromPile[holding.Index + holding.Length - 1];
+                        map[holding.Pile].Count += holding.Length;
+                    }
+
+                    // Add the move.
+                    moves.Add(new Move(type, from, rootIndex, to, map[to].Count));
+
+                    // Update the map.
+                    map[to].Last = fromPile[rootIndex + remainingLength - 1];
+                    map[to].Count += remainingLength;
+                }
 
                 if (rootIndex == 0 && DownPiles[from].Count == 0)
                 {
@@ -843,7 +872,11 @@ namespace Spider
             {
                 flags |= MoveFlags.UsesFreeCell;
             }
+            AddCompositeSinglePileMove(flags, from, moves);
+        }
 
+        private void AddCompositeSinglePileMove(MoveFlags flags, int from, IList<Move> moves)
+        {
             // Add the supplementary moves.
             for (int i = 0; i < moves.Count; i++)
             {
@@ -855,12 +888,12 @@ namespace Spider
             Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, from, 0, -1, AddSupplementary()));
         }
 
-        private int FindHolding(PileInfo[] map, HoldingStack holdingStack, int from, int fromFirst, int fromLast, int to, int maxExtraSuits)
+        private int FindHolding(PileInfo[] map, HoldingStack holdingStack, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
         {
-            HoldingStack.Index = fromLast;
+            holdingStack.StartingIndex = fromEnd;
             Pile fromPile = UpPiles[from];
-            int firstIndex = fromFirst + 1;
-            int lastIndex = fromLast - GetRunUp(from, fromLast);
+            int firstIndex = fromStart + 1;
+            int lastIndex = fromEnd - GetRunUp(from, fromEnd);
             int extraSuits = 0;
             for (int fromIndex = lastIndex; fromIndex >= firstIndex; fromIndex--)
             {
