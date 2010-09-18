@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider
 {
+    [DebuggerDisplay("Count = {Count}, Index = {Index}, Suits = {Suits}")]
+    [DebuggerTypeProxy(typeof(CollectionDebugView))]
     public class HoldingStack : SmallList<HoldingInfo>
     {
         public HoldingStack()

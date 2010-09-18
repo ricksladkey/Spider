@@ -5,6 +5,8 @@
 
 - prefer holding moves that match suit
 
+- also consider moving the offload back onto the from pile
+- when adding to the offload pile suits may be one less than the sum
 - clean up move printing including displaying flags
 - clean up diagnostics
 - convert holding list to use supplementary list instead

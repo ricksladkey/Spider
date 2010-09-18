@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(CollectionDebugView))]
-    public class SmallList<T> : IList<T>
+    public class SmallList<T> : IList<T>, System.Collections.IList
     {
         private int count;
         private T[] array;
@@ -205,6 +205,110 @@ namespace Spider
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        #endregion
+
+        #region IList Members
+
+        int System.Collections.IList.Add(object value)
+        {
+            Add((T)value);
+            return count - 1;
+        }
+
+        void System.Collections.IList.Clear()
+        {
+            Clear();
+        }
+
+        bool System.Collections.IList.Contains(object value)
+        {
+            return Contains((T)value);
+        }
+
+        int System.Collections.IList.IndexOf(object value)
+        {
+            return IndexOf((T)value);
+        }
+
+        void System.Collections.IList.Insert(int index, object value)
+        {
+            Insert(index, (T)value);
+        }
+
+        bool System.Collections.IList.IsFixedSize
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        bool System.Collections.IList.IsReadOnly
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        void System.Collections.IList.Remove(object value)
+        {
+            Remove((T)value);
+        }
+
+        void System.Collections.IList.RemoveAt(int index)
+        {
+            RemoveAt(index);
+        }
+
+        object System.Collections.IList.this[int index]
+        {
+            get
+            {
+                return array[index];
+            }
+            set
+            {
+                array[index] = (T)value;
+            }
+        }
+
+        #endregion
+
+        #region ICollection Members
+
+        void System.Collections.ICollection.CopyTo(Array array, int index)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                array.SetValue(this.array[i], index + i);
+            }
+        }
+
+        int System.Collections.ICollection.Count
+        {
+            get
+            {
+                return count;
+            }
+        }
+
+        bool System.Collections.ICollection.IsSynchronized
+        {
+            get
+            {
+                return false;
+            }
+        }
+
+        object System.Collections.ICollection.SyncRoot
+        {
+            get
+            {
+                return null;
+            }
         }
 
         #endregion

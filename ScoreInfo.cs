@@ -11,8 +11,8 @@ namespace Spider
         public const int BaseScore = 0;
         public const int UsesFreeCellScore = -1000;
 
-        public double[] Coefficients { get; private set; }
-        public int Coefficient0 { get; private set; }
+        public double[] Coefficients { get; set; }
+        public int Coefficient0 { get; set; }
 
         public int FaceValue { get; set; }
         public int NetRunLength { get; set; }
@@ -20,7 +20,7 @@ namespace Spider
         public bool CreatesFreeCell { get; set; }
         public bool UsesFreeCell { get; set; }
         public int DownCount { get; set; }
-        public bool IsOffload { get; set; }
+        public bool IsCompositeSinglePile { get; set; }
         public bool NoFreeCells { get; set; }
         public int OneRunDelta { get; set; }
         public int Uses { get; set; }
@@ -37,7 +37,7 @@ namespace Spider
                     Coefficients[Coefficient0 + 0] * NetRunLength +
                     Coefficients[Coefficient0 + 1] * (TurnsOverCard ? 1 : 0) +
                     Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
-                    Coefficients[Coefficient0 + 3] * (IsOffload ? 1 : 0) +
+                    Coefficients[Coefficient0 + 3] * (IsCompositeSinglePile ? 1 : 0) +
                     Coefficients[Coefficient0 + 4] * (NoFreeCells ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 5] * OneRunDelta;
 

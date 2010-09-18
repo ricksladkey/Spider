@@ -145,16 +145,16 @@ namespace UnitTests
         }
 
         [Test]
-        public void OffloadTest1()
+        public void CompositeSinglePileTest1()
         {
-            // A 1/1 offload move, 1 free cell.
+            // A 1/1 composite single pile move, 1 free cell.
             string data1 = "@2|||4s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s-5s4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest2()
+        public void CompositeSinglePileTest2()
         {
             // A 1/1 inversion move, 1 free cell.
             string data1 = "@2|||4s5s-8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -163,16 +163,16 @@ namespace UnitTests
         }
 
         [Test]
-        public void OffloadTest3()
+        public void CompositeSinglePileTest3()
         {
-            // A 1/1/1 offload move, 1 free cell.
+            // A 1/1/1 composite single pile move, 1 free cell.
             string data1 = "@2|||Ts3s2s6s-4s-Js--Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||6s-4s3s2s-JsTs--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest4()
+        public void CompositeSinglePileTest4()
         {
             // A 1/1/1 inversion move, 1 free cell.
             string data1 = "@2|||As2s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -181,16 +181,16 @@ namespace UnitTests
         }
 
         [Test]
-        public void OffloadTest5()
+        public void CompositeSinglePileTest5()
         {
-            // A 1/1/1 mixed offload move, 1 free cell.
+            // A 1/1/1 mixed composite single pile move, 1 free cell.
             string data1 = "@2|||5s2s3s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-6s5s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest6()
+        public void CompositeSinglePileTest6()
         {
             // A 1/1/1 inversion move, 1 free cell
             // with one holding cell.
@@ -200,7 +200,7 @@ namespace UnitTests
         }
 
         [Test]
-        public void OffloadTest7()
+        public void CompositeSinglePileTest7()
         {
             // A 1/1/1 inversion move, 1 free cell
             // with two holding cells.
@@ -210,100 +210,100 @@ namespace UnitTests
         }
 
         [Test]
-        public void OffloadTest8()
+        public void CompositeSinglePileTest8()
         {
-            // A 1/2 offload move, 2 free cells.
+            // A 1/2 composite single pile move, 2 free cells.
             string data1 = "@2|||As8s7h-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h-2sAs---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest9()
+        public void CompositeSinglePileTest9()
         {
-            // A 1/3 offload move, 2 free cells.
+            // A 1/3 composite single pile move, 2 free cells.
             string data1 = "@2|||As8s7h6s-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s-2sAs---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest10()
+        public void CompositeSinglePileTest10()
         {
-            // A 2/2 offload move, 2 free cells.
+            // A 2/2 composite single pile move, 2 free cells.
             string data1 = "@2|||Ts9h7h6s-Js---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||7h6s-JsTs9h---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest11()
+        public void CompositeSinglePileTest11()
         {
-            // A 1/4 offload move, three free cells.
+            // A 1/4 composite single pile move, three free cells.
             string data1 = "@2|||Ts8s7h6s5h-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s5h-JsTs----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest12()
+        public void CompositeSinglePileTest12()
         {
-            // A 1/6 offload move, three free cells.
+            // A 1/6 composite single pile move, three free cells.
             string data1 = "@2|||Ts8s7h6s5h4s3h-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s5h4s3h-JsTs----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest13()
+        public void CompositeSinglePileTest13()
         {
-            // A 2/5 offload move, three free cells.
+            // A 2/5 composite single pile move, three free cells.
             string data1 = "@2|||9s8h8s7h6s5h4s-Ts----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s5h4s-Ts9s8h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest14()
+        public void CompositeSinglePileTest14()
         {
-            // A 4/3 offload move, three free cells.
+            // A 4/3 composite single pile move, three free cells.
             string data1 = "@2|||Ts9h8s7h8s7h6s-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s-JsTs9h8s7h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest15()
+        public void CompositeSinglePileTest15()
         {
-            // A 1/1/1/1 offload move with reused piles, 1 free cell.
+            // A 1/1/1/1 composite single pile move with reused piles, 1 free cell.
             string data1 = "@2|||3s4s7s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5s4s3s-8s7s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest16()
+        public void CompositeSinglePileTest16()
         {
-            // A 1/1 offload move, 0 free cells.
+            // A 1/1 composite single pile move, 0 free cells.
             string data1 = "@2|||4s8s-5s-9s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5s4s-9s8s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
         }
 
         [Test]
-        public void OffloadTest17()
+        public void CompositeSinglePileTest17()
         {
-            // A 1/1/1 offload move with reused pile, 1 free cell.
+            // A 1/1/1 composite single pile move with reused pile, 1 free cell.
             string data1 = "@2|||As3s2s6s-4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||6s-4s3s2sAs--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
         [Test]
-        public void OffloadTest18()
+        public void CompositeSinglePileTest18()
         {
-            // A 1/1/1 partial offload move, 1 free cell.
-            string data1 = "@2|||7sAs3s4s5s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            // A 1/1/1 partial composite single pile move, 1 free cell.
+            string data1 = "@2|||7sAs5s3s4s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||7sAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }

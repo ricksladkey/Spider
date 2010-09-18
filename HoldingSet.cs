@@ -65,15 +65,50 @@ namespace Spider
             }
         }
 
+        public int Length
+        {
+            get
+            {
+                int length = 0;
+                for (int i = 0; i < Count; i++)
+                {
+                    length += Stack[i].Length;
+                }
+                return length;
+            }
+        }
+
         public HoldingInfo this[int index]
         {
             get
             {
                 if (Stack.Count == 0)
                 {
-                    return new HoldingInfo(-1, -1, 0);
+                    return HoldingInfo.Empty;
                 }
                 return Stack[index];
+            }
+        }
+
+        public IEnumerable<HoldingInfo> Forwards
+        {
+            get
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    yield return Stack[i];
+                }
+            }
+        }
+
+        public IEnumerable<HoldingInfo> Backwards
+        {
+            get
+            {
+                for (int i = Count - 1; i >= 0; i--)
+                {
+                    yield return Stack[i];
+                }
             }
         }
 
