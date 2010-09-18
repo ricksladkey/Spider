@@ -643,7 +643,32 @@ namespace Spider
                     }
                 }
 
-                if (to == -1)
+                MoveType type = MoveType.Basic;
+                if (to != -1)
+                {
+                    // Check for inverting.
+                    if (!offload.IsEmpty && to == offload.Pile)
+                    {
+                        if (offload.FreeCells != 1)
+                        {
+                            // Not enough free cells to invert.
+                            return;
+                        }
+                        Move move = moves[offload.Move];
+                        move.Type = MoveType.Basic;
+                        moves[offload.Move] = move;
+                        offload.Suits += suits;
+                        invertsPile = true;
+                    }
+
+                    // Try to move this run.
+                    if (ExtraSuits(freeCellsLeft) < suits - 1)
+                    {
+                        // Not enough free cells.
+                        return;
+                    }
+                }
+                else
                 {
                     if (!offload.IsEmpty)
                     {
@@ -669,32 +694,12 @@ namespace Spider
                     to = FreeCells[0];
                     int freeCellsUsed = FreeCellsUsed(freeCellsLeft, suits);
                     freeCellsLeft -= freeCellsUsed;
-                    offload = new OffloadInfo(n, to, suits, freeCellsUsed);
-                }
-                else
-                {
-                    // Check for inverting.
-                    if (!offload.IsEmpty && to == offload.Pile)
-                    {
-                        if (offload.FreeCells != 1)
-                        {
-                            // Not enough free cells to invert.
-                            return;
-                        }
-                        offload.Suits += suits;
-                        invertsPile = true;
-                    }
-
-                    // Try to move this run.
-                    if (ExtraSuits(freeCellsLeft) < suits - 1)
-                    {
-                        // Not enough free cells.
-                        return;
-                    }
+                    offload = new OffloadInfo(n, to, suits, freeCellsUsed, moves.Count);
+                    type = MoveType.Unload;
                 }
 
                 // Add the move.
-                moves.Add(new Move(from, rootIndex, to, map[to].Count));
+                moves.Add(new Move(type, from, rootIndex, to, map[to].Count));
 
                 // Update the map.
                 map[to].Last = fromPile[rootIndex + runLength - 1];
@@ -727,6 +732,7 @@ namespace Spider
                 }
 
                 // Found a home for the offload.
+                MoveType offloadType = invertsPile ? MoveType.Basic : MoveType.Reload;
                 int offloadRunLength = roots[offload.Root - 1] - offloadRootIndex;
                 Card offloadLastCard = fromPile[offloadRootIndex + offloadRunLength - 1];
                 moves.Add(new Move(offload.Pile, 0, to, map[to].Count));
@@ -750,29 +756,31 @@ namespace Spider
                         // Not enough free cells to invert.
                         return;
                     }
+                    Move move = moves[offload.Move];
+                    move.Type = MoveType.Basic;
+                    moves[offload.Move] = move;
                     invertsPile = true;
                 }
                 else
                 {
                     // Reload the offload onto the now empty pile.
-                    moves.Add(new Move(offload.Pile, 0, from, 0));
+                    moves.Add(new Move(MoveType.Reload, offload.Pile, 0, from, 0));
                 }
             }
 
             // Determine move type.
             bool createsFreeCell = offload.IsEmpty;
-            MoveType type = createsFreeCell ? MoveType.Emptying :
-                (invertsPile ? MoveType.Inverting : MoveType.Offload);
+            MoveFlags flags = createsFreeCell ? MoveFlags.Complete : MoveFlags.Empty;
 
             // Add the supplementary moves.
             for (int i = 0; i < moves.Count; i++)
             {
                 Move move = moves[i];
-                SupplementaryMoves.Add(new Move(move.From, move.FromIndex, move.To, move.ToIndex));
+                SupplementaryMoves.Add(move);
             }
 
             // Add the scoring move.
-            Candidates.Add(new Move(type, from, 0, from, 0, -1, AddSupplementary()));
+            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, from, 0, -1, AddSupplementary()));
         }
 #else
         private void CheckOffloads(int from)
@@ -1064,7 +1072,7 @@ namespace Spider
             int to = move.To;
             int toIndex = move.ToIndex;
 
-            if (move.Type == MoveType.Emptying || move.Type == MoveType.Inverting || move.Type == MoveType.Offload)
+            if (move.Type == MoveType.CompositeSinglePile)
             {
                 return CalculateOffloadScore(move);
             }
@@ -1130,8 +1138,9 @@ namespace Spider
             score.NetRunLength = 0;
             score.DownCount = DownPiles[move.From].Count;
             score.TurnsOverCard = score.DownCount != 0;
-            score.CreatesFreeCell = move.Type == MoveType.Emptying && !score.TurnsOverCard;
-            score.UsesFreeCell = move.Type != MoveType.Emptying && score.TurnsOverCard;
+            bool complete = (move.Flags & MoveFlags.Complete) == MoveFlags.Complete;
+            score.CreatesFreeCell = complete && !score.TurnsOverCard;
+            score.UsesFreeCell = !complete && score.TurnsOverCard;
             score.IsOffload = true;
             score.NoFreeCells = FreeCells.Count == 0;
             score.OneRunDelta = 0;
@@ -1499,15 +1508,6 @@ namespace Spider
 
             // First move to the holding piles.
             int undoTo = move.To;
-            if (move.Type == MoveType.Inverting)
-            {
-                // Can't undo holding piles.
-                undoTo = -1;
-            }
-            else if (move.Type == MoveType.Offload)
-            {
-                undoTo = move.From;
-            }
             Stack<Move> moveStack = new Stack<Move>();
             for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
             {
@@ -1516,20 +1516,10 @@ namespace Spider
                 MakeMoveUsingFreeCells(move.From, holding.Index, holding.Pile);
                 moveStack.Push(new Move(holding.Pile, undoFromIndex, undoTo));
             }
-            if (move.Type == MoveType.Emptying)
+            if (move.Type == MoveType.CompositeSinglePile)
             {
-                // Offload move that creates a free cell.
-                OffloadAllUsingFreeCells(move.Next);
-            }
-            else if (move.Type == MoveType.Inverting)
-            {
-                // Inverting move.
-                InvertUsingFreeCells(move.Next);
-            }
-            else if (move.Type == MoveType.Offload)
-            {
-                // Offloading move.
-                OffloadUsingFreeCells(move.Next);
+                // Composite single pile move.
+                MakeCompositeSinglePileMove(move.Next);
             }
             else if (move.Type == MoveType.Swap)
             {
@@ -1666,7 +1656,7 @@ namespace Spider
             return suits;
         }
 
-        private void OffloadAllUsingFreeCells(int first)
+        private void MakeCompositeSinglePileMove(int first)
         {
             if (Diagnostics)
             {
@@ -1679,7 +1669,7 @@ namespace Spider
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
                 Move move = SupplementaryList[next];
-                if (move.ToIndex == 0)
+                if (move.Type == MoveType.Unload)
                 {
                     offloadPile = move.To;
                     int suits = CountSuits(move.From, move.FromIndex);
@@ -1692,7 +1682,7 @@ namespace Spider
                         suits -= MoveOffUsingFreeCells(move.From, move.FromIndex, -1, suits, n, moveStack);
                     }
                 }
-                else if (move.From == offloadPile && move.FromIndex == 0)
+                else if (move.Type == MoveType.Reload)
                 {
                     while (moveStack.Count != 0)
                     {
@@ -1711,63 +1701,6 @@ namespace Spider
             if (moveStack.Count != 0)
             {
                 throw new Exception("missing reload move");
-            }
-        }
-
-        private void InvertUsingFreeCells(int first)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("IUFC");
-            }
-            MakeMovesUsingFreeCells(first);
-        }
-
-        private void OffloadUsingFreeCells(int first)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("OUFC");
-            }
-
-            // Advance past any holding moves.
-            int offloadIndex = -1;
-            for (int next = first; next != -1; next = SupplementaryList[next].Next)
-            {
-                Move move = SupplementaryList[next];
-                if (move.ToIndex == 0)
-                {
-                    offloadIndex = move.FromIndex;
-                    first = next;
-                    break;
-                }
-                MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
-            }
-
-            Analyze();
-            int freeCells = FreeCells.Count;
-            int from = SupplementaryList[first].From;
-            int lowerSuits = CountSuits(from, offloadIndex);
-            int maxLowerSuits = ExtraSuits(freeCells);
-            Debug.Assert(lowerSuits <= maxLowerSuits);
-            Stack<Move> moveStack = new Stack<Move>();
-            for (int n = freeCells; n > 0 && lowerSuits != 0; n--)
-            {
-                lowerSuits -= MoveOffUsingFreeCells(from, offloadIndex, from, lowerSuits, n, moveStack);
-            }
-            if (lowerSuits != 0)
-            {
-                throw new Exception("insufficient free cells");
-            }
-            for (int next = SupplementaryList[first].Next; SupplementaryList[next].Next != -1; next = SupplementaryList[next].Next)
-            {
-                Move move = SupplementaryList[next];
-                MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
-            }
-            while (moveStack.Count != 0)
-            {
-                Move move = moveStack.Pop();
-                MakeSimpleMove(move.From, move.FromIndex, move.To);
             }
         }
 

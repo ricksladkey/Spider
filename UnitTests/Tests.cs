@@ -66,7 +66,7 @@ namespace UnitTests
         [Test]
         public void SwapTest2()
         {
-            // A 1/1 whole swap move, 1 free cell.
+            // A 1/1 whole pile swap move, 1 free cell.
             string data1 = "@2|||8h-9h8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s-9h8h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -302,7 +302,7 @@ namespace UnitTests
         [Test]
         public void OffloadTest18()
         {
-            // A 1/1/1 part offload move, 1 free cell.
+            // A 1/1/1 partial offload move, 1 free cell.
             string data1 = "@2|||7sAs3s4s5s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||7sAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);

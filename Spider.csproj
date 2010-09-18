@@ -79,6 +79,7 @@
     <Compile Include="HoldingStack.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
+    <Compile Include="MoveFlags.cs" />
     <Compile Include="MoveList.cs" />
     <Compile Include="MoveType.cs" />
     <Compile Include="NelderMeadSimplex.cs" />

@@ -9,6 +9,7 @@ namespace Spider
     public struct Move
     {
         public MoveType Type { get; set; }
+        public MoveFlags Flags { get; set; }
         public int From { get; set; }
         public int FromIndex { get; set; }
         public int To { get; set; }
@@ -63,9 +64,15 @@ namespace Spider
         }
 
         public Move(MoveType type, int from, int fromIndex, int to, int toIndex, int holdingNext, int next)
+            : this(type, MoveFlags.Empty, from, fromIndex, to, toIndex, holdingNext, next)
+        {
+        }
+
+        public Move(MoveType type, MoveFlags flags, int from, int fromIndex, int to, int toIndex, int holdingNext, int next)
             : this()
         {
             Type = type;
+            Flags = flags;
             From = from;
             FromIndex = fromIndex;
             To = to;

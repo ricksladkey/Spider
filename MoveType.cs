@@ -10,8 +10,8 @@ namespace Spider
         Unknown = 0,
         Basic = 1,
         Swap = 2,
-        Offload = 3,
-        Inverting = 4,
-        Emptying = 5,
+        Unload = 3,
+        Reload = 4,
+        CompositeSinglePile = 5,
     }
 }

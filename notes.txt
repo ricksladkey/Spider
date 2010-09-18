@@ -5,6 +5,9 @@
 
 - prefer holding moves that match suit
 
+- offload moves could potential have both inverting and offloading for different runs
+- need to differentiate between offload and inverting in emptying moves
+- fix actual target free cell when offloading or fix moves that move to that pile (game 381)
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
 - convert lower stack into yet another root
