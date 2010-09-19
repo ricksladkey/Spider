@@ -78,6 +78,7 @@
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
+    <Compile Include="InsufficientFreeCellsException.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveFlags.cs" />

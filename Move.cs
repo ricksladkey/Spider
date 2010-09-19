@@ -38,6 +38,11 @@ namespace Spider
         {
         }
 
+        public Move(MoveType type, MoveFlags flags, int from, int fromIndex, int to)
+            : this(type, flags, from, fromIndex, to, -1, -1, -1)
+        {
+        }
+
         public Move(int from, int fromIndex, int to, int toIndex)
             : this(MoveType.Basic, from, fromIndex, to, toIndex, -1, -1)
         {
