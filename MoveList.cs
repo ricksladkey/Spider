@@ -7,11 +7,11 @@ using System.Text;
 namespace Spider
 {
     [DebuggerDisplay("Count = {Count}")]
-    [DebuggerTypeProxy(typeof(CollectionDebugView))]
+    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class MoveList : SmallList<Move>
     {
         public MoveList()
-            : base(Game.MaximumMoves)
+            : base(Game.MaximumMoves * 2)
         {
         }
     }

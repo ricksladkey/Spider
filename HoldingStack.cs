@@ -7,7 +7,7 @@ using System.Text;
 namespace Spider
 {
     [DebuggerDisplay("Count = {Count}, Index = {Index}, Suits = {Suits}")]
-    [DebuggerTypeProxy(typeof(CollectionDebugView))]
+    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class HoldingStack : SmallList<HoldingInfo>
     {
         public HoldingStack()

@@ -5,6 +5,7 @@
 
 - prefer holding moves that match suit
 
+- swaps could use holding piles from to the to pile
 - if holding pile targets the offload, convert it to inverting
 - if there are enough free cells to offload a run to a single pile pre-emptively call it inverting
 - rename invertsPile to canInvert

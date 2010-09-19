@@ -7,15 +7,17 @@ using System.Text;
 namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
-    [DebuggerTypeProxy(typeof(CollectionDebugView))]
-    public class SmallList<T> : IList<T>, System.Collections.IList
+    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
+    public class SmallList<T> : IList<T>
     {
+        private int capacity;
         private int count;
         private T[] array;
         private IEqualityComparer<T> comparer;
 
         public SmallList(int capacity)
         {
+            this.capacity = capacity;
             count = 0;
             array = new T[capacity];
             comparer = EqualityComparer<T>.Default;
@@ -53,6 +55,10 @@ namespace Spider
 
         public void AddRange(SmallList<T> other, int index, int count)
         {
+            if (capacity < this.count + count)
+            {
+                IncreaseCapacity();
+            }
             for (int i = 0; i < count; i++)
             {
                 array[this.count + i] = other.array[index + i];
@@ -62,6 +68,10 @@ namespace Spider
 
         public void AddRange(IList<T> other, int index, int count)
         {
+            if (capacity < this.count + count)
+            {
+                IncreaseCapacity();
+            }
             for (int i = 0; i < count; i++)
             {
                 array[this.count + i] = other[index + i];
@@ -99,6 +109,10 @@ namespace Spider
 
         public void Insert(int index, T item)
         {
+            if (capacity < count + 1)
+            {
+                IncreaseCapacity();
+            }
             for (int i = index; i < count; i++)
             {
                 array[i + 1] = array[i];
@@ -136,6 +150,10 @@ namespace Spider
 
         public void Add(T item)
         {
+            if (capacity < count + 1)
+            {
+                IncreaseCapacity();
+            }
             array[count++] = item;
         }
 
@@ -209,108 +227,14 @@ namespace Spider
 
         #endregion
 
-        #region IList Members
-
-        int System.Collections.IList.Add(object value)
+        private void IncreaseCapacity()
         {
-            Add((T)value);
-            return count - 1;
+            int newCapacity = capacity * 2;
+            T[] newArray = new T[newCapacity];
+            array.CopyTo(newArray, 0);
+
+            capacity = newCapacity;
+            array = newArray;
         }
-
-        void System.Collections.IList.Clear()
-        {
-            Clear();
-        }
-
-        bool System.Collections.IList.Contains(object value)
-        {
-            return Contains((T)value);
-        }
-
-        int System.Collections.IList.IndexOf(object value)
-        {
-            return IndexOf((T)value);
-        }
-
-        void System.Collections.IList.Insert(int index, object value)
-        {
-            Insert(index, (T)value);
-        }
-
-        bool System.Collections.IList.IsFixedSize
-        {
-            get
-            {
-                return true;
-            }
-        }
-
-        bool System.Collections.IList.IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        void System.Collections.IList.Remove(object value)
-        {
-            Remove((T)value);
-        }
-
-        void System.Collections.IList.RemoveAt(int index)
-        {
-            RemoveAt(index);
-        }
-
-        object System.Collections.IList.this[int index]
-        {
-            get
-            {
-                return array[index];
-            }
-            set
-            {
-                array[index] = (T)value;
-            }
-        }
-
-        #endregion
-
-        #region ICollection Members
-
-        void System.Collections.ICollection.CopyTo(Array array, int index)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                array.SetValue(this.array[i], index + i);
-            }
-        }
-
-        int System.Collections.ICollection.Count
-        {
-            get
-            {
-                return count;
-            }
-        }
-
-        bool System.Collections.ICollection.IsSynchronized
-        {
-            get
-            {
-                return false;
-            }
-        }
-
-        object System.Collections.ICollection.SyncRoot
-        {
-            get
-            {
-                return null;
-            }
-        }
-
-        #endregion
     }
 }

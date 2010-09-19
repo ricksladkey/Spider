@@ -69,7 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Card.cs" />
-    <Compile Include="CollectionDebugView.cs" />
     <Compile Include="ComplexMove.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="Deck.cs" />
@@ -78,7 +77,7 @@
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
-    <Compile Include="InsufficientFreeCellsException.cs" />
+    <Compile Include="InvalidMoveException.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveFlags.cs" />

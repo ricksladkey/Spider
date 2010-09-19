@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Spider
 {
-    class InsufficientFreeCellsException : Exception
+    class InvalidMoveException : Exception
     {
-        public InsufficientFreeCellsException(string message)
+        public InvalidMoveException(string message)
             : base(message)
         {
         }

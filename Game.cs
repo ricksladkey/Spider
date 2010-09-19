@@ -14,14 +14,14 @@ namespace Spider
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 7.792380919, 48.7750914, -0.1820563025, -6.24742809, -0.75786, 7.984789509,
-            /* 6 */ 2.151250994, 0.002918162963, -0.1725631349, -0.6357675859,
+            /* 0 */ 6.625729028, 73.1626371, -0.1213708683, -5.53189449, -0.75786, 6.789330781,
+            /* 6 */ 2.429508717, 0.001945441975, -0.1467275001, -0.5862463208,
         };
 
         public static double[] OneSuitCoefficients = TwoSuitCoefficients;
 
         public const int NumberOfPiles = 10;
-        public const int MaximumMoves = 1000;
+        public const int MaximumMoves = 1500;
 
         public const int Group0 = 0;
         public const int Group1 = 6;
@@ -463,7 +463,6 @@ namespace Spider
                 move.Next = i < count - 1 ? first + i + 1 : -1;
                 SupplementaryList.Add(move);
             }
-            SupplementaryMoves.Clear();
             return first;
         }
 
@@ -609,7 +608,8 @@ namespace Spider
             // Prepare data structures.
             int freeCellsLeft = freeCells;
             OffloadInfo offload = OffloadInfo.Empty;
-            List<Move> moves = new List<Move>();
+            MoveList moves = SupplementaryMoves;
+            moves.Clear();
             PileInfo[] map = new PileInfo[NumberOfPiles];
 
             // Initialize the pile map.
@@ -694,7 +694,7 @@ namespace Spider
                         // It doesn't make sense to offload the last root.
                         if (runs - 1 >= 2)
                         {
-                            AddCompositeSinglePileMove(MoveFlags.Empty, from, moves);
+                            AddCompositeSinglePileMove(MoveFlags.Empty, from);
                         }
                         return;
                     }
@@ -702,7 +702,7 @@ namespace Spider
                     // Check for partial offload.
                     if (offloads > 0)
                     {
-                        AddCompositeSinglePileMove(MoveFlags.Empty, from, moves);
+                        AddCompositeSinglePileMove(MoveFlags.Empty, from);
                     }
 
                     // Try to offload this run.
@@ -852,18 +852,11 @@ namespace Spider
             {
                 flags |= MoveFlags.UsesFreeCell;
             }
-            AddCompositeSinglePileMove(flags, from, moves);
+            AddCompositeSinglePileMove(flags, from);
         }
 
-        private void AddCompositeSinglePileMove(MoveFlags flags, int from, IList<Move> moves)
+        private void AddCompositeSinglePileMove(MoveFlags flags, int from)
         {
-            // Add the supplementary moves.
-            for (int i = 0; i < moves.Count; i++)
-            {
-                Move move = moves[i];
-                SupplementaryMoves.Add(move);
-            }
-
             // Add the scoring move.
             Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, from, 0, -1, AddSupplementary()));
         }
@@ -1539,7 +1532,7 @@ namespace Spider
             int toSuits = CountSuits(to, toIndex);
             if (fromSuits + toSuits - 1 > ExtraSuits(freeCells))
             {
-                throw new InsufficientFreeCellsException("insufficient free cells");
+                throw new InvalidMoveException("insufficient free cells");
             }
             Stack<Move> moveStack = new Stack<Move>();
             for (int n = freeCells; n > 0 && fromSuits + toSuits > 1; n--)
@@ -1585,7 +1578,7 @@ namespace Spider
             int suits = CountSuits(from, lastFromIndex);
             if (suits > ExtraSuits(freeCells))
             {
-                throw new InsufficientFreeCellsException("insufficient free cells");
+                throw new InvalidMoveException("insufficient free cells");
             }
             int totalSuits = CountSuits(from, lastFromIndex);
             int remainingSuits = totalSuits;
@@ -1698,7 +1691,7 @@ namespace Spider
                         {
                             MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
                         }
-                        catch (InsufficientFreeCellsException)
+                        catch (InvalidMoveException)
                         {
                             // The move appeared to be valid but the pile
                             // has changed due to a discard and the move
@@ -1795,7 +1788,10 @@ namespace Spider
             Analyze();
             int toIndex = UpPiles[to].Count;
             int extraSuits = CountSuits(from, lastFromIndex) - 1;
-            Debug.Assert(extraSuits >= 0);
+            if (extraSuits < 0)
+            {
+                throw new InvalidMoveException("not a single run");
+            }
             if (extraSuits == 0)
             {
                 MakeSimpleMove(from, lastFromIndex, to);
@@ -1809,7 +1805,7 @@ namespace Spider
             int maxExtraSuits = ExtraSuits(freeCells);
             if (extraSuits > maxExtraSuits)
             {
-                throw new InsufficientFreeCellsException("insufficient free cells");
+                throw new InvalidMoveException("insufficient free cells");
             }
             int suits = 0;
             int fromIndex = UpPiles[from].Count;

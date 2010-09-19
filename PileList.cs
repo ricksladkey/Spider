@@ -7,7 +7,7 @@ using System.Text;
 namespace Spider
 {
     [DebuggerDisplay("Count = {Count}")]
-    [DebuggerTypeProxy(typeof(CollectionDebugView))]
+    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class PileList : SmallList<int>
     {
         public PileList()

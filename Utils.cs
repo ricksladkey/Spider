@@ -49,7 +49,7 @@ namespace Spider
             switch (suit)
             {
                 case Suit.Clubs:
-                    return "♠";
+                    return "♣";
                 case Suit.Diamonds:
                     return "♦";
                 case Suit.Hearts:
