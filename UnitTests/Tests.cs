@@ -149,7 +149,7 @@ namespace UnitTests
         {
             // A 1/1 composite single pile move, 1 free cell.
             string data1 = "@2|||4s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||8s-5s4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-5s4s-8s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -167,7 +167,7 @@ namespace UnitTests
         {
             // A 1/1/1 composite single pile move, 1 free cell.
             string data1 = "@2|||Ts3s2s6s-4s-Js--Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||6s-4s3s2s-JsTs--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-4s3s2s-JsTs-6s-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -214,7 +214,7 @@ namespace UnitTests
         {
             // A 1/2 composite single pile move, 2 free cells.
             string data1 = "@2|||As8s7h-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||8s7h-2sAs---Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-2sAs-8s7h--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -232,7 +232,7 @@ namespace UnitTests
         {
             // A 2/2 composite single pile move, 2 free cells.
             string data1 = "@2|||Ts9h7h6s-Js---Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||7h6s-JsTs9h---Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-JsTs9h-7h6s--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -268,7 +268,7 @@ namespace UnitTests
         {
             // A 4/3 composite single pile move, three free cells.
             string data1 = "@2|||Ts9h8s7h8s7h6s-Js----Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||8s7h6s-JsTs9h8s7h----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-JsTs9h8s7h-8s7h6s---Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -295,7 +295,7 @@ namespace UnitTests
         {
             // A 1/1/1 composite single pile move with reused pile, 1 free cell.
             string data1 = "@2|||As3s2s6s-4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||6s-4s3s2sAs--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-4s3s2sAs-6s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -325,6 +325,7 @@ namespace UnitTests
         {
             // Check that the only available move is made.
             game = new Game(initial);
+            game.Diagnostics = true;
             Assert.IsTrue(game.Move());
             string actual = game.ToAsciiString();
             CheckResults(initial, expected, actual);

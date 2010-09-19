@@ -12,5 +12,7 @@ namespace Spider
         CreatesFreeCell = 0x0001,
         TurnsOverCard = 0x0002,
         UsesFreeCell = 0x0004,
+        Holding = 0x00008,
+        UndoHolding = 0x00010,
     }
 }
