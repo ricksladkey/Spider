@@ -9,13 +9,13 @@ namespace Spider
     public class Game
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 9.137560762, 44.11268861, -0.1107699821, -3.227980575, -0.1357842696, 9.77933,
-            /* 6 */ 1.830162252, 0.00665765693, -0.2034103221, -0.7819596996,
+            /* 0 */ 11.19118068, 33.21235313, -0.1201269187, -3.227980575, -0.1878116239, 7.070271551,
+            /* 6 */ 2.430823772, 0.004813360669, -0.2034103221, -0.6384674211, 50,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 6.625729028, 73.1626371, -0.1213708683, -5.53189449, -0.75786, 6.789330781,
-            /* 6 */ 2.429508717, 0.001945441975, -0.1467275001, -0.5862463208,
+            /* 0 */ 6.625729028, 76.19008829, -0.1263931638, -7.347469121, -0.7892200528, 4.526220521,
+            /* 6 */ 2.634733621, 0.001296961317, -0.1150420899, -0.3908308805, 33.33333333,
         };
 
         public static double[] OneSuitCoefficients = TwoSuitCoefficients;
@@ -732,11 +732,7 @@ namespace Spider
 
                 // Extract the holding set.
                 HoldingSet holdingSet = holdingStack.Set;
-#if true
                 bool undoHolding = map[to].Count != 0;
-#else
-                bool undoHolding = false;
-#endif
                 int remainingLength = runLength - holdingSet.Length;
 
                 if (undoHolding)
@@ -1061,13 +1057,9 @@ namespace Spider
 
             if (score.UsesFreeCell)
             {
-                // XXX: should calculate uses, etc.
-#if false
+                // XXX: should calculate uses, is king, etc.
                 score.Coefficient0 = Group1;
-                return score.LastResortScore + 25; // XXX: should not be hard-coded.
-#else
-                return score.LastResortScore; // XXX: wrong coefficients.
-#endif
+                return score.LastResortScore;
             }
             return score.Score;
         }
@@ -2045,7 +2037,7 @@ namespace Spider
             }
 
             string s = "";
-            
+
             s += Fence;
             s += Suits.ToString() + PrimarySeparator;
             s += ToAsciiString(discardRow) + PrimarySeparator;

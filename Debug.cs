@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    static class Debug
+    public static class Debug
     {
         [Conditional("DEBUG")]
         public static void Assert(bool condition)

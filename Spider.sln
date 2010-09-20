@@ -3,14 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D829E81B-EF8B-4EB1-AE2C-9D43BECBFA7E}"
 	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
 		notes.txt = notes.txt
+		Spider.vsmdi = Spider.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider", "Spider.csproj", "{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTests", "SpiderTests\SpiderTests.csproj", "{8AF8065B-5844-4BD7-9848-A12CA4338AFF}"
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = Spider.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -24,6 +32,10 @@ Global
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

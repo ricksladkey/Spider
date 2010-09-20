@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Spider
 {
-    class InvalidMoveException : Exception
+    public class InvalidMoveException : Exception
     {
         public InvalidMoveException(string message)
             : base(message)
