@@ -97,9 +97,14 @@ namespace Spider
             string type = Type.ToString();
             if (Flags != MoveFlags.Empty)
             {
-                type += "/" + Flags.ToString();
+                type += "(" + Flags.ToString() + ")";
             }
-            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", type, From, FromIndex, To, ToIndex, HoldingNext, Next, Score);
+            string score = Score.ToString("G5");
+            if (Score == Game.RejectScore)
+            {
+                score = "Reject";
+            }
+            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", type, From, FromIndex, To, ToIndex, HoldingNext, Next, score);
         }
     }
 }

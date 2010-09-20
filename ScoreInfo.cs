@@ -55,7 +55,8 @@ namespace Spider
                     Coefficients[Coefficient0 + 0] * (TurnsOverCard ? 1 : 0) +
                     Coefficients[Coefficient0 + 1] * DownCount +
                     Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
-                    Coefficients[Coefficient0 + 3] * (IsKing ? 1 : 0);
+                    Coefficients[Coefficient0 + 3] * (IsKing ? 1 : 0) +
+                    Coefficients[Coefficient0 + 4] * (IsCompositeSinglePile ? 1 : 0);
 
                 return score;
             }

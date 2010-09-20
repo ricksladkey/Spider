@@ -308,13 +308,22 @@ namespace UnitTests
             CheckMove(data1, data2);
         }
 
+        [TestMethod]
+        public void CompositeSinglePileTest19()
+        {
+            // A 1/1/1 reload to from composite single pile move, 1 free cell.
+            string data1 = "@2|||Ts9s5s8s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Ts9s8s-6s5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)
             {
                 PrintGame(new Game(initial));
                 PrintCandidates();
-                PrintGame();
+                Game.PrintGamesSideBySide(new Game(expected), game);
                 Utils.WriteLine("expected: {0}", expected);
                 Utils.WriteLine("actual:   {0}", actual);
             }

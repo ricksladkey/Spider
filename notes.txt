@@ -1,37 +1,18 @@
-- prefer composite moves that create a free cell, particularly after a deal
 - prefer last resort moves that lead to a discard
 - optimize scoring factors using designed experiments
 - before playing onto a free cell search for a free cell preserving sequence
 
 - prefer holding moves that match suit
 
+- retest complex 
 - swaps could use holding piles from to the to pile
-- if holding pile targets the offload, convert it to inverting
-- if there are enough free cells to offload a run to a single pile pre-emptively call it inverting
-- rename invertsPile to canInvert
 - also consider moving the offload back onto the from pile
-- when adding to the offload pile suits may be one less than the sum
-- clean up diagnostics
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
-- convert lower stack into yet another root
-- permit inner run to be the offload
-- count homeless runs allowing them as long as free cells permit
-- no homeless at the end makes an emptying move
-- no homeless anywhere else makes a free-cell preserving move
-- one homeless at the end makes a free-cell perserving move
-- use SupplementaryMoves instead of local list moves
-- intermediate offload runs could use holding piles as well
-- for offload consider trying to find homes for homeless runs by moving piles
-
-- convert last resort scoring to new model
-
-- add basic unit tests
-- add holding unit tests
+- for offload consider trying to find homes for homeless runs by uncovering targets
 
 - inverted offload moves don't need to move the entire lower run to a free cell if the suits match
-- offload moves no longer need the offload pile or offload index information
 
 - prefer long exposed runs even if it means splitting a run
 
