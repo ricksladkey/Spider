@@ -596,21 +596,32 @@ namespace Spider
                     break;
                 }
 
-#if false
                 if (!foundSwap)
                 {
+                    // Check whether reverse holding piles will help.
                     HoldingSet holdingSet = HoldingStack.Set;
                     if (!holdingSet.Contains(to))
                     {
                         HoldingStack reverseHoldingStack = new HoldingStack();
-                        int holdingSuits = FindHolding(UpPiles, reverseHoldingStack, to, toIndex, toPile.Count, from, maxExtraSuits);
-                        if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + holdingSuits)
+                        int reverseHoldingSuits = FindHolding(UpPiles, reverseHoldingStack, to, toIndex, toPile.Count, from, maxExtraSuits);
+                        if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + reverseHoldingSuits)
                         {
-                            Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet, reverseHoldingStack.Set)));
+                            bool overlaps = false;
+                            foreach (HoldingInfo reverseholding in reverseHoldingStack)
+                            {
+                                if (holdingSet.Contains(reverseholding.To))
+                                {
+                                    overlaps = true;
+                                    break;
+                                }
+                            }
+                            if (!overlaps)
+                            {
+                                Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet, reverseHoldingStack.Set)));
+                            }
                         }
                     }
                 }
-#endif
             }
         }
 
