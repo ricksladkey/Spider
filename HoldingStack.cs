@@ -37,7 +37,7 @@ namespace Spider
                 {
                     return StartingIndex;
                 }
-                return array[Count - 1].Index;
+                return array[Count - 1].FromIndex;
             }
         }
 

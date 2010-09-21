@@ -7,19 +7,21 @@ namespace Spider
 {
     public struct HoldingInfo
     {
-        public static HoldingInfo Empty = new HoldingInfo(-1, -1, 0, 0);
+        public static HoldingInfo Empty = new HoldingInfo(-1, -1, -1, 0, 0);
 
-        public int Pile { get; set; }
-        public int Index { get; set; }
+        public int From { get; set; }
+        public int FromIndex { get; set; }
+        public int To { get; set; }
         public int Suits { get; set; }
         public int Length { get; set; }
         public int Next { get; set; }
 
-        public HoldingInfo(int pile, int index, int suits, int length)
+        public HoldingInfo(int from, int fromIndex, int to, int suits, int length)
             : this()
         {
-            Pile = pile;
-            Index = index;
+            From = from;
+            To = to;
+            FromIndex = fromIndex;
             Suits = suits;
             Length = length;
             Next = -1;
@@ -27,7 +29,7 @@ namespace Spider
 
         public override string ToString()
         {
-            return string.Format("Pile: {0}, Index: {1}, Suits: {2}, Length: {3}, Next: {4}", Pile, Index, Suits, Length, Next);
+            return string.Format("To: {0}, FromIndex: {1}, Suits: {2}, Length: {3}, Next: {4}", To, FromIndex, Suits, Length, Next);
         }
     }
 }

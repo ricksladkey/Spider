@@ -367,7 +367,7 @@ namespace Spider
                                 if (holdingSuits > HoldingStack.Suits)
                                 {
                                     int length = HoldingStack.Index - fromIndex;
-                                    HoldingStack.Push(new HoldingInfo(to, fromIndex, holdingSuits, length));
+                                    HoldingStack.Push(new HoldingInfo(from, fromIndex, to, holdingSuits, length));
                                 }
 
                                 break;
@@ -450,6 +450,10 @@ namespace Spider
 
         private int AddSupplementary()
         {
+            if (SupplementaryMoves.Count == 0)
+            {
+                return -1;
+            }
             int first = SupplementaryList.Count;
             int count = SupplementaryMoves.Count;
             for (int i = 0; i < count; i++)
@@ -463,17 +467,41 @@ namespace Spider
 
         private int AddHolding(HoldingSet holdingSet)
         {
-            int first = holdingSet.Count == 0 ? -1 : HoldingList.Count;
+            if (holdingSet.Count == 0)
+            {
+                return -1;
+            }
+            int first = HoldingList.Count;
             for (int i = 0; i < holdingSet.Count; i++)
             {
-                HoldingInfo holdingInfo = holdingSet[i];
-                if (i < holdingSet.Count - 1)
-                {
-                    holdingInfo.Next = HoldingList.Count + 1;
-                }
-                HoldingList.Add(holdingInfo);
+                HoldingInfo holding = holdingSet[i];
+                holding.Next = i < holdingSet.Count - 1 ? HoldingList.Count + 1 : -1;
+                HoldingList.Add(holding);
             }
             return first;
+        }
+
+        private int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2)
+        {
+            if (holdingSet1.Count == 0 && holdingSet2.Count == 0)
+            {
+                return -1;
+            }
+            if (holdingSet1.Count == 0)
+            {
+                return AddHolding(holdingSet2);
+            }
+            if (holdingSet2.Count == 0)
+            {
+                return AddHolding(holdingSet1);
+            }
+            int first1 = AddHolding(holdingSet1);
+            int first2 = AddHolding(holdingSet2);
+            int last1 = first1 + holdingSet1.Count - 1;
+            HoldingInfo holding = HoldingList[last1];
+            holding.Next = first2;
+            HoldingList[last1] = holding;
+            return first1;
         }
 
         private void CheckSwaps(int from, int fromIndex, int extraSuits, int maxExtraSuits)
@@ -567,6 +595,22 @@ namespace Spider
                     foundSwap = true;
                     break;
                 }
+
+#if false
+                if (!foundSwap)
+                {
+                    HoldingSet holdingSet = HoldingStack.Set;
+                    if (!holdingSet.Contains(to))
+                    {
+                        HoldingStack reverseHoldingStack = new HoldingStack();
+                        int holdingSuits = FindHolding(UpPiles, reverseHoldingStack, to, toIndex, toPile.Count, from, maxExtraSuits);
+                        if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + holdingSuits)
+                        {
+                            Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet, reverseHoldingStack.Set)));
+                        }
+                    }
+                }
+#endif
             }
         }
 
@@ -742,7 +786,7 @@ namespace Spider
                     // Add moves to the holding piles.
                     foreach (HoldingInfo holding in holdingSet.Forwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.Pile));
+                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
                     }
 
                     // Add the move.
@@ -752,7 +796,7 @@ namespace Spider
                     int toOffset = remainingLength;
                     foreach (HoldingInfo holding in holdingSet.Backwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.Pile, -holding.Length, to));
+                        moves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, to));
                         toOffset += holding.Length;
                     }
                     Debug.Assert(toOffset == runLength);
@@ -765,9 +809,9 @@ namespace Spider
                     // Add moves to the holding piles.
                     foreach (HoldingInfo holding in holdingSet.Forwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.Pile));
+                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
 
-                        map[holding.Pile] = fromPile[holding.Index + holding.Length - 1];
+                        map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
                     }
 
                     // Add the move.
@@ -926,7 +970,7 @@ namespace Spider
                         if (holdingSuits > holdingStack.Suits)
                         {
                             int length = holdingStack.Index - fromIndex;
-                            holdingStack.Push(new HoldingInfo(pile, fromIndex, holdingSuits, length));
+                            holdingStack.Push(new HoldingInfo(from, fromIndex, pile, holdingSuits, length));
                         }
                     }
                 }
@@ -1476,9 +1520,9 @@ namespace Spider
             for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
             {
                 HoldingInfo holding = HoldingList[holdingNext];
-                int undoFromIndex = UpPiles[holding.Pile].Count;
-                MakeMoveUsingFreeCells(move.From, holding.Index, holding.Pile);
-                moveStack.Push(new Move(holding.Pile, undoFromIndex, move.To));
+                int undoFromIndex = UpPiles[holding.To].Count;
+                MakeMoveUsingFreeCells(holding.From, holding.FromIndex, holding.To);
+                moveStack.Push(new Move(holding.To, undoFromIndex, holding.From == move.From ? move.To : move.From));
             }
             if (move.Type == MoveType.CompositeSinglePile)
             {
@@ -1497,38 +1541,9 @@ namespace Spider
             }
 
             // Lastly move from the holding piles, if we still can.
-            Analyze();
-            int freeCells = FreeCells.Count;
-            int maxExtraSuits = ExtraSuits(freeCells);
             while (moveStack.Count > 0)
             {
-                Move undo = moveStack.Pop();
-                int undoToIndex = UpPiles[undo.To].Count;
-                if (undo.FromIndex >= UpPiles[undo.From].Count ||
-                    undoToIndex != 0 && UpPiles[undo.From][undo.FromIndex].Face + 1 != UpPiles[undo.To][undoToIndex - 1].Face)
-                {
-                    // The pile has changed since we moved due to a discard.
-#if false
-                    Console.Clear();
-                    PrintGames();
-                    PrintMove(move);
-                    Console.ReadKey();
-#endif
-                    break;
-                }
-                int extraSuits = CountSuits(undo.From, undo.FromIndex) - 1;
-                if (extraSuits > maxExtraSuits)
-                {
-                    // The number of free cells has decreased due to the main move.
-#if false
-                    Console.Clear();
-                    PrintGames();
-                    PrintMove(move);
-                    Console.ReadKey();
-#endif
-                    break;
-                }
-                MakeMoveUsingFreeCells(undo.From, undo.FromIndex, undo.To);
+                IfPossibleMakeMoveUsingFreeCells(moveStack.Pop());
             }
         }
 
@@ -1711,19 +1726,7 @@ namespace Spider
                 }
                 else if ((move.Flags & MoveFlags.UndoHolding) == MoveFlags.UndoHolding)
                 {
-                    if (SimpleMoveIsValid(move))
-                    {
-                        try
-                        {
-                            MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
-                        }
-                        catch (InvalidMoveException)
-                        {
-                            // The move appeared to be valid but the pile
-                            // has changed due to a discard and the move
-                            // is no longer possible.
-                        }
-                    }
+                    IfPossibleMakeMoveUsingFreeCells(move);
                 }
                 else
                 {
@@ -1761,6 +1764,23 @@ namespace Spider
             if (moveStack.Count != 0)
             {
                 throw new Exception("missing reload move");
+            }
+        }
+
+        private void IfPossibleMakeMoveUsingFreeCells(Move move)
+        {
+            if (SimpleMoveIsValid(move))
+            {
+                try
+                {
+                    MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
+                }
+                catch (InvalidMoveException)
+                {
+                    // The move appeared to be valid but the pile
+                    // has changed due to a discard and the move
+                    // is no longer possible.
+                }
             }
         }
 

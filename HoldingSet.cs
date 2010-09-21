@@ -24,7 +24,7 @@ namespace Spider
         {
             for (int i = 0; i < Count; i++)
             {
-                if (Stack[i].Pile == pile)
+                if (Stack[i].To == pile)
                 {
                     return true;
                 }
@@ -40,7 +40,7 @@ namespace Spider
                 {
                     return -1;
                 }
-                return Stack[Count - 1].Pile;
+                return Stack[Count - 1].To;
             }
         }
 
@@ -52,7 +52,7 @@ namespace Spider
                 {
                     return Stack.StartingIndex;
                 }
-                return Stack[Count - 1].Index;
+                return Stack[Count - 1].FromIndex;
             }
         }
 
