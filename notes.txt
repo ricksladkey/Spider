@@ -4,11 +4,16 @@
 
 - prefer holding moves that match suit
 
+- finish converting test jig to mstest
+- rename test jig
+- add unit tests for composite single pile moves with interior runs to holding piles
+- add units tests for swap with reverse holding piles
 - retest complex
+- avoid spurious composite single pile moves due to uncovering
 - merge the multiple different places that free cell algorithms are implemented
 - move utility calculations like run length into supporting data structures
 - separate analyze into analyze free cells and analyze runs
-- forward swaps might find different holding piles that wouldn't conflict with the to pile
+- forward swaps might be able to find different holding piles that wouldn't conflict with the to pile
 - reverse swaps could use forward swap holding piles if we built an accurate card map
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves
@@ -26,9 +31,3 @@
 
 - alternate Nelder-Mead implementation:
   http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
-
-
-
-
-spider --games 1 --seed 39983 --simple --suits 4
-spider: seed: 39983, message: maximum moves exceeded
