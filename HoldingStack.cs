@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {Count}, Index = {Index}, Suits = {Suits}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class HoldingStack : SmallList<HoldingInfo>
+    public class HoldingStack : FastList<HoldingInfo>
     {
         public HoldingStack()
             : base(Game.NumberOfPiles)
@@ -22,7 +22,7 @@ namespace Spider
 
         public HoldingInfo Pop()
         {
-            HoldingInfo item = this[Count - 1];
+            HoldingInfo item = array[Count - 1];
             RemoveAt(Count - 1);
             return item;
         }
@@ -37,7 +37,7 @@ namespace Spider
                 {
                     return StartingIndex;
                 }
-                return this[Count - 1].Index;
+                return array[Count - 1].Index;
             }
         }
 
@@ -49,7 +49,7 @@ namespace Spider
                 {
                     return 0;
                 }
-                return this[Count - 1].Suits;
+                return array[Count - 1].Suits;
             }
         }
 

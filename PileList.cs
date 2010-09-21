@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class PileList : SmallList<int>
+    public class PileList : FastList<int>
     {
         public PileList()
             : base(Game.NumberOfPiles)

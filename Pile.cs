@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class Pile : SmallList<Card>
+    public class Pile : FastList<Card>
     {
         public Pile()
             : base(2 * 52)
@@ -33,9 +33,9 @@ namespace Spider
             for (int i = 0; i < Count - 1; i++)
             {
                 int swap = random.Next(Count - i);
-                Card tmp = this[i + swap];
-                this[i + swap] = this[i];
-                this[i] = tmp;
+                Card tmp = array[i + swap];
+                array[i + swap] = array[i];
+                array[i] = tmp;
             }
         }
     }

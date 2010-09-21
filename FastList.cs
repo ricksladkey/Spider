@@ -8,22 +8,27 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class SmallList<T> : IList<T>
+    public class FastList<T> : IList<T>
     {
-        private int capacity;
-        private int count;
-        private T[] array;
-        private IEqualityComparer<T> comparer;
+        protected int capacity;
+        protected int count;
+        protected T[] array;
+        protected IEqualityComparer<T> comparer;
 
-        public SmallList(int capacity)
+        public FastList(int capacity)
+            : this(capacity, 0)
+        {
+        }
+
+        public FastList(int capacity, int count)
         {
             this.capacity = capacity;
-            count = 0;
+            this.count = count;
             array = new T[capacity];
             comparer = EqualityComparer<T>.Default;
         }
 
-        public void Copy(SmallList<T> other)
+        public void Copy(FastList<T> other)
         {
             Clear();
             AddRange(other, 0, other.Count);
@@ -43,7 +48,7 @@ namespace Spider
             }
         }
 
-        public void AddRange(SmallList<T> other)
+        public void AddRange(FastList<T> other)
         {
             AddRange(other, 0, other.Count);
         }
@@ -53,7 +58,7 @@ namespace Spider
             AddRange(other, 0, other.Count);
         }
 
-        public void AddRange(SmallList<T> other, int index, int count)
+        public void AddRange(FastList<T> other, int index, int count)
         {
             if (capacity < this.count + count)
             {

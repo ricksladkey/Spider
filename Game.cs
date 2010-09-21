@@ -54,8 +54,8 @@ namespace Spider
         public Pile Deck { get; private set; }
         public Pile Shuffled { get; private set; }
         public Pile StockPile { get; private set; }
-        public Pile[] DownPiles { get; private set; }
-        public Pile[] UpPiles { get; private set; }
+        public PileMap DownPiles { get; private set; }
+        public PileMap UpPiles { get; private set; }
         public List<Pile> DiscardPiles { get; private set; }
 
         private Pile ScratchPile { get; set; }
@@ -114,13 +114,8 @@ namespace Spider
             Moves = new MoveList();
             Shuffled = new Pile();
             StockPile = new Pile();
-            DownPiles = new Pile[NumberOfPiles];
-            UpPiles = new Pile[NumberOfPiles];
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                DownPiles[i] = new Pile();
-                UpPiles[i] = new Pile();
-            }
+            DownPiles = new PileMap();
+            UpPiles = new PileMap();
             DiscardPiles = new List<Pile>();
 
             ScratchPile = new Pile();
@@ -551,6 +546,7 @@ namespace Spider
                 }
 
                 int toSuits = CountSuits(to, toIndex);
+                bool foundSwap = false;
                 foreach (HoldingSet holdingSet in HoldingStack.Sets)
                 {
                     if (holdingSet.Contains(to))
@@ -568,6 +564,7 @@ namespace Spider
                     Debug.Assert(toIndex == 0 || toPile[toIndex - 1].Face - 1 == fromCard.Face);
                     Debug.Assert(fromIndex == 0 || fromCardParent.Face - 1 == toPile[toIndex].Face);
                     Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet)));
+                    foundSwap = true;
                     break;
                 }
             }
@@ -610,14 +607,14 @@ namespace Spider
             OffloadInfo offload = OffloadInfo.Empty;
             MoveList moves = SupplementaryMoves;
             moves.Clear();
-            PileInfo[] map = new PileInfo[NumberOfPiles];
+            CardMap map = new CardMap();
 
             // Initialize the pile map.
             for (int pile = 0; pile < NumberOfPiles; pile++)
             {
                 if (pile != from)
                 {
-                    map[pile].Update(UpPiles[pile]);
+                    map.Update(pile, UpPiles[pile]);
                 }
             }
 
@@ -638,14 +635,14 @@ namespace Spider
                 int to = -1;
                 for (int i = 0; i < NumberOfPiles; i++)
                 {
-                    if (map[i].Last.Face - 1 == rootCard.Face)
+                    if (map[i].Face - 1 == rootCard.Face)
                     {
                         if (!offload.IsEmpty && to == offload.Pile)
                         {
                             to = -1;
                             suitsMatch = false;
                         }
-                        if (!suitsMatch && map[i].Last.Suit == rootCard.Suit)
+                        if (!suitsMatch && map[i].Suit == rootCard.Suit)
                         {
                             to = i;
                             suitsMatch = true;
@@ -658,6 +655,7 @@ namespace Spider
                 }
 
                 MoveType type = MoveType.Basic;
+                bool isOffload = false;
                 if (to != -1)
                 {
                     // Check for inverting.
@@ -716,7 +714,6 @@ namespace Spider
                         return;
                     }
                     to = FreeCells[0];
-                    Debug.Assert(map[to].Count == 0);
                     if (suits > maxExtraSuits)
                     {
                         // Try using holding piles.
@@ -731,12 +728,13 @@ namespace Spider
                     freeCellsLeft -= freeCellsUsed;
                     offload = new OffloadInfo(n, to, suits, freeCellsUsed);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
+                    isOffload = true;
                     offloads++;
                 }
 
                 // Extract the holding set.
                 HoldingSet holdingSet = holdingStack.Set;
-                bool undoHolding = map[to].Count != 0;
+                bool undoHolding = !isOffload;
                 int remainingLength = runLength - holdingSet.Length;
 
                 if (undoHolding)
@@ -760,26 +758,23 @@ namespace Spider
                     Debug.Assert(toOffset == runLength);
 
                     // Update the map.
-                    map[to].Last = fromPile[rootIndex + runLength - 1];
-                    map[to].Count += runLength;
+                    map[to] = fromPile[rootIndex + runLength - 1];
                 }
                 else
                 {
                     // Add moves to the holding piles.
                     foreach (HoldingInfo holding in holdingSet.Forwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, holding.Index, holding.Pile, map[holding.Pile].Count));
+                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.Pile));
 
-                        map[holding.Pile].Last = fromPile[holding.Index + holding.Length - 1];
-                        map[holding.Pile].Count += holding.Length;
+                        map[holding.Pile] = fromPile[holding.Index + holding.Length - 1];
                     }
 
                     // Add the move.
-                    moves.Add(new Move(type, from, rootIndex, to, map[to].Count));
+                    moves.Add(new Move(type, from, rootIndex, to));
 
                     // Update the map.
-                    map[to].Last = fromPile[rootIndex + remainingLength - 1];
-                    map[to].Count += remainingLength;
+                    map[to] = fromPile[rootIndex + remainingLength - 1];
                 }
 
                 if (rootIndex == 0 && DownPiles[from].Count == 0)
@@ -808,7 +803,7 @@ namespace Spider
                     matchesFrom = true;
                 }
 
-                if (offloadRootCard.Face + 1 == map[to].Last.Face)
+                if (offloadRootCard.Face + 1 == map[to].Face)
                 {
                     // Offoad matches to pile.
                     matchesTo = true;
@@ -848,9 +843,8 @@ namespace Spider
                     moves.Add(new Move(offloadType, offload.Pile, 0, to));
 
                     // Update the map.
-                    map[to].Last = map[offload.Pile].Last;
-                    map[to].Count += map[offload.Pile].Count;
-                    map[offload.Pile] = PileInfo.Empty;
+                    map[to] = map[offload.Pile];
+                    map[offload.Pile] = Card.Empty;
 
                     // Update the state.
                     freeCellsLeft += offload.FreeCells;
@@ -897,7 +891,7 @@ namespace Spider
             Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, from, 0, -1, AddSupplementary()));
         }
 
-        private int FindHolding(PileInfo[] map, HoldingStack holdingStack, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
+        private int FindHolding(IGetCard map, HoldingStack holdingStack, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
         {
             holdingStack.StartingIndex = fromEnd;
             Pile fromPile = UpPiles[from];
@@ -922,7 +916,7 @@ namespace Spider
                     {
                         continue;
                     }
-                    if (fromCard.Face + 1 == map[pile].Last.Face)
+                    if (fromCard.Face + 1 == map.GetCard(pile).Face)
                     {
                         int holdingSuits = extraSuits;
                         if (fromCard.Suit != fromPile[fromIndex - 1].Suit)
@@ -2105,10 +2099,10 @@ namespace Spider
             return t + s;
         }
 
-        private static string ToAsciiString(Pile[] rows)
+        private static string ToAsciiString(IList<Pile> rows)
         {
             string s = "";
-            int n = rows.Length;
+            int n = rows.Count;
             while (n > 0 && rows[n - 1].Count == 0)
             {
                 n--;
@@ -2293,7 +2287,7 @@ namespace Spider
             return s;
         }
 
-        private static string ToPrettyString(Pile[] rows)
+        private static string ToPrettyString(IList<Pile> rows)
         {
             string s = "";
             int max = 0;

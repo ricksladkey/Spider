@@ -5,7 +5,7 @@
 - prefer holding moves that match suit
 
 - retest complex 
-- swaps could use holding piles from to the to pile
+- swaps could use holding piles from the to pile
 - also consider moving the offload back onto the from pile
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves

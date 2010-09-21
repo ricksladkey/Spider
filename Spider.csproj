@@ -77,6 +77,7 @@
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
+    <Compile Include="IGetCard.cs" />
     <Compile Include="InvalidMoveException.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
@@ -87,8 +88,9 @@
     <Compile Include="NumUtilsTests.cs" />
     <Compile Include="OffloadInfo.cs" />
     <Compile Include="Pile.cs" />
-    <Compile Include="PileInfo.cs" />
     <Compile Include="PileList.cs" />
+    <Compile Include="CardMap.cs" />
+    <Compile Include="PileMap.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -96,7 +98,7 @@
     <Compile Include="RegressionResult.cs" />
     <Compile Include="ScoreInfo.cs" />
     <Compile Include="SimplexConstant.cs" />
-    <Compile Include="SmallList.cs" />
+    <Compile Include="FastList.cs" />
     <Compile Include="Suit.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Vector.cs" />

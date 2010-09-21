@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class MoveList : SmallList<Move>
+    public class MoveList : FastList<Move>
     {
         public MoveList()
             : base(Game.MaximumMoves * 2)
