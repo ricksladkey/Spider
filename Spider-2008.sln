@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider", "Spider.csproj", "{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D829E81B-EF8B-4EB1-AE2C-9D43BECBFA7E}"
+	ProjectSection(SolutionItems) = preProject
+		notes.txt = notes.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
