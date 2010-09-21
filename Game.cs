@@ -170,7 +170,7 @@ namespace Spider
                         throw new Exception("maximum moves exceeded");
                     }
                     CopyGame();
-                    if (!Move())
+                    if (!MakeMove())
                     {
                         if (StockPile.Count > 0)
                         {
@@ -216,11 +216,8 @@ namespace Spider
             Candidates.Clear();
             Shuffled.Clear();
             StockPile.Clear();
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                DownPiles[i].Clear();
-                UpPiles[i].Clear();
-            }
+            DownPiles.Clear();
+            UpPiles.Clear();
             DiscardPiles.Clear();
 
             if (Suits == 1)
@@ -288,12 +285,8 @@ namespace Spider
             }
         }
 
-        public bool Move()
+        public bool MakeMove()
         {
-            Candidates.Clear();
-            SupplementaryList.Clear();
-            HoldingList.Clear();
-
             Analyze();
 
             if (FreeCells.Count == NumberOfPiles)
@@ -301,6 +294,16 @@ namespace Spider
                 Won = true;
                 return true;
             }
+
+            FindMoves();
+            return ChooseMove();
+        }
+
+        public void FindMoves()
+        {
+            Candidates.Clear();
+            SupplementaryList.Clear();
+            HoldingList.Clear();
 
             int freeCells = FreeCells.Count;
             int maxExtraSuits = ExtraSuits(freeCells);
@@ -436,8 +439,6 @@ namespace Spider
                 // Check for composite single pile moves.
                 CheckCompositeSinglePile(from);
             }
-
-            return ChooseMove();
         }
 
         private void PrepareToDeal()
@@ -657,11 +658,52 @@ namespace Spider
                 return;
             }
 
+            // Check first with no uncovering moves.
+            CheckOneCompositeSinglePile(from, roots, Move.Empty);
+
+            // Check again with any uncovering moves.
+            int maxExtraSuits = ExtraSuits(freeCells);
+            for (int uncoveringFrom = 0; uncoveringFrom < NumberOfPiles; uncoveringFrom++)
+            {
+                if (uncoveringFrom == from)
+                {
+                    continue;
+                }
+                Pile uncoveringFromPile = UpPiles[uncoveringFrom];
+                int uncoveringFromIndex = uncoveringFromPile.Count - RunLengthsAnySuit[uncoveringFrom];
+                if (uncoveringFromIndex == 0)
+                {
+                    continue;
+                }
+                int uncoveringFromSuits = CountSuits(uncoveringFrom, uncoveringFromIndex);
+                if (uncoveringFromSuits - 1 > maxExtraSuits)
+                {
+                    continue;
+                }
+                Card uncoveringFromCard = uncoveringFromPile[uncoveringFromIndex];
+                PileList faceList = FaceLists[(int)uncoveringFromCard.Face + 1];
+                for (int i = 0; i < faceList.Count; i++)
+                {
+                    int uncoveringTo = faceList[i];
+                    if (uncoveringTo == from)
+                    {
+                        continue;
+                    }
+                    Move move = new Move(uncoveringFrom, uncoveringFromIndex, uncoveringTo);
+                    CheckOneCompositeSinglePile(from, roots, move);
+                    break;
+                }
+            }
+        }
+
+        private void CheckOneCompositeSinglePile(int from, PileList roots, Move move)
+        {
             // Prepare data structures.
-            int freeCellsLeft = freeCells;
+            Pile fromPile = UpPiles[from];
+            int freeCellsLeft = FreeCells.Count;
+            int runs = roots.Count - 1;
             OffloadInfo offload = OffloadInfo.Empty;
-            MoveList moves = SupplementaryMoves;
-            moves.Clear();
+            SupplementaryMoves.Clear();
             CardMap map = new CardMap();
 
             // Initialize the pile map.
@@ -671,6 +713,13 @@ namespace Spider
                 {
                     map.Update(pile, UpPiles[pile]);
                 }
+            }
+
+            if (!move.IsEmpty)
+            {
+                map[move.To] = map[move.From];
+                map[move.From] = UpPiles[move.From][move.FromIndex - 1];
+                SupplementaryMoves.Add(move);
             }
 
             // Check all the roots.
@@ -797,17 +846,17 @@ namespace Spider
                     // Add moves to the holding piles.
                     foreach (HoldingInfo holding in holdingSet.Forwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
+                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
                     }
 
                     // Add the move.
-                    moves.Add(new Move(type, from, rootIndex, to));
+                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
 
                     // Undo moves to the holding piles.
                     int toOffset = remainingLength;
                     foreach (HoldingInfo holding in holdingSet.Backwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, to));
+                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, to));
                         toOffset += holding.Length;
                     }
                     Debug.Assert(toOffset == runLength);
@@ -820,13 +869,13 @@ namespace Spider
                     // Add moves to the holding piles.
                     foreach (HoldingInfo holding in holdingSet.Forwards)
                     {
-                        moves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
+                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
 
                         map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
                     }
 
                     // Add the move.
-                    moves.Add(new Move(type, from, rootIndex, to));
+                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
 
                     // Update the map.
                     map[to] = fromPile[rootIndex + remainingLength - 1];
@@ -886,16 +935,16 @@ namespace Spider
                 if (matchesFrom)
                 {
                     // Offload matches from pile.
-                    moves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
+                    SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
                     AddCompositeSinglePileMove(MoveFlags.Empty, from);
-                    moves.RemoveAt(moves.Count - 1);
+                    SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
                 }
 
                 if (matchesTo)
                 {
                     // Found a home for the offload.
                     MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                    moves.Add(new Move(offloadType, offload.Pile, 0, to));
+                    SupplementaryMoves.Add(new Move(offloadType, offload.Pile, 0, to));
 
                     // Update the map.
                     map[to] = map[offload.Pile];
@@ -918,7 +967,7 @@ namespace Spider
                 else
                 {
                     // Reload the offload onto the now empty pile.
-                    moves.Add(new Move(MoveType.Reload, offload.Pile, 0, from, 0));
+                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.Pile, 0, from, 0));
                 }
             }
 
@@ -1778,21 +1827,16 @@ namespace Spider
             }
         }
 
-        private void IfPossibleMakeMoveUsingFreeCells(Move move)
+        private bool IfPossibleMakeMoveUsingFreeCells(Move move)
         {
             if (SimpleMoveIsValid(move))
             {
-                try
+                if (SafeMakeMoveUsingFreeCells(move.From, move.FromIndex, move.To) != null)
                 {
-                    MakeMoveUsingFreeCells(move.From, move.FromIndex, move.To);
-                }
-                catch (InvalidMoveException)
-                {
-                    // The move appeared to be valid but the pile
-                    // has changed due to a discard and the move
-                    // is no longer possible.
+                    return true;
                 }
             }
+            return false;
         }
 
         private bool SimpleMoveIsValid(Move move)
@@ -1834,6 +1878,15 @@ namespace Spider
 
         private void MakeMoveUsingFreeCells(int from, int lastFromIndex, int to)
         {
+            string error = SafeMakeMoveUsingFreeCells(from, lastFromIndex, to);
+            if (error != null)
+            {
+                throw new InvalidMoveException(error);
+            }
+        }
+
+        private string SafeMakeMoveUsingFreeCells(int from, int lastFromIndex, int to)
+        {
             if (lastFromIndex < 0)
             {
                 lastFromIndex += UpPiles[from].Count;
@@ -1847,12 +1900,12 @@ namespace Spider
             int extraSuits = CountSuits(from, lastFromIndex) - 1;
             if (extraSuits < 0)
             {
-                throw new InvalidMoveException("not a single run");
+                return "not a single run";
             }
             if (extraSuits == 0)
             {
                 MakeSimpleMove(from, lastFromIndex, to);
-                return;
+                return null;
             }
             if (toIndex == 0)
             {
@@ -1862,7 +1915,7 @@ namespace Spider
             int maxExtraSuits = ExtraSuits(freeCells);
             if (extraSuits > maxExtraSuits)
             {
-                throw new InvalidMoveException("insufficient free cells");
+                return "insufficient free cells";
             }
             int suits = 0;
             int fromIndex = UpPiles[from].Count;
@@ -1898,6 +1951,7 @@ namespace Spider
                 Move move = moveStack.Pop();
                 MakeSimpleMove(move.From, move.FromIndex, move.To);
             }
+            return null;
         }
 
         private void MakeSimpleMove(int from, int fromIndex, int to)

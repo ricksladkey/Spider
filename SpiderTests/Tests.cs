@@ -6,9 +6,7 @@ using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Spider;
-
-namespace UnitTests
+namespace Spider.Tests
 {
     [TestClass]
     public class Tests
@@ -42,7 +40,7 @@ namespace UnitTests
             // No cards: we win.
             string data = "@2||||@";
             game = new Game(data);
-            Assert.IsTrue(game.Move());
+            Assert.IsTrue(game.MakeMove());
         }
 
         [TestMethod]
@@ -51,7 +49,7 @@ namespace UnitTests
             // No useful move: we lose.
             string data = "@2|||AS|@";
             game = new Game(data);
-            Assert.IsFalse(game.Move());
+            Assert.IsFalse(game.MakeMove());
         }
 
         [TestMethod]
@@ -335,7 +333,7 @@ namespace UnitTests
             // Check that the only available move is made.
             game = new Game(initial);
             game.Diagnostics = true;
-            Assert.IsTrue(game.Move());
+            Assert.IsTrue(game.MakeMove());
             string actual = game.ToAsciiString();
             CheckResults(initial, expected, actual);
         }
@@ -346,7 +344,7 @@ namespace UnitTests
             // or that a last resort move was made.
             game = new Game(initial);
             int before = game.EmptyFreeCells;
-            bool moved = game.Move();
+            bool moved = game.MakeMove();
             if (moved)
             {
                 int after = game.EmptyFreeCells;

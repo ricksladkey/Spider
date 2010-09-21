@@ -8,6 +8,8 @@ namespace Spider
 {
     public struct Move
     {
+        public static Move Empty = new Move(-1, -1);
+
         public MoveType Type { get; set; }
         public MoveFlags Flags { get; set; }
         public int From { get; set; }
@@ -90,6 +92,14 @@ namespace Spider
             HoldingNext = holdingNext;
             Next = next;
             Score = 0;
+        }
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return From == -1;
+            }
         }
 
         public override string ToString()

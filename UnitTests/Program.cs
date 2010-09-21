@@ -7,6 +7,7 @@ using System.Text;
 using NUnit.Framework;
 
 using Spider;
+using Spider.Tests;
 
 namespace UnitTests
 {

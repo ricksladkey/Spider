@@ -19,6 +19,14 @@ namespace Spider
             }
         }
 
+        public void Clear()
+        {
+            for (int i = 0; i < Game.NumberOfPiles; i++)
+            {
+                array[i].Clear();
+            }
+        }
+
         #region IGetCard Members
 
         public Card GetCard(int index)

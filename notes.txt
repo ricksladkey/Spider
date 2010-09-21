@@ -4,9 +4,12 @@
 
 - prefer holding moves that match suit
 
-- retest complex 
-- swaps could use holding piles from the to pile
-- also consider moving the offload back onto the from pile
+- retest complex
+- merge the multiple different places that free cell algorithms are implemented
+- move utility calculations like run length into supporting data structures
+- separate analyze into analyze free cells and analyze runs
+- forward swaps might find different holding piles that wouldn't conflict with the to pile
+- reverse swaps could use forward swap holding piles if we built an accurate card map
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
@@ -14,7 +17,7 @@
 
 - inverted offload moves don't need to move the entire lower run to a free cell if the suits match
 
-- prefer long exposed runs even if it means splitting a run
+- prefer long exposed runs even if it means splitting a run, just before a deal
 
 - figure out why simple consistently gets better results than complex
 - theory: prefer to have a single run on a free cell
