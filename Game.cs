@@ -640,13 +640,17 @@ namespace Spider
                 {
                     if (map[i].Last.Face - 1 == rootCard.Face)
                     {
-                        if (map[i].Last.Suit == rootCard.Suit)
+                        if (!offload.IsEmpty && to == offload.Pile)
+                        {
+                            to = -1;
+                            suitsMatch = false;
+                        }
+                        if (!suitsMatch && map[i].Last.Suit == rootCard.Suit)
                         {
                             to = i;
                             suitsMatch = true;
-                            break;
                         }
-                        if (to == -1)
+                        else if (to == -1)
                         {
                             to = i;
                         }
@@ -659,7 +663,7 @@ namespace Spider
                     // Check for inverting.
                     if (!offload.IsEmpty && to == offload.Pile)
                     {
-                        if (!offload.CanInvert)
+                        if (!offload.SinglePile)
                         {
                             // Not enough free cells to invert.
                             return;
@@ -726,7 +730,7 @@ namespace Spider
                     int freeCellsUsed = FreeCellsUsed(freeCellsLeft, suits);
                     freeCellsLeft -= freeCellsUsed;
                     offload = new OffloadInfo(n, to, suits, freeCellsUsed);
-                    type = offload.CanInvert ? MoveType.Basic : MoveType.Unload;
+                    type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     offloads++;
                 }
 
@@ -793,43 +797,69 @@ namespace Spider
 
                 int offloadRootIndex = roots[offload.Root];
                 Card offloadRootCard = fromPile[offloadRootIndex];
-
-                if (offload.CanInvert && offload.Suits - 1 > ExtraSuits(freeCellsLeft))
-                {
-                    // Can't move the offload due to inverting.
-                    continue;
-                }
+                int offloadSuits = offload.Suits;
+                int offloadMaxExtraSuits = ExtraSuits(freeCellsLeft);
+                bool matchesFrom = false;
+                bool matchesTo = false;
 
                 if (rootIndex > 0 && offloadRootCard.Face + 1 == fromPile[rootIndex - 1].Face)
                 {
                     // Offload matches from pile.
-                    moves.Add(new Move(offload.CanInvert ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
+                    matchesFrom = true;
+                }
+
+                if (offloadRootCard.Face + 1 == map[to].Last.Face)
+                {
+                    // Offoad matches to pile.
+                    matchesTo = true;
+                }
+
+                if (!matchesFrom && !matchesTo)
+                {
+                    continue;
+                }
+
+                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+                {
+#if false
+                    offloadSuits -= FindHolding(map, holdingStack, from, offloadRootIndex, offloadRootIndex + runLength, to, maxExtraSuits);
+                    if (offloadSuits - 1 > offloadMaxExtraSuits)
+                    {
+                        // Can't move the offload due to additional suits.
+                        continue;
+                    }
+#else
+                    continue;
+#endif
+                }
+
+                if (matchesFrom)
+                {
+                    // Offload matches from pile.
+                    moves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
                     AddCompositeSinglePileMove(MoveFlags.Empty, from);
                     moves.RemoveAt(moves.Count - 1);
                 }
 
-                if (offloadRootCard.Face + 1 != map[to].Last.Face)
+                if (matchesTo)
                 {
-                    // Cards don't match.
-                    continue;
+                    // Found a home for the offload.
+                    MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
+                    moves.Add(new Move(offloadType, offload.Pile, 0, to));
+
+                    // Update the map.
+                    map[to].Last = map[offload.Pile].Last;
+                    map[to].Count += map[offload.Pile].Count;
+                    map[offload.Pile] = PileInfo.Empty;
+
+                    // Update the state.
+                    freeCellsLeft += offload.FreeCells;
+                    offload = OffloadInfo.Empty;
                 }
-
-                // Found a home for the offload.
-                MoveType offloadType = offload.CanInvert ? MoveType.Basic : MoveType.Reload;
-                moves.Add(new Move(offloadType, offload.Pile, 0, to));
-
-                // Update the map.
-                map[to].Last = map[offload.Pile].Last;
-                map[to].Count += map[offload.Pile].Count;
-                map[offload.Pile] = PileInfo.Empty;
-
-                // Update the state.
-                freeCellsLeft += offload.FreeCells;
-                offload = OffloadInfo.Empty;
             }
 
             // Check for unload that needs to be reloaded.
-            if (!offload.IsEmpty && !offload.CanInvert)
+            if (!offload.IsEmpty && !offload.SinglePile)
             {
                 if (DownPiles[from].Count != 0)
                 {
@@ -1998,7 +2028,12 @@ namespace Spider
 
         private void PrintMoves()
         {
-            foreach (Move move in Moves)
+            PrintMoves(Moves);
+        }
+
+        private void PrintMoves(MoveList moves)
+        {
+            foreach (Move move in moves)
             {
                 PrintMove(move);
             }

@@ -16,14 +16,14 @@ namespace Spider
             Pile = pile;
             Suits = suits;
             FreeCells = freeCells;
-            CanInvert = freeCells == 1;
+            SinglePile = freeCells == 1;
         }
 
         public int Root { get; set; }
         public int Pile { get; set; }
         public int Suits { get; set; }
         public int FreeCells { get; set; }
-        public bool CanInvert { get; set; }
+        public bool SinglePile { get; set; }
 
         public bool IsEmpty
         {
