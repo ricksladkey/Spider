@@ -9,13 +9,13 @@ namespace Spider
     public class Game
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 11.19118068, 33.21235313, -0.1201269187, -3.227980575, -0.1878116239, 7.070271551,
-            /* 6 */ 2.430823772, 0.004813360669, -0.2034103221, -0.6384674211, 3.76449,
+            /* 0 */ 11.19118068, 33.21235313, -0.1201269187, -3.227980575, -0.1878116239, 7.070271551, 1,
+            /* 7 */ 2.430823772, 0.004813360669, -0.2034103221, -0.6384674211, 3.76449,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 6.625729028, 76.19008829, -0.1748222044, -6.24742809, -0.7892200528, 3.848568365,
-            /* 6 */ 2.634733621, 0.000864640878, -0.083173266, -0.3908308805, 3.76449,
+            /* 0 */ 6.625729028, 76.19008829, -0.1748222044, -6.24742809, -0.7892200528, 3.848568365, 1,
+            /* 7 */ 2.634733621, 0.000864640878, -0.083173266, -0.3908308805, 3.76449,
         };
 
         public static double[] OneSuitCoefficients = TwoSuitCoefficients;
@@ -24,7 +24,7 @@ namespace Spider
         public const int MaximumMoves = 1500;
 
         public const int Group0 = 0;
-        public const int Group1 = 6;
+        public const int Group1 = 7;
 
         public static char Fence = '@';
         public static char PrimarySeparator = '|';
@@ -1145,6 +1145,7 @@ namespace Spider
             {
                 return RejectScore;
             }
+            score.Uses = CountUses(move);
             score.OneRunDelta = !isSwap ? GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
             int faceFrom = (int)fromChild.Face;
             int faceTo = isSwap ? (int)toChild.Face : 0;
@@ -1272,7 +1273,7 @@ namespace Spider
 
         private int CountUses(Move move)
         {
-            if (move.FromIndex == 0)
+            if (move.FromIndex == 0 || move.ToIndex != UpPiles[move.To].Count)
             {
                 // No exposed card, no uses.
                 return 0;

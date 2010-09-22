@@ -39,7 +39,8 @@ namespace Spider
                     Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 3] * (IsCompositeSinglePile ? 1 : 0) +
                     Coefficients[Coefficient0 + 4] * (NoFreeCells ? 1 : 0) * DownCount +
-                    Coefficients[Coefficient0 + 5] * OneRunDelta;
+                    Coefficients[Coefficient0 + 5] * OneRunDelta +
+                    Coefficients[Coefficient0 + 6] * Uses;
 
                 return score;
             }

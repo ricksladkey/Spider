@@ -5,6 +5,7 @@
 - prefer holding moves that match suit
 
 - finish converting test jig to mstest
+- ordinary moves and swaps could also count uses for the exposed card, if not consecutive
 - rename test jig
 - add unit tests for composite single pile moves with interior runs to holding piles
 - add units tests for swap with reverse holding piles
