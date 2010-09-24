@@ -14,6 +14,7 @@ namespace Spider
         public double[] Coefficients { get; set; }
         public int Coefficient0 { get; set; }
 
+        public int Order { get; set; }
         public int FaceValue { get; set; }
         public int NetRunLength { get; set; }
         public bool TurnsOverCard { get; set; }
@@ -40,7 +41,8 @@ namespace Spider
                     Coefficients[Coefficient0 + 3] * (IsCompositeSinglePile ? 1 : 0) +
                     Coefficients[Coefficient0 + 4] * (NoFreeCells ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 5] * OneRunDelta +
-                    Coefficients[Coefficient0 + 6] * Uses;
+                    Coefficients[Coefficient0 + 6] * Uses +
+                    Coefficients[Coefficient0 + 7] * Order;
 
                 return score;
             }
@@ -57,7 +59,8 @@ namespace Spider
                     Coefficients[Coefficient0 + 1] * DownCount +
                     Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 3] * (IsKing ? 1 : 0) +
-                    Coefficients[Coefficient0 + 4] * (IsCompositeSinglePile ? 1 : 0);
+                    Coefficients[Coefficient0 + 4] * (IsCompositeSinglePile ? 1 : 0) +
+                    Coefficients[Coefficient0 + 5] * Order;
 
                 return score;
             }

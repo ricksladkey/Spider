@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-using NUnit.Framework;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Spider;
 using Spider.Tests;
@@ -48,8 +48,8 @@ namespace UnitTests
                 {
                     continue;
                 }
-                object[] attributeArray = methodInfo.GetCustomAttributes(typeof(TestAttribute), false);
-                foreach (TestAttribute attribute in attributeArray)
+                object[] attributeArray = methodInfo.GetCustomAttributes(typeof(TestMethodAttribute), false);
+                foreach (TestMethodAttribute attribute in attributeArray)
                 {
                     list.Add(methodInfo);
                     break;

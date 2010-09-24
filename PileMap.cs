@@ -19,7 +19,7 @@ namespace Spider
             }
         }
 
-        public void Clear()
+        public void ClearAll()
         {
             for (int i = 0; i < Game.NumberOfPiles; i++)
             {

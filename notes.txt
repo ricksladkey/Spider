@@ -4,6 +4,7 @@
 
 - prefer holding moves that match suit
 
+- could use holding piles for uncovering moves
 - finish converting test jig to mstest
 - ordinary moves and swaps could also count uses for the exposed card, if not consecutive
 - rename test jig

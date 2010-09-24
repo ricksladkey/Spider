@@ -9,22 +9,25 @@ namespace Spider
     public class Game
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 11.19118068, 33.21235313, -0.1201269187, -3.227980575, -0.1878116239, 7.070271551, 10,
-            /* 7 */ 2.430823772, 0.004813360669, -0.2034103221, -0.6384674211, 3.76449,
+            /* 0 */ 8.42581707, 42.35984891, -0.1201269187, -4.841970863, -0.1252077493, 4.908558385, 8.502830004, 1,
+            /* 8 */ 2.241481832, 0.003208907113, -0.1594844085, -0.9196463991, 5.422359166, 1,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 8.800301511, 50.79339219, -0.1165481363, -6.24742809, -0.75786, 2.565712243, 11.29346306,
-            /* 7 */ 1.756489081, 0.000576427252, -0.0766947266, -0.3064319999, 3.76449,
+            /* 0 */ 8.800301511, 50.79339219, -0.1165481363, -6.24742809, -0.75786, 2.565712243, 11.29346306, 1,
+            /* 8 */ 1.756489081, 0.000576427252, -0.0766947266, -0.3064319999, 3.76449, 1,
         };
 
-        public static double[] OneSuitCoefficients = TwoSuitCoefficients;
+        public static double[] OneSuitCoefficients = new double[] {
+            /* 0 */ 4.241634919, 93.31341988, -0.08091391227, -3.265541832, -0.5942021654, 2.565712243, 17.64117551, 1,
+            /* 8 */ 1.756489081, 0.0002561898898, -0.04347481483, -0.1737026135, 3.471266012, 1,
+        };
 
         public const int NumberOfPiles = 10;
         public const int MaximumMoves = 1500;
 
         public const int Group0 = 0;
-        public const int Group1 = 7;
+        public const int Group1 = 8;
 
         public static char Fence = '@';
         public static char PrimarySeparator = '|';
@@ -216,8 +219,8 @@ namespace Spider
             Candidates.Clear();
             Shuffled.Clear();
             StockPile.Clear();
-            DownPiles.Clear();
-            UpPiles.Clear();
+            DownPiles.ClearAll();
+            UpPiles.ClearAll();
             DiscardPiles.Clear();
 
             if (Suits == 1)
@@ -659,7 +662,7 @@ namespace Spider
             }
 
             // Check first with no uncovering moves.
-            CheckOneCompositeSinglePile(from, roots, Move.Empty);
+            CheckOneCompositeSinglePile(from, roots, Move.Empty, 0);
 
             // Check again with any uncovering moves.
             int maxExtraSuits = ExtraSuits(freeCells);
@@ -689,14 +692,17 @@ namespace Spider
                     {
                         continue;
                     }
+                    Pile uncoveringToPile = UpPiles[uncoveringTo];
+                    Card uncoveringToCard = uncoveringToPile[uncoveringToPile.Count - 1];
                     Move move = new Move(uncoveringFrom, uncoveringFromIndex, uncoveringTo);
-                    CheckOneCompositeSinglePile(from, roots, move);
+                    int order = GetOrder(uncoveringToCard, uncoveringFromCard);
+                    CheckOneCompositeSinglePile(from, roots, move, order);
                     break;
                 }
             }
         }
 
-        private void CheckOneCompositeSinglePile(int from, PileList roots, Move move)
+        private void CheckOneCompositeSinglePile(int from, PileList roots, Move move, int order)
         {
             // Prepare data structures.
             Pile fromPile = UpPiles[from];
@@ -786,6 +792,9 @@ namespace Spider
                             return;
                         }
                     }
+
+                    // Recording the order improvement.
+                    order += GetOrder(true, suitsMatch);
                 }
                 else
                 {
@@ -800,7 +809,7 @@ namespace Spider
                     {
                         if (runs - 1 >= 2)
                         {
-                            AddCompositeSinglePileMove(MoveFlags.Empty, from);
+                            AddCompositeSinglePileMove(MoveFlags.Empty, from, order);
                         }
                         return;
                     }
@@ -808,7 +817,7 @@ namespace Spider
                     // Check for partial offload.
                     if (offloads > 0)
                     {
-                        AddCompositeSinglePileMove(MoveFlags.Empty, from);
+                        AddCompositeSinglePileMove(MoveFlags.Empty, from, order);
                     }
 
                     // Try to offload this run.
@@ -900,17 +909,20 @@ namespace Spider
                 int offloadMaxExtraSuits = ExtraSuits(freeCellsLeft);
                 bool matchesFrom = false;
                 bool matchesTo = false;
+                Card targetCard = Card.Empty;
 
                 if (rootIndex > 0 && offloadRootCard.Face + 1 == fromPile[rootIndex - 1].Face)
                 {
                     // Offload matches from pile.
                     matchesFrom = true;
+                    targetCard = fromPile[rootIndex - 1];
                 }
 
                 if (offloadRootCard.Face + 1 == map[to].Face)
                 {
                     // Offoad matches to pile.
                     matchesTo = true;
+                    targetCard = map[to];
                 }
 
                 if (!matchesFrom && !matchesTo)
@@ -936,12 +948,15 @@ namespace Spider
                 {
                     // Offload matches from pile.
                     SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
-                    AddCompositeSinglePileMove(MoveFlags.Empty, from);
+                    AddCompositeSinglePileMove(MoveFlags.Empty, from, order + GetOrder(targetCard, offloadRootCard));
                     SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
                 }
 
                 if (matchesTo)
                 {
+                    // Recording the order improvement.
+                    order += GetOrder(targetCard, offloadRootCard);
+
                     // Found a home for the offload.
                     MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
                     SupplementaryMoves.Add(new Move(offloadType, offload.Pile, 0, to));
@@ -986,13 +1001,13 @@ namespace Spider
             {
                 flags |= MoveFlags.UsesFreeCell;
             }
-            AddCompositeSinglePileMove(flags, from);
+            AddCompositeSinglePileMove(flags, from, order);
         }
 
-        private void AddCompositeSinglePileMove(MoveFlags flags, int from)
+        private void AddCompositeSinglePileMove(MoveFlags flags, int from, int order)
         {
-            // Add the scoring move.
-            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, from, 0, -1, AddSupplementary()));
+            // Add the scoring move and the accumulated supplementary moves.
+            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, order, 0, 0, -1, AddSupplementary()));
         }
 
         private int FindHolding(IGetCard map, HoldingStack holdingStack, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
@@ -1140,8 +1155,8 @@ namespace Spider
             int newOrderFrom = GetOrder(toParent, fromChild);
             int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
             int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
-            int order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
-            if (order < 0)
+            score.Order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
+            if (score.Order < 0)
             {
                 return RejectScore;
             }
@@ -1158,12 +1173,12 @@ namespace Spider
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.CreatesFreeCell = wholePile && score.DownCount == 0;
             score.NoFreeCells = FreeCells.Count == 0;
-            if (order == 0 && score.NetRunLength < 0)
+            if (score.Order == 0 && score.NetRunLength < 0)
             {
                 return RejectScore;
             }
             int delta = 0;
-            if (order == 0 && score.NetRunLength == 0)
+            if (score.Order == 0 && score.NetRunLength == 0)
             {
                 if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
                 {
@@ -1184,6 +1199,7 @@ namespace Spider
             ScoreInfo score = new ScoreInfo(Coefficients, Group0);
             Move firstMove = Normalize(SupplementaryList[move.Next]);
 
+            score.Order = move.FromIndex;
             score.FaceValue = (int)UpPiles[firstMove.From][firstMove.FromIndex].Face;
             score.NetRunLength = 0;
             score.DownCount = DownPiles[move.From].Count;
@@ -1335,6 +1351,19 @@ namespace Spider
                 return 0;
             }
             if (parent.Suit != child.Suit)
+            {
+                return 1;
+            }
+            return 2;
+        }
+
+        private int GetOrder(bool facesMatch, bool suitsMatch)
+        {
+            if (!facesMatch)
+            {
+                return 0;
+            }
+            if (!suitsMatch)
             {
                 return 1;
             }
