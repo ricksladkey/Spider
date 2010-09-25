@@ -1,14 +1,5 @@
-- prefer last resort moves that lead to a discard
-- optimize scoring factors using designed experiments
-- before playing onto a free cell search for a free cell preserving sequence
-
-- prefer holding moves that match suit
-
 - could use holding piles for uncovering moves
-- finish converting test jig to mstest
-- ordinary moves and swaps could also count uses for the exposed card, if not consecutive
 - rename test jig
-- add unit tests for composite single pile moves with interior runs to holding piles
 - add units tests for swap with reverse holding piles
 - retest complex
 - avoid spurious composite single pile moves due to uncovering
@@ -22,7 +13,10 @@
 - consider enumerating all offload moves instead of one per pile
 - for offload consider trying to find homes for homeless runs by uncovering targets
 
-- inverted offload moves don't need to move the entire lower run to a free cell if the suits match
+- optimize scoring factors using designed experiments
+- before playing onto a free cell search for a free cell preserving sequence
+
+- prefer holding moves that match suit
 
 - prefer long exposed runs even if it means splitting a run, just before a deal
 
