@@ -27,13 +27,46 @@ namespace Spider
             }
         }
 
+        public int GetRunDown(int pile, int index)
+        {
+            return array[pile].GetRunDown(index);
+        }
+
+        public int GetRunDownAnySuit(int pile, int index)
+        {
+            return array[pile].GetRunDownAnySuit(index);
+        }
+
+        public int GetRunUp(int pile, int index)
+        {
+            return array[pile].GetRunUp(index);
+        }
+
+        public int GetRunUpAnySuit(int pile, int index)
+        {
+            return array[pile].GetRunUpAnySuit(index);
+        }
+
+        public int CountSuits(int pile, int index)
+        {
+            return array[pile].CountSuits(index, -1);
+        }
+
+        public int CountSuits(int pile, int startIndex, int endIndex)
+        {
+            return array[pile].CountSuits(startIndex, endIndex);
+        }
+
+        public int GetRunDelta(int from, int fromIndex, int to, int toIndex)
+        {
+            return GetRunUp(from, fromIndex) - GetRunUp(to, toIndex);
+        }
+
         #region IGetCard Members
 
-        public Card GetCard(int index)
+        public Card GetCard(int pile)
         {
-            Pile pile = array[index];
-            int count = pile.Count;
-            return count == 0 ? Card.Empty : pile[count - 1];
+            return array[pile].LastCard;
         }
 
         #endregion

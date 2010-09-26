@@ -14,5 +14,11 @@ namespace Spider
             : base(Game.NumberOfPiles)
         {
         }
+
+        public PileList(PileList other)
+            : this()
+        {
+            AddRange(other);
+        }
     }
 }

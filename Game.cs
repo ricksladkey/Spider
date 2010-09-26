@@ -91,8 +91,7 @@ namespace Spider
         {
             get
             {
-                Analyze();
-                return FreeCells.Count;
+                return GetFreeCells();
             }
         }
 
@@ -460,7 +459,7 @@ namespace Spider
                 {
                     continue;
                 }
-                int fromSuits = CountSuits(from, fromIndex);
+                int fromSuits = fromPile.CountSuits(fromIndex);
                 if (fromSuits - 1 > maxExtraSuits)
                 {
                     continue;
@@ -611,7 +610,7 @@ namespace Spider
                     continue;
                 }
 
-                int toSuits = CountSuits(to, toIndex);
+                int toSuits = toPile.CountSuits(toIndex);
                 bool foundSwap = false;
                 foreach (HoldingSet holdingSet in HoldingStack.Sets)
                 {
@@ -679,7 +678,7 @@ namespace Spider
             roots.Add(index);
             while (index > 0)
             {
-                int count = GetRunUpAnySuit(from, index);
+                int count = fromPile.GetRunUpAnySuit(index);
                 index -= count;
                 if (fromPile[index].Face == Face.King)
                 {
@@ -772,7 +771,7 @@ namespace Spider
                 int rootIndex = roots[n];
                 Card rootCard = fromPile[rootIndex];
                 int runLength = roots[n - 1] - roots[n];
-                int suits = CountSuits(from, rootIndex, rootIndex + runLength);
+                int suits = fromPile.CountSuits(rootIndex, rootIndex + runLength);
                 int maxExtraSuits = ExtraSuits(freeCellsLeft);
                 bool suitsMatch = false;
                 holdingStack.Clear();
@@ -1042,7 +1041,6 @@ namespace Spider
 
         private int AddCompositeSinglePileMove(int best, MoveFlags flags, int from, int order)
         {
-#if false
             // Check which move is better.
             if (best != -1)
             {
@@ -1073,14 +1071,8 @@ namespace Spider
                 }
 
                 // Clear out the previous best move.
-#if true
-                previous.Flags |= MoveFlags.Flagged;
-                Candidates[best] = previous;
-#else
                 Candidates[best] = Move.Empty;
-#endif
             }
-#endif
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
@@ -1093,7 +1085,7 @@ namespace Spider
             holdingStack.StartingIndex = fromEnd;
             Pile fromPile = UpPiles[from];
             int firstIndex = fromStart + 1;
-            int lastIndex = fromEnd - GetRunUp(from, fromEnd);
+            int lastIndex = fromEnd - fromPile.GetRunUp(fromEnd);
             int extraSuits = 0;
             for (int fromIndex = lastIndex; fromIndex >= firstIndex; fromIndex--)
             {
@@ -1178,6 +1170,19 @@ namespace Spider
             }
         }
 
+        private int GetFreeCells()
+        {
+            FreeCells.Clear();
+            for (int i = 0; i < NumberOfPiles; i++)
+            {
+                if (UpPiles[i].Count == 0)
+                {
+                    FreeCells.Add(i);
+                }
+            }
+            return FreeCells.Count;
+        }
+
         private void Analyze()
         {
             FreeCells.Clear();
@@ -1200,8 +1205,8 @@ namespace Spider
                 }
 
                 // Cache run lengths.
-                RunLengths[i] = GetRunUp(i, pile.Count);
-                RunLengthsAnySuit[i] = GetRunUpAnySuit(i, pile.Count);
+                RunLengths[i] = pile.GetRunUp(pile.Count);
+                RunLengthsAnySuit[i] = pile.GetRunUpAnySuit(pile.Count);
             }
         }
 
@@ -1265,7 +1270,7 @@ namespace Spider
             {
                 if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
                 {
-                    delta = GetRunDelta(from, fromIndex, to, toIndex);
+                    delta = UpPiles.GetRunDelta(from, fromIndex, to, toIndex);
                 }
                 if (delta <= 0)
                 {
@@ -1340,9 +1345,9 @@ namespace Spider
         {
             bool fromFree = DownPiles[move.From].Count == 0;
             bool toFree = DownPiles[move.To].Count == 0;
-            bool fromUpper = GetRunUp(move.From, move.FromIndex) == move.FromIndex;
+            bool fromUpper = UpPiles.GetRunUp(move.From, move.FromIndex) == move.FromIndex;
             bool fromLower = move.HoldingNext == -1;
-            bool toUpper = GetRunUp(move.To, move.ToIndex) == move.ToIndex;
+            bool toUpper = UpPiles.GetRunUp(move.To, move.ToIndex) == move.ToIndex;
             bool oldFrom = move.FromIndex == 0 ?
                 (fromFree && fromLower) :
                 (fromFree && fromUpper && fromLower && oldOrder == 2);
@@ -1364,11 +1369,6 @@ namespace Spider
             return oneRunDelta > 0 ? 1 : 0;
         }
 
-        private int GetRunDelta(int from, int fromIndex, int to, int toIndex)
-        {
-            return GetRunUp(from, fromIndex) - GetRunUp(to, toIndex);
-        }
-
         private int CountUses(Move move)
         {
             if (move.FromIndex == 0 || move.ToIndex != UpPiles[move.To].Count)
@@ -1387,7 +1387,7 @@ namespace Spider
                 // Check whether the exposed card will be useful.
                 int freeCells = FreeCells.Count - 1;
                 int maxExtraSuits = ExtraSuits(freeCells);
-                int fromSuits = CountSuits(move.From, move.FromIndex);
+                int fromSuits = fromPile.CountSuits(move.FromIndex);
                 for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
                 {
                     if (nextFrom == move.From || nextFrom == move.To)
@@ -1407,7 +1407,7 @@ namespace Spider
                         // Not the card we need.
                         continue;
                     }
-                    int extraSuits = CountSuits(nextFrom, nextFromIndex) - 1;
+                    int extraSuits = nextFromPile.CountSuits(nextFromIndex) - 1;
                     if (extraSuits <= maxExtraSuits)
                     {
                         // Card leads to a useful move.
@@ -1415,7 +1415,7 @@ namespace Spider
                     }
 
                     // Check whether the exposed run will be useful.
-                    int upperFromIndex = move.FromIndex - GetRunUp(move.From, move.FromIndex);
+                    int upperFromIndex = move.FromIndex - fromPile.GetRunUp(move.FromIndex);
                     if (upperFromIndex != move.FromIndex)
                     {
                         Card upperFromCard = fromPile[upperFromIndex];
@@ -1454,8 +1454,8 @@ namespace Spider
 
         private int GetNetRunLength(int order, int from, int fromIndex, int to, int toIndex)
         {
-            int moveRun = GetRunDown(from, fromIndex);
-            int fromRun = GetRunUp(from, fromIndex + 1) + moveRun - 1;
+            int moveRun = UpPiles.GetRunDown(from, fromIndex);
+            int fromRun = UpPiles.GetRunUp(from, fromIndex + 1) + moveRun - 1;
             if (order != 2)
             {
                 // The from card's suit doesn't match the to card's suit.
@@ -1466,7 +1466,7 @@ namespace Spider
                 }
                 return -fromRun;
             }
-            int toRun = GetRunUp(to, toIndex);
+            int toRun = UpPiles.GetRunUp(to, toIndex);
             int newRun = moveRun + toRun;
             if (moveRun == fromRun)
             {
@@ -1474,135 +1474,6 @@ namespace Spider
                 return newRun;
             }
             return newRun - fromRun;
-        }
-
-        private int CountSuits(int column, int row)
-        {
-            return CountSuits(column, row, -1);
-        }
-
-        private int CountSuits(int column, int startRow, int endRow)
-        {
-            Pile pile = UpPiles[column];
-            if (endRow == -1)
-            {
-                endRow = UpPiles[column].Count;
-            }
-            Debug.Assert(startRow >= 0 && startRow <= pile.Count);
-            Debug.Assert(endRow >= 0 && endRow <= pile.Count);
-            int suits = 0;
-            int index = startRow;
-            if (index < endRow)
-            {
-                suits++;
-                index += GetRunDown(column, index);
-            }
-            while (index < endRow)
-            {
-                if (pile[index - 1].Face - 1 != pile[index].Face)
-                {
-                    // Found an out of sequence run in the range.
-                    return -1;
-                }
-                suits++;
-                index += GetRunDown(column, index);
-            }
-            return suits;
-        }
-
-        private int GetRunUp(int column, int row)
-        {
-            if (row == 0)
-            {
-                return 0;
-            }
-            Pile pile = UpPiles[column];
-            Debug.Assert(row >= 0 && row <= pile.Count);
-            int runLength = 1;
-            for (int index = row - 2; index >= 0; index--)
-            {
-                Card card = pile[index];
-                Card nextCard = pile[index + 1];
-                if (nextCard.Suit != card.Suit)
-                {
-                    break;
-                }
-                if (nextCard.Face + 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
-            return runLength;
-        }
-
-        private int GetRunUpAnySuit(int column, int row)
-        {
-            if (row == 0)
-            {
-                return 0;
-            }
-            Pile pile = UpPiles[column];
-            Debug.Assert(row >= 0 && row <= pile.Count);
-            int runLength = 1;
-            for (int index = row - 2; index >= 0; index--)
-            {
-                Card card = pile[index];
-                Card nextCard = pile[index + 1];
-                if (nextCard.Face + 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
-            return runLength;
-        }
-
-        private int GetRunDown(int column, int row)
-        {
-            Pile pile = UpPiles[column];
-            Debug.Assert(row >= 0 && row <= pile.Count);
-            if (row == pile.Count)
-            {
-                return 0;
-            }
-            int runLength = 1;
-            for (int index = row + 1; index < pile.Count; index++)
-            {
-                Card previousCard = pile[index - 1];
-                Card card = pile[index];
-                if (previousCard.Suit != card.Suit)
-                {
-                    break;
-                }
-                if (previousCard.Face - 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
-            return runLength;
-        }
-
-        private int GetRunDownAnySuit(int column, int row)
-        {
-            Pile pile = UpPiles[column];
-            if (row == pile.Count)
-            {
-                return 0;
-            }
-            int runLength = 1;
-            for (int index = row + 1; index < pile.Count; index++)
-            {
-                Card previousCard = pile[index - 1];
-                Card card = pile[index];
-                if (previousCard.Face - 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
-            return runLength;
         }
 
         private bool ChooseMove()
@@ -1725,10 +1596,9 @@ namespace Spider
             {
                 Utils.WriteLine("SWUFC: {0}/{1} -> {2}/{3}", from, fromIndex, to, toIndex);
             }
-            Analyze();
-            int freeCells = FreeCells.Count;
-            int fromSuits = CountSuits(from, fromIndex);
-            int toSuits = CountSuits(to, toIndex);
+            int freeCells = GetFreeCells();
+            int fromSuits = UpPiles.CountSuits(from, fromIndex);
+            int toSuits = UpPiles.CountSuits(to, toIndex);
             if (fromSuits + toSuits - 1 > ExtraSuits(freeCells))
             {
                 throw new InvalidMoveException("insufficient free cells");
@@ -1772,14 +1642,13 @@ namespace Spider
             {
                 Utils.WriteLine("ULTFC: {0}/{1} -> {2}", from, lastFromIndex, to);
             }
-            Analyze();
-            int freeCells = FreeCells.Count;
-            int suits = CountSuits(from, lastFromIndex);
+            int freeCells = GetFreeCells();
+            int suits = UpPiles.CountSuits(from, lastFromIndex);
             if (suits > ExtraSuits(freeCells))
             {
                 throw new InvalidMoveException("insufficient free cells");
             }
-            int totalSuits = CountSuits(from, lastFromIndex);
+            int totalSuits = UpPiles.CountSuits(from, lastFromIndex);
             int remainingSuits = totalSuits;
             int fromIndex = UpPiles[from].Count;
             for (int n = 0; n < freeCells; n++)
@@ -1787,7 +1656,7 @@ namespace Spider
                 int m = Math.Min(freeCells, n + remainingSuits);
                 for (int i = m - 1; i >= n; i--)
                 {
-                    int runLength = GetRunUp(from, fromIndex);
+                    int runLength = UpPiles.GetRunUp(from, fromIndex);
                     fromIndex -= runLength;
                     fromIndex = Math.Max(fromIndex, lastFromIndex);
                     MakeSimpleMove(from, -runLength, FreeCells[i]);
@@ -1818,7 +1687,7 @@ namespace Spider
             {
                 // Move as much as possible but not too much.
                 Pile fromPile = UpPiles[from];
-                int fromIndex = fromPile.Count - GetRunUp(from, fromPile.Count);
+                int fromIndex = fromPile.Count - UpPiles.GetRunUp(from, fromPile.Count);
                 if (fromIndex < lastFromIndex)
                 {
                     fromIndex = lastFromIndex;
@@ -1859,8 +1728,7 @@ namespace Spider
             Stack<Move> moveStack = new Stack<Move>();
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
-                Analyze();
-                int freeCells = FreeCells.Count;
+                int freeCells = GetFreeCells();
                 Move move = Normalize(SupplementaryList[next]);
                 if (move.Type == MoveType.Unload)
                 {
@@ -1993,9 +1861,8 @@ namespace Spider
             {
                 Utils.WriteLine("MMUFC: {0}/{1} -> {2}", from, lastFromIndex, to);
             }
-            Analyze();
             int toIndex = UpPiles[to].Count;
-            int extraSuits = CountSuits(from, lastFromIndex) - 1;
+            int extraSuits = UpPiles.CountSuits(from, lastFromIndex) - 1;
             if (extraSuits < 0)
             {
                 return "not a single run";
@@ -2005,11 +1872,13 @@ namespace Spider
                 MakeSimpleMove(from, lastFromIndex, to);
                 return null;
             }
+            int freeCells = GetFreeCells();
+            PileList usableFreeCells = new PileList(FreeCells);
             if (toIndex == 0)
             {
-                FreeCells.Remove(to);
+                usableFreeCells.Remove(to);
+                freeCells--;
             }
-            int freeCells = FreeCells.Count;
             int maxExtraSuits = ExtraSuits(freeCells);
             if (extraSuits > maxExtraSuits)
             {
@@ -2022,10 +1891,10 @@ namespace Spider
             {
                 for (int i = 0; i < n; i++)
                 {
-                    int runLength = GetRunUp(from, fromIndex);
+                    int runLength = UpPiles.GetRunUp(from, fromIndex);
                     fromIndex -= runLength;
-                    MakeSimpleMove(from, -runLength, FreeCells[i]);
-                    moveStack.Push(new Move(FreeCells[i], -runLength, to));
+                    MakeSimpleMove(from, -runLength, usableFreeCells[i]);
+                    moveStack.Push(new Move(usableFreeCells[i], -runLength, to));
                     suits++;
                     if (suits == extraSuits)
                     {
@@ -2038,9 +1907,9 @@ namespace Spider
                 }
                 for (int i = n - 2; i >= 0; i--)
                 {
-                    int runLength = UpPiles[FreeCells[i]].Count;
-                    MakeSimpleMove(FreeCells[i], -runLength, FreeCells[n - 1]);
-                    moveStack.Push(new Move(FreeCells[n - 1], -runLength, FreeCells[i]));
+                    int runLength = UpPiles[usableFreeCells[i]].Count;
+                    MakeSimpleMove(usableFreeCells[i], -runLength, usableFreeCells[n - 1]);
+                    moveStack.Push(new Move(usableFreeCells[n - 1], -runLength, usableFreeCells[i]));
                 }
             }
             MakeSimpleMove(from, lastFromIndex, to);
@@ -2064,7 +1933,7 @@ namespace Spider
             }
             Debug.Assert(UpPiles[from].Count != 0);
             Debug.Assert(fromIndex < UpPiles[from].Count);
-            Debug.Assert(CountSuits(from, fromIndex) == 1);
+            Debug.Assert(UpPiles.CountSuits(from, fromIndex) == 1);
             Debug.Assert(UpPiles[to].Count == 0 || UpPiles[from][fromIndex].Face + 1 == UpPiles[to][UpPiles[to].Count - 1].Face);
             MakeMove(new Move(from, fromIndex, to, UpPiles[to].Count));
         }
@@ -2132,7 +2001,7 @@ namespace Spider
                     continue;
                 }
 
-                int runLength = GetRunUp(i, pile.Count);
+                int runLength = pile.GetRunUp(pile.Count);
                 if (runLength == 13)
                 {
                     int index = pile.Count - runLength;
