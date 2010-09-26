@@ -9,9 +9,9 @@ namespace Spider
     public enum MoveFlags
     {
         Empty = 0x0000,
-        CreatesFreeCell = 0x0001,
+        CreatesEmptyPile = 0x0001,
         TurnsOverCard = 0x0002,
-        UsesFreeCell = 0x0004,
+        UsesEmptyPile = 0x0004,
         Holding = 0x0008,
         UndoHolding = 0x0010,
         Flagged = 0x0020,
@@ -19,32 +19,32 @@ namespace Spider
 
     public static class MoveFlagsExensions
     {
-        public static int ChangeInFreeCells(this MoveFlags flags)
+        public static int ChangeInEmptyPiles(this MoveFlags flags)
         {
-            if ((flags & MoveFlags.CreatesFreeCell) == MoveFlags.CreatesFreeCell)
+            if ((flags & MoveFlags.CreatesEmptyPile) == MoveFlags.CreatesEmptyPile)
             {
                 return 1;
             }
-            if ((flags & MoveFlags.UsesFreeCell) == MoveFlags.UsesFreeCell)
+            if ((flags & MoveFlags.UsesEmptyPile) == MoveFlags.UsesEmptyPile)
             {
                 return -1;
             }
             return 0;
         }
 
-        public static bool CreatesFreeCell(this MoveFlags flags)
+        public static bool CreatesEmptyPile(this MoveFlags flags)
         {
-            return (flags & MoveFlags.CreatesFreeCell) == MoveFlags.CreatesFreeCell;
+            return (flags & MoveFlags.CreatesEmptyPile) == MoveFlags.CreatesEmptyPile;
         }
 
-        public static bool PreservesFreeCells(this MoveFlags flags)
+        public static bool PreservesEmptyPiles(this MoveFlags flags)
         {
-            return (flags & (MoveFlags.CreatesFreeCell | MoveFlags.UsesFreeCell)) == MoveFlags.Empty;
+            return (flags & (MoveFlags.CreatesEmptyPile | MoveFlags.UsesEmptyPile)) == MoveFlags.Empty;
         }
 
-        public static bool UsesFreeCell(this MoveFlags flags)
+        public static bool UsesEmptyPile(this MoveFlags flags)
         {
-            return (flags & MoveFlags.UsesFreeCell) == MoveFlags.UsesFreeCell;
+            return (flags & MoveFlags.UsesEmptyPile) == MoveFlags.UsesEmptyPile;
         }
 
         public static bool TurnsOverCard(this MoveFlags flags)

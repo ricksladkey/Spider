@@ -7,9 +7,9 @@ namespace Spider
 {
     public struct ScoreInfo
     {
-        public const int CreatesFreeCellScore = 1000;
+        public const int CreatesEmptyPileScore = 1000;
         public const int BaseScore = 0;
-        public const int UsesFreeCellScore = -1000;
+        public const int UsesEmptyPileScore = -1000;
 
         public double[] Coefficients { get; set; }
         public int Coefficient0 { get; set; }
@@ -18,11 +18,11 @@ namespace Spider
         public int FaceValue { get; set; }
         public int NetRunLength { get; set; }
         public bool TurnsOverCard { get; set; }
-        public bool CreatesFreeCell { get; set; }
-        public bool UsesFreeCell { get; set; }
+        public bool CreatesEmptyPile { get; set; }
+        public bool UsesEmptyPile { get; set; }
         public int DownCount { get; set; }
         public bool IsCompositeSinglePile { get; set; }
-        public bool NoFreeCells { get; set; }
+        public bool NoEmptyPiles { get; set; }
         public int OneRunDelta { get; set; }
         public int Uses { get; set; }
         public bool IsKing { get; set; }
@@ -32,14 +32,14 @@ namespace Spider
             get
             {
                 double score = BaseScore +
-                    CreatesFreeCellScore * (CreatesFreeCell ? 1 : 0) +
-                    UsesFreeCellScore * (UsesFreeCell ? 1 : 0) +
+                    CreatesEmptyPileScore * (CreatesEmptyPile ? 1 : 0) +
+                    UsesEmptyPileScore * (UsesEmptyPile ? 1 : 0) +
                     FaceValue +
                     Coefficients[Coefficient0 + 0] * NetRunLength +
                     Coefficients[Coefficient0 + 1] * (TurnsOverCard ? 1 : 0) +
                     Coefficients[Coefficient0 + 2] * (TurnsOverCard ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 3] * (IsCompositeSinglePile ? 1 : 0) +
-                    Coefficients[Coefficient0 + 4] * (NoFreeCells ? 1 : 0) * DownCount +
+                    Coefficients[Coefficient0 + 4] * (NoEmptyPiles ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 5] * OneRunDelta +
                     Coefficients[Coefficient0 + 6] * Uses +
                     Coefficients[Coefficient0 + 7] * Order;
@@ -53,7 +53,7 @@ namespace Spider
             get
             {
                 double score = BaseScore +
-                    UsesFreeCellScore * (UsesFreeCell ? 1 : 0) +
+                    UsesEmptyPileScore * (UsesEmptyPile ? 1 : 0) +
                     Uses +
                     Coefficients[Coefficient0 + 0] * (TurnsOverCard ? 1 : 0) +
                     Coefficients[Coefficient0 + 1] * DownCount +
