@@ -1,10 +1,12 @@
 - could use holding piles for uncovering moves
+- could collect composite uncovering moves
+- promote one run delta to a full-fledged scoring feature
+- collect one run piles
+- try targeting one run piles to the from or the to piles after a root iteration
+- rename freeCells to emptyPiles
 - rename test jig
 - retest complex
 - merge the multiple different places that free cell algorithms are implemented
-- separate analyze into analyze free cells and analyze runs
-- forward swaps might be able to find different holding piles that wouldn't conflict with the to pile
-- reverse swaps could use forward swap holding piles if we built an accurate card map
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile

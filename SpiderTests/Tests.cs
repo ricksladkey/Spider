@@ -179,6 +179,15 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        public void SwapTest15()
+        {
+            // A 2/2 out-of-order swap move, 1 free cells, 1 holding piles.
+            string data1 = "@4|||As6h2hAs-As3h5h4s-4d3d--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@4|||As6h5h4s-As3h2hAs-4d3d--Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
         public void CompositeSinglePileTest1()
         {
             // A 1/1 composite single pile move, 1 free cell.

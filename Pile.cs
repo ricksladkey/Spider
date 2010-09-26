@@ -49,16 +49,71 @@ namespace Spider
 
         public int GetRunUp(int index)
         {
-            if (index == 0)
-            {
-                return 0;
-            }
             Debug.Assert(index >= 0 && index <= Count);
-            int runLength = 1;
-            for (int i = index - 2; i >= 0; i--)
+            if (index < 2)
             {
-                Card card = array[i];
-                Card nextCard = array[i + 1];
+                return index;
+            }
+            int runLength = 1;
+            int i = index - 2;
+            Card card = array[i + 1];
+            do
+            {
+                Card nextCard = array[i];
+                if (nextCard.Suit != card.Suit)
+                {
+                    break;
+                }
+                if (nextCard.Face - 1 != card.Face)
+                {
+                    break;
+                }
+                card = nextCard;
+                runLength++;
+                i--;
+            }
+            while (i >= 0);
+            return runLength;
+        }
+
+        public int GetRunUpAnySuit(int index)
+        {
+            Debug.Assert(index >= 0 && index <= Count);
+            if (index < 2)
+            {
+                return index;
+            }
+            int runLength = 1;
+            int i = index - 2;
+            Face face = array[i + 1].Face;
+            do
+            {
+                Face nextFace = array[i].Face;
+                if (nextFace - 1 != face)
+                {
+                    break;
+                }
+                face = nextFace;
+                runLength++;
+                i--;
+            }
+            while (i >= 0);
+            return runLength;
+        }
+
+        public int GetRunDown(int index)
+        {
+            Debug.Assert(index >= 0 && index <= Count);
+            if (index > count - 2)
+            {
+                return count - index;
+            }
+            int runLength = 1;
+            int i = index + 1;
+            Card card = array[i - 1];
+            do
+            {
+                Card nextCard = array[i];
                 if (nextCard.Suit != card.Suit)
                 {
                     break;
@@ -67,74 +122,35 @@ namespace Spider
                 {
                     break;
                 }
+                card = nextCard;
                 runLength++;
+                i++;
             }
-            return runLength;
-        }
-
-        public int GetRunUpAnySuit(int index)
-        {
-            if (index == 0)
-            {
-                return 0;
-            }
-            Debug.Assert(index >= 0 && index <= Count);
-            int runLength = 1;
-            for (int i = index - 2; i >= 0; i--)
-            {
-                Card card = array[i];
-                Card nextCard = array[i + 1];
-                if (nextCard.Face + 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
-            return runLength;
-        }
-
-        public int GetRunDown(int index)
-        {
-            Debug.Assert(index >= 0 && index <= Count);
-            if (index == Count)
-            {
-                return 0;
-            }
-            int runLength = 1;
-            for (int i = index + 1; i < Count; i++)
-            {
-                Card previousCard = array[i - 1];
-                Card card = array[i];
-                if (previousCard.Suit != card.Suit)
-                {
-                    break;
-                }
-                if (previousCard.Face - 1 != card.Face)
-                {
-                    break;
-                }
-                runLength++;
-            }
+            while (i < count);
             return runLength;
         }
 
         public int GetRunDownAnySuit(int index)
         {
-            if (index == Count)
+            if (index > count - 2)
             {
-                return 0;
+                return count - index;
             }
             int runLength = 1;
-            for (int i = index + 1; i < Count; i++)
+            int i = index + 1;
+            Face face = array[i - 1].Face;
+            do
             {
-                Card previousCard = array[i - 1];
-                Card card = array[i];
-                if (previousCard.Face - 1 != card.Face)
+                Face nextFace = array[i].Face;
+                if (nextFace + 1 != face)
                 {
                     break;
                 }
+                face = nextFace;
                 runLength++;
+                i++;
             }
+            while (i < count);
             return runLength;
         }
 

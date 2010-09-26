@@ -15,28 +15,37 @@ namespace Spider
         {
         }
 
-        public void Update(int index, Pile pile)
+        public void Update(PileMap pileMap)
         {
-            Update(index, pile, pile.Count);
+            for (int pile = 0; pile < Count; pile++)
+            {
+                Pile other = pileMap[pile];
+                Update(pile, other, other.Count);
+            }
         }
 
-        public void Update(int index, Pile pile, int count)
+        public void Update(int pile, Pile other)
+        {
+            Update(pile, other, other.Count);
+        }
+
+        public void Update(int pile, Pile other, int count)
         {
             if (count == 0)
             {
-                array[index] = Card.Empty;
+                array[pile] = Card.Empty;
             }
             else
             {
-                array[index] = pile[count - 1];
+                array[pile] = other[count - 1];
             }
         }
 
         #region IGetCard Members
 
-        public Card GetCard(int index)
+        public Card GetCard(int pile)
         {
-            return array[index];
+            return array[pile];
         }
 
         #endregion

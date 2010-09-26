@@ -29,7 +29,7 @@ namespace Spider
 
         public override string ToString()
         {
-            return string.Format("To: {0}, FromIndex: {1}, Suits: {2}, Length: {3}, Next: {4}", To, FromIndex, Suits, Length, Next);
+            return string.Format("{0}/{1} -> {2}, Suits: {3}, Length: {4}, Next: {5}", From, FromIndex, To, Suits, Length, Next);
         }
     }
 }

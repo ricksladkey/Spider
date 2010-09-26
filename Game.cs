@@ -14,8 +14,8 @@ namespace Spider
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
-            /* 0 */ 8.114827647, 63.49174024, -0.1160733333, -4.898312748, -0.8369998149, 1.496134645, 9.447113329, 1,
-            /* 8 */ 1.583930791, 0.0003074278678, -0.05704045645, -0.3064319999, 2.146732245, 0.6666666667,
+            /* 0 */ 6.362452378, 63.49174024, -0.1027791635, -4.898312748, -0.741136128, 1.436684988, 9.447113329, 0.8164965809,
+            /* 8 */ 1.71772823, 0.0002049519119, -0.05704045645, -0.2307120267, 1.49037565, 0.5019319713,
         };
 
         public static double[] OneSuitCoefficients = new double[] {
@@ -322,7 +322,6 @@ namespace Spider
                 HoldingStack.Clear();
                 HoldingStack.StartingIndex = fromPile.Count;
                 int extraSuits = 0;
-                int runLength = 0;
                 for (int fromIndex = fromPile.Count - 1; fromIndex >= 0; fromIndex--)
                 {
                     Card fromCard = fromPile[fromIndex];
@@ -337,14 +336,12 @@ namespace Spider
                         {
                             // This is a cross-suit run.
                             extraSuits++;
-                            runLength = 0;
                             if (extraSuits > maxExtraSuits + HoldingStack.Suits)
                             {
                                 break;
                             }
                         }
                     }
-                    runLength++;
 
                     // Add moves to other piles.
                     if (fromCard.Face < Face.King)
@@ -543,11 +540,13 @@ namespace Spider
 
         private void CheckSwaps(int from, int fromIndex, int extraSuits, int maxExtraSuits)
         {
+#if false
             if (extraSuits + 1 > maxExtraSuits + HoldingStack.Suits)
             {
                 // Need at least one free cell or a holding pile to swap.
                 return;
             }
+#endif
             if (fromIndex == 0 && DownPiles[from].Count != 0)
             {
                 // Would turn over a card.
@@ -610,6 +609,41 @@ namespace Spider
                     continue;
                 }
 
+#if false
+                int toSuits = toPile.CountSuits(toIndex);
+                HoldingStack forwardHoldingStack = new HoldingStack();
+                if (extraSuits + toSuits > maxExtraSuits)
+                {
+                    // Check whether forward holding piles will help.
+                    int forwardHoldingSuits = FindHolding(UpPiles, forwardHoldingStack, true, from, fromIndex, fromPile.Count, to, maxExtraSuits);
+                    if (extraSuits + toSuits > maxExtraSuits + forwardHoldingSuits)
+                    {
+                        // Prepare an accurate map.
+                        CardMap map = new CardMap();
+                        map.Update(UpPiles);
+                        foreach (HoldingInfo holding in forwardHoldingStack.Set)
+                        {
+                            map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
+                        }
+
+                        // Check whether reverse holding piles will help.
+                        HoldingStack reverseHoldingStack = new HoldingStack();
+                        int reverseHoldingSuits = FindHolding(map, reverseHoldingStack, true, to, toIndex, toPile.Count, from, maxExtraSuits);
+                        if (extraSuits + toSuits > maxExtraSuits + forwardHoldingSuits + reverseHoldingSuits)
+                        {
+                            continue;
+                        }
+
+                        Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(forwardHoldingStack.Set, reverseHoldingStack.Set)));
+                        continue;
+                    }
+                }
+
+                // We've found a legal swap.
+                Debug.Assert(toIndex == 0 || toPile[toIndex - 1].Face - 1 == fromCard.Face);
+                Debug.Assert(fromIndex == 0 || fromCardParent.Face - 1 == toPile[toIndex].Face);
+                Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(forwardHoldingStack.Set)));
+#else
                 int toSuits = toPile.CountSuits(toIndex);
                 bool foundSwap = false;
                 foreach (HoldingSet holdingSet in HoldingStack.Sets)
@@ -639,26 +673,23 @@ namespace Spider
                     HoldingSet holdingSet = HoldingStack.Set;
                     if (!holdingSet.Contains(to))
                     {
+                        // Prepare an accurate map.
+                        CardMap map = new CardMap();
+                        map.Update(UpPiles);
+                        foreach (HoldingInfo holding in holdingSet)
+                        {
+                            map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
+                        }
+
                         HoldingStack reverseHoldingStack = new HoldingStack();
-                        int reverseHoldingSuits = FindHolding(UpPiles, reverseHoldingStack, to, toIndex, toPile.Count, from, maxExtraSuits);
+                        int reverseHoldingSuits = FindHolding(map, reverseHoldingStack, true, to, toIndex, toPile.Count, from, maxExtraSuits);
                         if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + reverseHoldingSuits)
                         {
-                            bool overlaps = false;
-                            foreach (HoldingInfo reverseholding in reverseHoldingStack)
-                            {
-                                if (holdingSet.Contains(reverseholding.To))
-                                {
-                                    overlaps = true;
-                                    break;
-                                }
-                            }
-                            if (!overlaps)
-                            {
-                                Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet, reverseHoldingStack.Set)));
-                            }
+                            Candidates.Add(new Move(MoveType.Swap, from, fromIndex, to, toIndex, AddHolding(holdingSet, reverseHoldingStack.Set)));
                         }
                     }
                 }
+#endif
             }
         }
 
@@ -820,7 +851,7 @@ namespace Spider
                     if (suits - 1 > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
                         if (suits - 1 > maxExtraSuits)
                         {
                             // Not enough free cells.
@@ -865,7 +896,7 @@ namespace Spider
                     if (suits > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
                             // Still not enough free cells.
@@ -968,7 +999,7 @@ namespace Spider
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
 #if false
-                    offloadSuits -= FindHolding(map, holdingStack, from, offloadRootIndex, offloadRootIndex + runLength, to, maxExtraSuits);
+                    offloadSuits -= FindHolding(map, holdingStack, false, from, offloadRootIndex, offloadRootIndex + runLength, to, maxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Can't move the offload due to additional suits.
@@ -1080,11 +1111,11 @@ namespace Spider
             return best;
         }
 
-        private int FindHolding(IGetCard map, HoldingStack holdingStack, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
+        private int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
         {
             holdingStack.StartingIndex = fromEnd;
             Pile fromPile = UpPiles[from];
-            int firstIndex = fromStart + 1;
+            int firstIndex = fromStart + (inclusive ? 0 : 1);
             int lastIndex = fromEnd - fromPile.GetRunUp(fromEnd);
             int extraSuits = 0;
             for (int fromIndex = lastIndex; fromIndex >= firstIndex; fromIndex--)
@@ -1108,7 +1139,7 @@ namespace Spider
                     if (fromCard.Face + 1 == map.GetCard(pile).Face)
                     {
                         int holdingSuits = extraSuits;
-                        if (fromCard.Suit != fromPile[fromIndex - 1].Suit)
+                        if (fromIndex == fromStart || fromCard.Suit != fromPile[fromIndex - 1].Suit)
                         {
                             holdingSuits++;
                         }
@@ -1461,7 +1492,7 @@ namespace Spider
                 // The from card's suit doesn't match the to card's suit.
                 if (moveRun == fromRun)
                 {
-                    // The from card's suit doesn't its parent.
+                    // The from card's suit doesn't match its parent.
                     return 0;
                 }
                 return -fromRun;
@@ -1470,7 +1501,7 @@ namespace Spider
             int newRun = moveRun + toRun;
             if (moveRun == fromRun)
             {
-                // The from card's suit doesn't its parent.
+                // The from card's suit doesn't match its parent.
                 return newRun;
             }
             return newRun - fromRun;
@@ -1599,6 +1630,10 @@ namespace Spider
             int freeCells = GetFreeCells();
             int fromSuits = UpPiles.CountSuits(from, fromIndex);
             int toSuits = UpPiles.CountSuits(to, toIndex);
+            if (fromSuits == 0 && toSuits == 0)
+            {
+                return;
+            }
             if (fromSuits + toSuits - 1 > ExtraSuits(freeCells))
             {
                 throw new InvalidMoveException("insufficient free cells");
