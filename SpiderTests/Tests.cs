@@ -127,6 +127,33 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest9()
         {
+            // A 4/3 swap move, 3 free cells.
+            string data1 = "@2|||5hTs9h8s7h-Js4h3s2h----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||5h4h3s2h-JsTs9h8s7h----Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [TestMethod]
+        public void SwapTest10()
+        {
+            // A 5/2 swap move, 3 free cells.
+            string data1 = "@2|||5hTs9h8s7h6s-Js4h3s----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||5h4h3s-JsTs9h8s7h6s----Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [TestMethod]
+        public void SwapTest11()
+        {
+            // A 6/1 swap move, 3 free cells.
+            string data1 = "@2|||5h9s8h7s6h5s4h-Ts4h----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||5h4h-Ts9s8h7s6h5s4h----Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
+        [TestMethod]
+        public void SwapTest12()
+        {
             // A 1/1 out-of-order swap move, 0 free cells, 1 holding pile.
             string data1 = "@2|||9s3h-4h8s-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||9s8s-4h3h-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -134,11 +161,20 @@ namespace Spider.Tests
         }
 
         [TestMethod]
-        public void SwapTest10()
+        public void SwapTest13()
         {
             // A 1/1 in-order swap move, 0 free cells, 1 holding pile.
             string data1 = "@4|||4s3h-4h3s-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@4|||4s3s-4h3h-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void SwapTest14()
+        {
+            // A 1/1 in-order swap move, 0 free cells, 2 holding piles.
+            string data1 = "@4|||4s3h-4h3s2h-4d-4c3c-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@4|||4s3s2h-4h3h-4d-4c3c-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
         }
 
