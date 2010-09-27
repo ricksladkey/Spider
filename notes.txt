@@ -1,3 +1,4 @@
+- review empty pile calculations when counting uses
 - could use holding piles for uncovering moves
 - could collect composite uncovering moves
 - promote one run delta to a full-fledged scoring feature

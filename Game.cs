@@ -62,7 +62,6 @@ namespace Spider
         public List<Pile> DiscardPiles { get; private set; }
 
         private Pile ScratchPile { get; set; }
-        private MoveList UncoveringMoves { get; set; }
         private MoveList Candidates { get; set; }
         private MoveList SupplementaryMoves { get; set; }
         private MoveList SupplementaryList { get; set; }
@@ -71,7 +70,9 @@ namespace Spider
         private int[] RunLengths { get; set; }
         private int[] RunLengthsAnySuit { get; set; }
         private PileList EmptyPiles { get; set; }
+        private PileList OneRunPiles { get; set; }
         private PileList[] FaceLists { get; set; }
+        private MoveList UncoveringMoves { get; set; }
         private Game LastGame { get; set; }
 
         public List<ComplexMove> ComplexCandidates
@@ -91,7 +92,7 @@ namespace Spider
         {
             get
             {
-                return GetEmptyPiles();
+                return FindEmptyPiles();
             }
         }
 
@@ -122,7 +123,6 @@ namespace Spider
             DiscardPiles = new List<Pile>();
 
             ScratchPile = new Pile();
-            UncoveringMoves = new MoveList();
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
@@ -131,11 +131,13 @@ namespace Spider
             RunLengths = new int[NumberOfPiles];
             RunLengthsAnySuit = new int[NumberOfPiles];
             EmptyPiles = new PileList();
+            OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
             {
                 FaceLists[i] = new PileList();
             }
+            UncoveringMoves = new MoveList();
             Coefficients = null;
         }
 
@@ -305,7 +307,6 @@ namespace Spider
 
         public void FindMoves()
         {
-            UncoveringMoves.Clear();
             Candidates.Clear();
             SupplementaryList.Clear();
             HoldingList.Clear();
@@ -315,6 +316,7 @@ namespace Spider
             int maxExtraSuitsToEmptyPile = ExtraSuits(emptyPiles - 1);
 
             FindUncoveringMoves(maxExtraSuits);
+            FindOneRunPiles();
 
             for (int from = 0; from < NumberOfPiles; from++)
             {
@@ -448,6 +450,7 @@ namespace Spider
         private void FindUncoveringMoves(int maxExtraSuits)
         {
             // Find all uncovering moves.
+            UncoveringMoves.Clear();
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = UpPiles[from];
@@ -471,6 +474,24 @@ namespace Spider
                     int order = GetOrder(toCard, fromCard);
                     UncoveringMoves.Add(new Move(from, fromIndex, to, order));
                 }
+            }
+        }
+
+        private void FindOneRunPiles()
+        {
+            OneRunPiles.Clear();
+            for (int i = 0; i < NumberOfPiles; i++)
+            {
+                Pile pile = UpPiles[i];
+                if (pile.Count == 0)
+                {
+                    continue;
+                }
+                if (pile.Count != RunLengthsAnySuit[i])
+                {
+                    continue;
+                }
+                OneRunPiles.Add(i);
             }
         }
 
@@ -711,11 +732,6 @@ namespace Spider
             {
                 int count = fromPile.GetRunUpAnySuit(index);
                 index -= count;
-                if (fromPile[index].Face == Face.King)
-                {
-                    // Cannot move a king.
-                    return;
-                }
                 roots.Add(index);
             }
             int runs = roots.Count - 1;
@@ -1201,7 +1217,7 @@ namespace Spider
             }
         }
 
-        private int GetEmptyPiles()
+        private int FindEmptyPiles()
         {
             EmptyPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
@@ -1603,7 +1619,7 @@ namespace Spider
             // Lastly move from the holding piles, if we still can.
             while (moveStack.Count > 0)
             {
-                IfPossibleMakeMoveUsingEmptyPiles(moveStack.Pop());
+                TryToMakeMoveUsingEmptyPiles(moveStack.Pop());
             }
         }
 
@@ -1627,7 +1643,7 @@ namespace Spider
             {
                 Utils.WriteLine("SWUEP: {0}/{1} -> {2}/{3}", from, fromIndex, to, toIndex);
             }
-            int emptyPiles = GetEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             int fromSuits = UpPiles.CountSuits(from, fromIndex);
             int toSuits = UpPiles.CountSuits(to, toIndex);
             if (fromSuits == 0 && toSuits == 0)
@@ -1677,7 +1693,7 @@ namespace Spider
             {
                 Utils.WriteLine("ULTEP: {0}/{1} -> {2}", from, lastFromIndex, to);
             }
-            int emptyPiles = GetEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             int suits = UpPiles.CountSuits(from, lastFromIndex);
             if (suits > ExtraSuits(emptyPiles))
             {
@@ -1763,7 +1779,7 @@ namespace Spider
             Stack<Move> moveStack = new Stack<Move>();
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
-                int emptyPiles = GetEmptyPiles();
+                int emptyPiles = FindEmptyPiles();
                 Move move = Normalize(SupplementaryList[next]);
                 if (move.Type == MoveType.Unload)
                 {
@@ -1787,18 +1803,15 @@ namespace Spider
                 }
                 else if ((move.Flags & MoveFlags.UndoHolding) == MoveFlags.UndoHolding)
                 {
-                    IfPossibleMakeMoveUsingEmptyPiles(move);
+                    TryToMakeMoveUsingEmptyPiles(move);
                 }
                 else
                 {
-                    if (SimpleMoveIsValid(move))
-                    {
-                        MakeMoveUsingEmptyPiles(move.From, move.FromIndex, move.To);
-                    }
-                    else
+                    if (!TryToMakeMoveUsingEmptyPiles(move))
                     {
                         // Things got messed up due to a discard.  There should
                         // be another pile with the same target.
+                        bool foundAlternative = false;
                         Pile fromPile = UpPiles[move.From];
                         Card fromCard = fromPile[move.FromIndex];
                         for (int to = 0; to < NumberOfPiles; to++)
@@ -1817,6 +1830,12 @@ namespace Spider
                                 continue;
                             }
                             MakeMoveUsingEmptyPiles(move.From, move.FromIndex, to);
+                            foundAlternative = true;
+                            break;
+                        }
+                        if (!foundAlternative)
+                        {
+                            // This move is hopelessly messed up.
                             break;
                         }
                     }
@@ -1828,11 +1847,11 @@ namespace Spider
             }
         }
 
-        private bool IfPossibleMakeMoveUsingEmptyPiles(Move move)
+        private bool TryToMakeMoveUsingEmptyPiles(Move move)
         {
             if (SimpleMoveIsValid(move))
             {
-                if (SafeMakeMoveUsingEmptyPiles(move.From, move.FromIndex, move.To) != null)
+                if (SafeMakeMoveUsingEmptyPiles(move.From, move.FromIndex, move.To) == null)
                 {
                     return true;
                 }
@@ -1907,7 +1926,7 @@ namespace Spider
                 MakeSimpleMove(from, lastFromIndex, to);
                 return null;
             }
-            int emptyPiles = GetEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             PileList usableEmptyPiles = new PileList(EmptyPiles);
             if (toIndex == 0)
             {
