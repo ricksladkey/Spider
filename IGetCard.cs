@@ -7,6 +7,6 @@ namespace Spider
 {
     public interface IGetCard
     {
-        Card GetCard(int pile);
+        Card GetCard(int column);
     }
 }

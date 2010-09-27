@@ -13,9 +13,9 @@ namespace Spider
         public PileMap()
             : base(Game.NumberOfPiles, Game.NumberOfPiles)
         {
-            for (int index = 0; index < Game.NumberOfPiles; index++)
+            for (int row = 0; row < Game.NumberOfPiles; row++)
             {
-                array[index] = new Pile();
+                array[row] = new Pile();
             }
         }
 
@@ -27,46 +27,46 @@ namespace Spider
             }
         }
 
-        public int GetRunDown(int pile, int index)
+        public int GetRunDown(int column, int row)
         {
-            return array[pile].GetRunDown(index);
+            return array[column].GetRunDown(row);
         }
 
-        public int GetRunDownAnySuit(int pile, int index)
+        public int GetRunDownAnySuit(int column, int row)
         {
-            return array[pile].GetRunDownAnySuit(index);
+            return array[column].GetRunDownAnySuit(row);
         }
 
-        public int GetRunUp(int pile, int index)
+        public int GetRunUp(int column, int row)
         {
-            return array[pile].GetRunUp(index);
+            return array[column].GetRunUp(row);
         }
 
-        public int GetRunUpAnySuit(int pile, int index)
+        public int GetRunUpAnySuit(int column, int row)
         {
-            return array[pile].GetRunUpAnySuit(index);
+            return array[column].GetRunUpAnySuit(row);
         }
 
-        public int CountSuits(int pile, int index)
+        public int CountSuits(int column, int row)
         {
-            return array[pile].CountSuits(index, -1);
+            return array[column].CountSuits(row, -1);
         }
 
-        public int CountSuits(int pile, int startIndex, int endIndex)
+        public int CountSuits(int column, int startRow, int endRow)
         {
-            return array[pile].CountSuits(startIndex, endIndex);
+            return array[column].CountSuits(startRow, endRow);
         }
 
-        public int GetRunDelta(int from, int fromIndex, int to, int toIndex)
+        public int GetRunDelta(int from, int fromRow, int to, int toRow)
         {
-            return GetRunUp(from, fromIndex) - GetRunUp(to, toIndex);
+            return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
         #region IGetCard Members
 
-        public Card GetCard(int pile)
+        public Card GetCard(int column)
         {
-            return array[pile].LastCard;
+            return array[column].LastCard;
         }
 
         #endregion

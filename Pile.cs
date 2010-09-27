@@ -18,10 +18,7 @@ namespace Spider
         public Pile(IEnumerable<Card> other)
             : this()
         {
-            foreach (Card card in other)
-            {
-                Add(card);
-            }
+            AddRange(other);
         }
 
         public Card LastCard
@@ -34,10 +31,10 @@ namespace Spider
 
         public void Shuffle(int seed)
         {
-            Random random = new Random(seed);
             // Knuth shuffle algorithm: for each card
             // except the last, swap it with one of the
             // later cards.
+            Random random = new Random(seed);
             for (int i = 0; i < Count - 1; i++)
             {
                 int swap = random.Next(Count - i);
@@ -47,15 +44,15 @@ namespace Spider
             }
         }
 
-        public int GetRunUp(int index)
+        public int GetRunUp(int row)
         {
-            Debug.Assert(index >= 0 && index <= Count);
-            if (index < 2)
+            Debug.Assert(row >= 0 && row <= Count);
+            if (row < 2)
             {
-                return index;
+                return row;
             }
             int runLength = 1;
-            int i = index - 2;
+            int i = row - 2;
             Card card = array[i + 1];
             do
             {
@@ -76,15 +73,15 @@ namespace Spider
             return runLength;
         }
 
-        public int GetRunUpAnySuit(int index)
+        public int GetRunUpAnySuit(int row)
         {
-            Debug.Assert(index >= 0 && index <= Count);
-            if (index < 2)
+            Debug.Assert(row >= 0 && row <= Count);
+            if (row < 2)
             {
-                return index;
+                return row;
             }
             int runLength = 1;
-            int i = index - 2;
+            int i = row - 2;
             Face face = array[i + 1].Face;
             do
             {
@@ -101,15 +98,15 @@ namespace Spider
             return runLength;
         }
 
-        public int GetRunDown(int index)
+        public int GetRunDown(int row)
         {
-            Debug.Assert(index >= 0 && index <= Count);
-            if (index > count - 2)
+            Debug.Assert(row >= 0 && row <= Count);
+            if (row > count - 2)
             {
-                return count - index;
+                return count - row;
             }
             int runLength = 1;
-            int i = index + 1;
+            int i = row + 1;
             Card card = array[i - 1];
             do
             {
@@ -130,14 +127,14 @@ namespace Spider
             return runLength;
         }
 
-        public int GetRunDownAnySuit(int index)
+        public int GetRunDownAnySuit(int row)
         {
-            if (index > count - 2)
+            if (row > count - 2)
             {
-                return count - index;
+                return count - row;
             }
             int runLength = 1;
-            int i = index + 1;
+            int i = row + 1;
             Face face = array[i - 1].Face;
             do
             {
@@ -154,27 +151,27 @@ namespace Spider
             return runLength;
         }
 
-        public int CountSuits(int index)
+        public int CountSuits(int row)
         {
-            return CountSuits(index, -1);
+            return CountSuits(row, -1);
         }
 
-        public int CountSuits(int startIndex, int endIndex)
+        public int CountSuits(int startRow, int endRow)
         {
-            if (endIndex == -1)
+            if (endRow == -1)
             {
-                endIndex = Count;
+                endRow = Count;
             }
-            Debug.Assert(startIndex >= 0 && startIndex <= Count);
-            Debug.Assert(endIndex >= 0 && endIndex <= Count);
+            Debug.Assert(startRow >= 0 && startRow <= Count);
+            Debug.Assert(endRow >= 0 && endRow <= Count);
             int suits = 0;
-            int i = startIndex;
-            if (i < endIndex)
+            int i = startRow;
+            if (i < endRow)
             {
                 suits++;
                 i += GetRunDown(i);
             }
-            while (i < endIndex)
+            while (i < endRow)
             {
                 if (array[i - 1].Face - 1 != array[i].Face)
                 {

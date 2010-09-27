@@ -9,17 +9,17 @@ namespace Spider
     {
         public static OffloadInfo Empty = new OffloadInfo(-1, -1, -1, -1);
 
-        public OffloadInfo(int root, int pile, int suits, int emptyPilesUsed)
+        public OffloadInfo(int root, int column, int suits, int emptyPilesUsed)
             : this()
         {
             Root = root;
-            Pile = pile;
+            Column = column;
             Suits = suits;
             EmptyPilesUsed = emptyPilesUsed;
         }
 
         public int Root { get; set; }
-        public int Pile { get; set; }
+        public int Column { get; set; }
         public int Suits { get; set; }
         public int EmptyPilesUsed { get; set; }
 

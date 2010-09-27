@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    [DebuggerDisplay("Count = {Count}, Pile = {Pile}, Index = {Index}, Suits = {Suits}, Length = {Length}")]
+    [DebuggerDisplay("Count = {Count}, From = {From}, FromRow = {FromRow}, To = {To}, Suits = {Suits}, Length = {Length}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public struct HoldingSet : IEnumerable<HoldingInfo>
     {
@@ -20,11 +20,11 @@ namespace Spider
             Count = count;
         }
 
-        public bool Contains(int pile)
+        public bool Contains(int column)
         {
             for (int i = 0; i < Count; i++)
             {
-                if (Stack[i].To == pile)
+                if (Stack[i].To == column)
                 {
                     return true;
                 }
@@ -32,7 +32,7 @@ namespace Spider
             return false;
         }
 
-        public int Pile
+        public int To
         {
             get
             {
@@ -44,15 +44,15 @@ namespace Spider
             }
         }
 
-        public int Index
+        public int FromRow
         {
             get
             {
                 if (Count == 0)
                 {
-                    return Stack.StartingIndex;
+                    return Stack.StartingRow;
                 }
-                return Stack[Count - 1].FromIndex;
+                return Stack[Count - 1].FromRow;
             }
         }
 

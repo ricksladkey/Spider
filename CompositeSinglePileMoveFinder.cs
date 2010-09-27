@@ -49,13 +49,13 @@ namespace Spider
 
             // Find roots.
             roots.Clear();
-            int index = fromPile.Count;
-            roots.Add(index);
-            while (index > 0)
+            int row = fromPile.Count;
+            roots.Add(row);
+            while (row > 0)
             {
-                int count = fromPile.GetRunUpAnySuit(index);
-                index -= count;
-                roots.Add(index);
+                int count = fromPile.GetRunUpAnySuit(row);
+                row -= count;
+                roots.Add(row);
             }
             int runs = roots.Count - 1;
             if (runs <= 1)
@@ -87,7 +87,7 @@ namespace Spider
                 used.Add(move.From);
 
                 // The uncovered card has to match a root to be useful.
-                Card uncoveredCard = UpPiles[move.From][move.FromIndex - 1];
+                Card uncoveredCard = UpPiles[move.From][move.FromRow - 1];
                 bool matchesRoot = false;
                 for (int j = 1; j < roots.Count; j++)
                 {
@@ -103,8 +103,8 @@ namespace Spider
                 }
 
                 // Try again to find a composite single pile move.
-                order = move.ToIndex;
-                move.ToIndex = -1;
+                order = move.ToRow;
+                move.ToRow = -1;
                 CheckOne(from, roots, move);
             }
         }
@@ -124,7 +124,7 @@ namespace Spider
             if (!move.IsEmpty)
             {
                 map[move.To] = map[move.From];
-                map[move.From] = UpPiles[move.From][move.FromIndex - 1];
+                map[move.From] = UpPiles[move.From][move.FromRow - 1];
                 SupplementaryMoves.Add(move);
             }
 
@@ -132,10 +132,10 @@ namespace Spider
             int offloads = 0;
             for (int n = 1; n < roots.Count; n++)
             {
-                int rootIndex = roots[n];
-                Card rootCard = fromPile[rootIndex];
+                int rootRow = roots[n];
+                Card rootCard = fromPile[rootRow];
                 int runLength = roots[n - 1] - roots[n];
-                int suits = fromPile.CountSuits(rootIndex, rootIndex + runLength);
+                int suits = fromPile.CountSuits(rootRow, rootRow + runLength);
                 int maxExtraSuits = Game.ExtraSuits(emptyPilesLeft);
                 bool suitsMatch = false;
                 holdingStack.Clear();
@@ -146,7 +146,7 @@ namespace Spider
                 {
                     if (map[i].Face - 1 == rootCard.Face)
                     {
-                        if (!offload.IsEmpty && to == offload.Pile)
+                        if (!offload.IsEmpty && to == offload.Column)
                         {
                             to = -1;
                             suitsMatch = false;
@@ -168,7 +168,7 @@ namespace Spider
                 if (to != -1)
                 {
                     // Check for inverting.
-                    if (!offload.IsEmpty && to == offload.Pile)
+                    if (!offload.IsEmpty && to == offload.Column)
                     {
                         if (!offload.SinglePile)
                         {
@@ -184,7 +184,7 @@ namespace Spider
                     if (suits - 1 > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= game.FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
+                        suits -= game.FindHolding(map, holdingStack, false, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits - 1 > maxExtraSuits)
                         {
                             // Not enough empty piles.
@@ -229,7 +229,7 @@ namespace Spider
                     if (suits > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= game.FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
+                        suits -= game.FindHolding(map, holdingStack, false, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
                             // Still not enough empty piles.
@@ -258,7 +258,7 @@ namespace Spider
                     }
 
                     // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
+                    SupplementaryMoves.Add(new Move(type, from, rootRow, to));
 
                     // Undo moves to the holding piles.
                     int toOffset = remainingLength;
@@ -270,7 +270,7 @@ namespace Spider
                     Debug.Assert(toOffset == runLength);
 
                     // Update the map.
-                    map[to] = fromPile[rootIndex + runLength - 1];
+                    map[to] = fromPile[rootRow + runLength - 1];
                 }
                 else
                 {
@@ -279,24 +279,24 @@ namespace Spider
                     {
                         SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
 
-                        map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
+                        map[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
                     }
 
                     // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
+                    SupplementaryMoves.Add(new Move(type, from, rootRow, to));
 
                     // Update the map.
-                    map[to] = fromPile[rootIndex + remainingLength - 1];
+                    map[to] = fromPile[rootRow + remainingLength - 1];
                 }
 
-                if (rootIndex == 0 && DownPiles[from].Count == 0)
+                if (rootRow == 0 && DownPiles[from].Count == 0)
                 {
                     // Got to the bottom of the pile
                     // and created an empty pile.
                     emptyPilesLeft++;
                 }
 
-                CheckOffload(from, rootIndex, to);
+                CheckOffload(from, rootRow, to);
             }
 
             // Check for unload that needs to be reloaded.
@@ -310,7 +310,7 @@ namespace Spider
                 else
                 {
                     // Reload the offload onto the now empty pile.
-                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.Pile, 0, from, 0));
+                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.Column, 0, from, 0));
                 }
             }
 
@@ -332,7 +332,7 @@ namespace Spider
             AddMove(flags, from, order);
         }
 
-        private void CheckOffload(int from, int rootIndex, int to)
+        private void CheckOffload(int from, int rootRow, int to)
         {
             if (offload.IsEmpty)
             {
@@ -340,20 +340,19 @@ namespace Spider
                 return;
             }
 
-            Pile fromPile = UpPiles[from];
-            int offloadRootIndex = roots[offload.Root];
-            Card offloadRootCard = fromPile[offloadRootIndex];
+            int offloadRootRow = roots[offload.Root];
+            Card offloadRootCard = fromPile[offloadRootRow];
             int offloadSuits = offload.Suits;
             int offloadMaxExtraSuits = Game.ExtraSuits(emptyPilesLeft);
             bool matchesFrom = false;
             bool matchesTo = false;
             Card targetCard = Card.Empty;
 
-            if (rootIndex > 0 && offloadRootCard.Face + 1 == fromPile[rootIndex - 1].Face)
+            if (rootRow > 0 && offloadRootCard.Face + 1 == fromPile[rootRow - 1].Face)
             {
                 // Offload matches from pile.
                 matchesFrom = true;
-                targetCard = fromPile[rootIndex - 1];
+                targetCard = fromPile[rootRow - 1];
             }
 
             if (offloadRootCard.Face + 1 == map[to].Face)
@@ -371,7 +370,7 @@ namespace Spider
             if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
             {
 #if false
-                offloadSuits -= FindHolding(map, holdingStack, false, from, offloadRootIndex, offloadRootIndex + runLength, to, maxExtraSuits);
+                offloadSuits -= FindHolding(map, holdingStack, false, from, offloadRootRow, offloadRootRow + runLength, to, maxExtraSuits);
                 if (offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Can't move the offload due to additional suits.
@@ -384,7 +383,7 @@ namespace Spider
             if (matchesFrom)
             {
                 // Offload matches from pile.
-                SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
+                SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Column, 0, from));
                 AddMove(MoveFlags.Empty, from, order + Game.GetOrder(targetCard, offloadRootCard));
                 SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
             }
@@ -396,11 +395,11 @@ namespace Spider
 
                 // Found a home for the offload.
                 MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                SupplementaryMoves.Add(new Move(offloadType, offload.Pile, 0, to));
+                SupplementaryMoves.Add(new Move(offloadType, offload.Column, 0, to));
 
                 // Update the map.
-                map[to] = map[offload.Pile];
-                map[offload.Pile] = Card.Empty;
+                map[to] = map[offload.Column];
+                map[offload.Column] = Card.Empty;
 
                 // Update the state.
                 emptyPilesLeft += offload.EmptyPilesUsed;
@@ -430,7 +429,7 @@ namespace Spider
                         {
                             return;
                         }
-                        int previousOrder = previous.ToIndex;
+                        int previousOrder = previous.ToRow;
                         int currentOrder = order;
                         if (previousOrder >= currentOrder)
                         {

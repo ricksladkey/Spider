@@ -17,35 +17,35 @@ namespace Spider
 
         public void Update(PileMap pileMap)
         {
-            for (int pile = 0; pile < Count; pile++)
+            for (int column = 0; column < Count; column++)
             {
-                Pile other = pileMap[pile];
-                Update(pile, other, other.Count);
+                Pile pile = pileMap[column];
+                Update(column, pile, pile.Count);
             }
         }
 
-        public void Update(int pile, Pile other)
+        public void Update(int column, Pile pile)
         {
-            Update(pile, other, other.Count);
+            Update(column, pile, pile.Count);
         }
 
-        public void Update(int pile, Pile other, int count)
+        public void Update(int column, Pile pile, int count)
         {
             if (count == 0)
             {
-                array[pile] = Card.Empty;
+                array[column] = Card.Empty;
             }
             else
             {
-                array[pile] = other[count - 1];
+                array[column] = pile[count - 1];
             }
         }
 
         #region IGetCard Members
 
-        public Card GetCard(int pile)
+        public Card GetCard(int column)
         {
-            return array[pile];
+            return array[column];
         }
 
         #endregion

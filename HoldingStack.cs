@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    [DebuggerDisplay("Count = {Count}, Index = {Index}, Suits = {Suits}")]
+    [DebuggerDisplay("Count = {Count}, FromRow = {FromRow}, Suits = {Suits}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class HoldingStack : FastList<HoldingInfo>
     {
@@ -27,17 +27,17 @@ namespace Spider
             return item;
         }
 
-        public int StartingIndex { get; set; }
+        public int StartingRow { get; set; }
 
-        public int Index
+        public int FromRow
         {
             get
             {
                 if (Count == 0)
                 {
-                    return StartingIndex;
+                    return StartingRow;
                 }
-                return array[Count - 1].FromIndex;
+                return array[Count - 1].FromRow;
             }
         }
 

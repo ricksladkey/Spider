@@ -13,9 +13,9 @@ namespace Spider
         public MoveType Type { get; set; }
         public MoveFlags Flags { get; set; }
         public int From { get; set; }
-        public int FromIndex { get; set; }
+        public int FromRow { get; set; }
         public int To { get; set; }
-        public int ToIndex { get; set; }
+        public int ToRow { get; set; }
         public int HoldingNext { get; set; }
         public int Next { get; set; }
         public double Score { get; set; }
@@ -30,65 +30,65 @@ namespace Spider
         {
         }
 
-        public Move(int from, int fromIndex, int to)
-            : this(MoveType.Basic, from, fromIndex, to, -1, -1, -1)
+        public Move(int from, int fromRow, int to)
+            : this(MoveType.Basic, from, fromRow, to, -1, -1, -1)
         {
         }
 
-        public Move(MoveType type, int from, int fromIndex, int to)
-            : this(type, from, fromIndex, to, -1, -1, -1)
+        public Move(MoveType type, int from, int fromRow, int to)
+            : this(type, from, fromRow, to, -1, -1, -1)
         {
         }
 
-        public Move(MoveType type, MoveFlags flags, int from, int fromIndex, int to)
-            : this(type, flags, from, fromIndex, to, -1, -1, -1)
+        public Move(MoveType type, MoveFlags flags, int from, int fromRow, int to)
+            : this(type, flags, from, fromRow, to, -1, -1, -1)
         {
         }
 
-        public Move(int from, int fromIndex, int to, int toIndex)
-            : this(MoveType.Basic, from, fromIndex, to, toIndex, -1, -1)
+        public Move(int from, int fromRow, int to, int toRow)
+            : this(MoveType.Basic, from, fromRow, to, toRow, -1, -1)
         {
         }
 
-        public Move(MoveType type, int from, int fromIndex, int to, int toIndex)
-            : this(type, from, fromIndex, to, toIndex, -1, -1)
+        public Move(MoveType type, int from, int fromRow, int to, int toRow)
+            : this(type, from, fromRow, to, toRow, -1, -1)
         {
         }
 
-        public Move(MoveType type, MoveFlags flags, int from, int fromIndex, int to, int toIndex)
-            : this(type, flags, from, fromIndex, to, toIndex, -1, -1)
+        public Move(MoveType type, MoveFlags flags, int from, int fromRow, int to, int toRow)
+            : this(type, flags, from, fromRow, to, toRow, -1, -1)
         {
         }
 
-        public Move(int from, int fromIndex, int to, int toIndex, int holdingNext)
-            : this(MoveType.Basic, from, fromIndex, to, toIndex, holdingNext, -1)
+        public Move(int from, int fromRow, int to, int toRow, int holdingNext)
+            : this(MoveType.Basic, from, fromRow, to, toRow, holdingNext, -1)
         {
         }
 
-        public Move(MoveType type, int from, int fromIndex, int to, int toIndex, int holdingNext)
-            : this(type, from, fromIndex, to, toIndex, holdingNext, -1)
+        public Move(MoveType type, int from, int fromRow, int to, int toRow, int holdingNext)
+            : this(type, from, fromRow, to, toRow, holdingNext, -1)
         {
         }
 
-        public Move(int from, int fromIndex, int to, int toIndex, int holdingNext, int next)
-            : this(MoveType.Basic, from, fromIndex, to, toIndex, holdingNext, next)
+        public Move(int from, int fromRow, int to, int toRow, int holdingNext, int next)
+            : this(MoveType.Basic, from, fromRow, to, toRow, holdingNext, next)
         {
         }
 
-        public Move(MoveType type, int from, int fromIndex, int to, int toIndex, int holdingNext, int next)
-            : this(type, MoveFlags.Empty, from, fromIndex, to, toIndex, holdingNext, next)
+        public Move(MoveType type, int from, int fromRow, int to, int toRow, int holdingNext, int next)
+            : this(type, MoveFlags.Empty, from, fromRow, to, toRow, holdingNext, next)
         {
         }
 
-        public Move(MoveType type, MoveFlags flags, int from, int fromIndex, int to, int toIndex, int holdingNext, int next)
+        public Move(MoveType type, MoveFlags flags, int from, int fromRow, int to, int toRow, int holdingNext, int next)
             : this()
         {
             Type = type;
             Flags = flags;
             From = from;
-            FromIndex = fromIndex;
+            FromRow = fromRow;
             To = to;
-            ToIndex = toIndex;
+            ToRow = toRow;
             HoldingNext = holdingNext;
             Next = next;
             Score = 0;
@@ -114,7 +114,7 @@ namespace Spider
             {
                 score = "Reject";
             }
-            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", type, From, FromIndex, To, ToIndex, HoldingNext, Next, score);
+            return string.Format("{0}: {1}/{2} -> {3}/{4} h{5}, n{6}: s{7}", type, From, FromRow, To, ToRow, HoldingNext, Next, score);
         }
     }
 }
