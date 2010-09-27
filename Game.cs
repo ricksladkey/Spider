@@ -61,19 +61,21 @@ namespace Spider
         public PileMap UpPiles { get; private set; }
         public List<Pile> DiscardPiles { get; private set; }
 
-        private Pile ScratchPile { get; set; }
-        private MoveList Candidates { get; set; }
-        private MoveList SupplementaryMoves { get; set; }
-        private MoveList SupplementaryList { get; set; }
-        private HoldingStack HoldingStack { get; set; }
-        private List<HoldingInfo> HoldingList { get; set; }
-        private int[] RunLengths { get; set; }
-        private int[] RunLengthsAnySuit { get; set; }
-        private PileList EmptyPiles { get; set; }
-        private PileList OneRunPiles { get; set; }
-        private PileList[] FaceLists { get; set; }
-        private MoveList UncoveringMoves { get; set; }
-        private Game LastGame { get; set; }
+        public Pile ScratchPile { get; private set; }
+        public MoveList Candidates { get; private set; }
+        public MoveList SupplementaryMoves { get; private set; }
+        public MoveList SupplementaryList { get; private set; }
+        public HoldingStack HoldingStack { get; private set; }
+        public List<HoldingInfo> HoldingList { get; private set; }
+        public int[] RunLengths { get; private set; }
+        public int[] RunLengthsAnySuit { get; private set; }
+        public PileList EmptyPiles { get; private set; }
+        public PileList OneRunPiles { get; private set; }
+        public PileList[] FaceLists { get; private set; }
+        public MoveList UncoveringMoves { get; private set; }
+        public Game LastGame { get; private set; }
+
+        private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -139,6 +141,8 @@ namespace Spider
             }
             UncoveringMoves = new MoveList();
             Coefficients = null;
+
+            CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(this);
         }
 
         public Game(string game)
@@ -443,7 +447,7 @@ namespace Spider
                 }
 
                 // Check for composite single pile moves.
-                CheckCompositeSinglePile(from);
+                CompositeSinglePileMoveFinder.Check(from);
             }
         }
 
@@ -482,16 +486,11 @@ namespace Spider
             OneRunPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                Pile pile = UpPiles[i];
-                if (pile.Count == 0)
+                int count = UpPiles[i].Count;
+                if (count != 0 && count != RunLengthsAnySuit[i])
                 {
-                    continue;
+                    OneRunPiles.Add(i);
                 }
-                if (pile.Count != RunLengthsAnySuit[i])
-                {
-                    continue;
-                }
-                OneRunPiles.Add(i);
             }
         }
 
@@ -503,7 +502,7 @@ namespace Spider
         {
         }
 
-        private int AddSupplementary()
+        public int AddSupplementary()
         {
             if (SupplementaryMoves.Count == 0)
             {
@@ -714,420 +713,7 @@ namespace Spider
             }
         }
 
-        private void CheckCompositeSinglePile(int from)
-        {
-            int emptyPiles = EmptyPiles.Count;
-            Pile fromPile = UpPiles[from];
-            if (fromPile.Count == 0)
-            {
-                // No cards.
-                return;
-            }
-
-            // Find roots.
-            PileList roots = new PileList();
-            int index = fromPile.Count;
-            roots.Add(index);
-            while (index > 0)
-            {
-                int count = fromPile.GetRunUpAnySuit(index);
-                index -= count;
-                roots.Add(index);
-            }
-            int runs = roots.Count - 1;
-            if (runs <= 1)
-            {
-                // Not at least two runs.
-                return;
-            }
-
-            // Check first with no uncovering moves.
-            int best = CheckOneCompositeSinglePile(-1, from, roots, Move.Empty, 0);
-
-            PileList used = new PileList();
-            for (int i = 0; i < UncoveringMoves.Count; i++)
-            {
-                // Make sure the move doesn't interfere.
-                Move move = UncoveringMoves[i];
-                if (move.From == from || move.To == from)
-                {
-                    continue;
-                }
-
-                // Only need to try an uncovered card once.
-                if (used.Contains(move.From))
-                {
-                    continue;
-                }
-                used.Add(move.From);
-
-                // The uncovered card has to match a root to be useful.
-                Card uncoveredCard = UpPiles[move.From][move.FromIndex - 1];
-                bool matchesRoot = false;
-                for (int j = 1; j < roots.Count; j++)
-                {
-                    if (uncoveredCard.Face - 1 == fromPile[roots[j]].Face)
-                    {
-                        matchesRoot = true;
-                        break;
-                    }
-                }
-                if (!matchesRoot)
-                {
-                    continue;
-                }
-
-                // Try again to find a composite single pile move.
-                int order = move.ToIndex;
-                move.ToIndex = -1;
-                best = CheckOneCompositeSinglePile(best, from, roots, move, order);
-            }
-        }
-
-        private int CheckOneCompositeSinglePile(int best, int from, PileList roots, Move move, int order)
-        {
-            // Prepare data structures.
-            Pile fromPile = UpPiles[from];
-            int emptyPilesLeft = EmptyPiles.Count;
-            int runs = roots.Count - 1;
-            OffloadInfo offload = OffloadInfo.Empty;
-            SupplementaryMoves.Clear();
-            CardMap map = new CardMap();
-
-            // Initialize the pile map.
-            for (int pile = 0; pile < NumberOfPiles; pile++)
-            {
-                if (pile != from)
-                {
-                    map.Update(pile, UpPiles[pile]);
-                }
-            }
-
-            if (!move.IsEmpty)
-            {
-                map[move.To] = map[move.From];
-                map[move.From] = UpPiles[move.From][move.FromIndex - 1];
-                SupplementaryMoves.Add(move);
-            }
-
-            // Check all the roots.
-            int offloads = 0;
-            HoldingStack holdingStack = new HoldingStack();
-            for (int n = 1; n < roots.Count; n++)
-            {
-                int rootIndex = roots[n];
-                Card rootCard = fromPile[rootIndex];
-                int runLength = roots[n - 1] - roots[n];
-                int suits = fromPile.CountSuits(rootIndex, rootIndex + runLength);
-                int maxExtraSuits = ExtraSuits(emptyPilesLeft);
-                bool suitsMatch = false;
-                holdingStack.Clear();
-
-                // Try to find the best matching target.
-                int to = -1;
-                for (int i = 0; i < NumberOfPiles; i++)
-                {
-                    if (map[i].Face - 1 == rootCard.Face)
-                    {
-                        if (!offload.IsEmpty && to == offload.Pile)
-                        {
-                            to = -1;
-                            suitsMatch = false;
-                        }
-                        if (!suitsMatch && map[i].Suit == rootCard.Suit)
-                        {
-                            to = i;
-                            suitsMatch = true;
-                        }
-                        else if (to == -1)
-                        {
-                            to = i;
-                        }
-                    }
-                }
-
-                MoveType type = MoveType.Basic;
-                bool isOffload = false;
-                if (to != -1)
-                {
-                    // Check for inverting.
-                    if (!offload.IsEmpty && to == offload.Pile)
-                    {
-                        if (!offload.SinglePile)
-                        {
-                            // Not enough empty piles to invert.
-                            return best;
-                        }
-
-                        // Update the state.
-                        offload.Suits += suits - (suitsMatch ? 1 : 0);
-                    }
-
-                    // Try to move this run.
-                    if (suits - 1 > maxExtraSuits)
-                    {
-                        // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
-                        if (suits - 1 > maxExtraSuits)
-                        {
-                            // Not enough empty piles.
-                            return best;
-                        }
-                    }
-
-                    // Recording the order improvement.
-                    order += GetOrder(true, suitsMatch);
-                }
-                else
-                {
-                    if (!offload.IsEmpty)
-                    {
-                        // Already have an offload.
-                        return best;
-                    }
-
-                    // It doesn't make sense to offload the last root.
-                    if (n == roots.Count - 1)
-                    {
-                        if (runs - 1 >= 2)
-                        {
-                            best = AddCompositeSinglePileMove(best, MoveFlags.Empty, from, order);
-                        }
-                        return best;
-                    }
-
-                    // Check for partial offload.
-                    if (offloads > 0)
-                    {
-                        best = AddCompositeSinglePileMove(best, MoveFlags.Empty, from, order);
-                    }
-
-                    // Try to offload this run.
-                    if (emptyPilesLeft == 0)
-                    {
-                        // Not enough empty piles.
-                        return best;
-                    }
-                    to = EmptyPiles[0];
-                    if (suits > maxExtraSuits)
-                    {
-                        // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, false, from, rootIndex, rootIndex + runLength, to, maxExtraSuits);
-                        if (suits > maxExtraSuits)
-                        {
-                            // Still not enough empty piles.
-                             return best;
-                        }
-                    }
-                    int emptyPilesUsed = EmptyPilesUsed(emptyPilesLeft, suits);
-                    emptyPilesLeft -= emptyPilesUsed;
-                    offload = new OffloadInfo(n, to, suits, emptyPilesUsed);
-                    type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
-                    isOffload = true;
-                    offloads++;
-                }
-
-                // Extract the holding set.
-                HoldingSet holdingSet = holdingStack.Set;
-                bool undoHolding = !isOffload;
-                int remainingLength = runLength - holdingSet.Length;
-
-                if (undoHolding)
-                {
-                    // Add moves to the holding piles.
-                    foreach (HoldingInfo holding in holdingSet.Forwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
-                    }
-
-                    // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
-
-                    // Undo moves to the holding piles.
-                    int toOffset = remainingLength;
-                    foreach (HoldingInfo holding in holdingSet.Backwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, to));
-                        toOffset += holding.Length;
-                    }
-                    Debug.Assert(toOffset == runLength);
-
-                    // Update the map.
-                    map[to] = fromPile[rootIndex + runLength - 1];
-                }
-                else
-                {
-                    // Add moves to the holding piles.
-                    foreach (HoldingInfo holding in holdingSet.Forwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
-
-                        map[holding.To] = fromPile[holding.FromIndex + holding.Length - 1];
-                    }
-
-                    // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootIndex, to));
-
-                    // Update the map.
-                    map[to] = fromPile[rootIndex + remainingLength - 1];
-                }
-
-                if (rootIndex == 0 && DownPiles[from].Count == 0)
-                {
-                    // Got to the bottom of the pile
-                    // and created an empty pile.
-                    emptyPilesLeft++;
-                }
-
-                if (offload.IsEmpty)
-                {
-                    // No offload to check.
-                    continue;
-                }
-
-                int offloadRootIndex = roots[offload.Root];
-                Card offloadRootCard = fromPile[offloadRootIndex];
-                int offloadSuits = offload.Suits;
-                int offloadMaxExtraSuits = ExtraSuits(emptyPilesLeft);
-                bool matchesFrom = false;
-                bool matchesTo = false;
-                Card targetCard = Card.Empty;
-
-                if (rootIndex > 0 && offloadRootCard.Face + 1 == fromPile[rootIndex - 1].Face)
-                {
-                    // Offload matches from pile.
-                    matchesFrom = true;
-                    targetCard = fromPile[rootIndex - 1];
-                }
-
-                if (offloadRootCard.Face + 1 == map[to].Face)
-                {
-                    // Offoad matches to pile.
-                    matchesTo = true;
-                    targetCard = map[to];
-                }
-
-                if (!matchesFrom && !matchesTo)
-                {
-                    continue;
-                }
-
-                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
-                {
-#if false
-                    offloadSuits -= FindHolding(map, holdingStack, false, from, offloadRootIndex, offloadRootIndex + runLength, to, maxExtraSuits);
-                    if (offloadSuits - 1 > offloadMaxExtraSuits)
-                    {
-                        // Can't move the offload due to additional suits.
-                        continue;
-                    }
-#else
-                    continue;
-#endif
-                }
-
-                if (matchesFrom)
-                {
-                    // Offload matches from pile.
-                    SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Pile, 0, from));
-                    best = AddCompositeSinglePileMove(best, MoveFlags.Empty, from, order + GetOrder(targetCard, offloadRootCard));
-                    SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
-                }
-
-                if (matchesTo)
-                {
-                    // Record the order improvement.
-                    order += GetOrder(targetCard, offloadRootCard);
-
-                    // Found a home for the offload.
-                    MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                    SupplementaryMoves.Add(new Move(offloadType, offload.Pile, 0, to));
-
-                    // Update the map.
-                    map[to] = map[offload.Pile];
-                    map[offload.Pile] = Card.Empty;
-
-                    // Update the state.
-                    emptyPilesLeft += offload.EmptyPilesUsed;
-                    offload = OffloadInfo.Empty;
-                }
-            }
-
-            // Check for unload that needs to be reloaded.
-            if (!offload.IsEmpty && !offload.SinglePile)
-            {
-                if (DownPiles[from].Count != 0)
-                {
-                    // Can't reload.
-                    return best;
-                }
-                else
-                {
-                    // Reload the offload onto the now empty pile.
-                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.Pile, 0, from, 0));
-                }
-            }
-
-            // Determine move type.
-            int downCount = DownPiles[from].Count;
-            MoveFlags flags = MoveFlags.Empty;
-            if (downCount != 0)
-            {
-                flags |= MoveFlags.TurnsOverCard;
-            }
-            if (offload.IsEmpty && downCount == 0)
-            {
-                flags |= MoveFlags.CreatesEmptyPile;
-            }
-            if (!offload.IsEmpty && downCount != 0)
-            {
-                flags |= MoveFlags.UsesEmptyPile;
-            }
-            return AddCompositeSinglePileMove(best, flags, from, order);
-        }
-
-        private int AddCompositeSinglePileMove(int best, MoveFlags flags, int from, int order)
-        {
-            // Check which move is better.
-            if (best != -1)
-            {
-                Move previous = Candidates[best];
-                int previousChangeInEmptyPiles = previous.Flags.ChangeInEmptyPiles();
-                int currentChangeInEmptyPiles = flags.ChangeInEmptyPiles();
-                if (previousChangeInEmptyPiles >= currentChangeInEmptyPiles)
-                {
-                    if (previousChangeInEmptyPiles > currentChangeInEmptyPiles)
-                    {
-                        return best;
-                    }
-                    int previousTurnsOverCard = previous.Flags.TurnsOverCard() ? 1 : 0;
-                    int currentTurnsOverCard = flags.TurnsOverCard() ? 1 : 0;
-                    if (previousTurnsOverCard >= currentTurnsOverCard)
-                    {
-                        if (previousTurnsOverCard > currentTurnsOverCard)
-                        {
-                            return best;
-                        }
-                        int previousOrder = previous.ToIndex;
-                        int currentOrder = order;
-                        if (previousOrder >= currentOrder)
-                        {
-                            return best;
-                        }
-                    }
-                }
-
-                // Clear out the previous best move.
-                Candidates[best] = Move.Empty;
-            }
-
-            // Add the scoring move and the accumulated supplementary moves.
-            best = Candidates.Count;
-            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, order, -1, AddSupplementary()));
-            return best;
-        }
-
-        private int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
+        public int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
         {
             holdingStack.StartingIndex = fromEnd;
             Pile fromPile = UpPiles[from];
@@ -1170,7 +756,7 @@ namespace Spider
             return holdingStack.Suits;
         }
 
-        private int ExtraSuits(int emptyPiles)
+        public static int ExtraSuits(int emptyPiles)
         {
 #if true
             // The formula for how many intermediate runs can
@@ -1192,7 +778,7 @@ namespace Spider
 #endif
         }
 
-        private int EmptyPilesUsed(int emptyPiles, int suits)
+        public static int EmptyPilesUsed(int emptyPiles, int suits)
         {
             int used = 0;
             for (int n = emptyPiles; n > 0 && suits > 0; n--)
@@ -1473,7 +1059,7 @@ namespace Spider
             return uses;
         }
 
-        private int GetOrder(Card parent, Card child)
+        public static int GetOrder(Card parent, Card child)
         {
             if (parent.Face - 1 != child.Face)
             {
@@ -1486,7 +1072,7 @@ namespace Spider
             return 2;
         }
 
-        private int GetOrder(bool facesMatch, bool suitsMatch)
+        public static int GetOrder(bool facesMatch, bool suitsMatch)
         {
             if (!facesMatch)
             {
