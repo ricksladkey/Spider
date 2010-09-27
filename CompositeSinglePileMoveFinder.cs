@@ -5,18 +5,8 @@ using System.Text;
 
 namespace Spider
 {
-    public class CompositeSinglePileMoveFinder
+    public class CompositeSinglePileMoveFinder : GameHelper
     {
-        private Game game;
-
-        private static int NumberOfPiles { get { return Game.NumberOfPiles; } }
-        private PileMap UpPiles { get { return game.UpPiles; } }
-        private PileMap DownPiles { get { return game.DownPiles; } }
-        private MoveList UncoveringMoves { get { return game.UncoveringMoves; } }
-        private MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }
-        private MoveList Candidates { get { return game.Candidates; } }
-        private PileList EmptyPiles { get { return game.EmptyPiles; } }
-
         private PileList used;
         private PileList roots;
         private CardMap map;
@@ -29,9 +19,8 @@ namespace Spider
         private int emptyPilesLeft;
 
         public CompositeSinglePileMoveFinder(Game game)
+            : base(game)
         {
-            this.game = game;
-
             used = new PileList();
             roots = new PileList();
             map = new CardMap();
@@ -136,7 +125,7 @@ namespace Spider
                 Card rootCard = fromPile[rootRow];
                 int runLength = roots[n - 1] - roots[n];
                 int suits = fromPile.CountSuits(rootRow, rootRow + runLength);
-                int maxExtraSuits = Game.ExtraSuits(emptyPilesLeft);
+                int maxExtraSuits = ExtraSuits(emptyPilesLeft);
                 bool suitsMatch = false;
                 holdingStack.Clear();
 
@@ -146,7 +135,7 @@ namespace Spider
                 {
                     if (map[i].Face - 1 == rootCard.Face)
                     {
-                        if (!offload.IsEmpty && to == offload.Column)
+                        if (!offload.IsEmpty && to == offload.To)
                         {
                             to = -1;
                             suitsMatch = false;
@@ -168,7 +157,7 @@ namespace Spider
                 if (to != -1)
                 {
                     // Check for inverting.
-                    if (!offload.IsEmpty && to == offload.Column)
+                    if (!offload.IsEmpty && to == offload.To)
                     {
                         if (!offload.SinglePile)
                         {
@@ -310,7 +299,7 @@ namespace Spider
                 else
                 {
                     // Reload the offload onto the now empty pile.
-                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.Column, 0, from, 0));
+                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.To, 0, from, 0));
                 }
             }
 
@@ -343,7 +332,7 @@ namespace Spider
             int offloadRootRow = roots[offload.Root];
             Card offloadRootCard = fromPile[offloadRootRow];
             int offloadSuits = offload.Suits;
-            int offloadMaxExtraSuits = Game.ExtraSuits(emptyPilesLeft);
+            int offloadMaxExtraSuits = ExtraSuits(emptyPilesLeft);
             bool matchesFrom = false;
             bool matchesTo = false;
             Card targetCard = Card.Empty;
@@ -383,7 +372,7 @@ namespace Spider
             if (matchesFrom)
             {
                 // Offload matches from pile.
-                SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.Column, 0, from));
+                SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.To, 0, from));
                 AddMove(MoveFlags.Empty, from, order + Game.GetOrder(targetCard, offloadRootCard));
                 SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
             }
@@ -395,11 +384,11 @@ namespace Spider
 
                 // Found a home for the offload.
                 MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                SupplementaryMoves.Add(new Move(offloadType, offload.Column, 0, to));
+                SupplementaryMoves.Add(new Move(offloadType, offload.To, 0, to));
 
                 // Update the map.
-                map[to] = map[offload.Column];
-                map[offload.Column] = Card.Empty;
+                map[to] = map[offload.To];
+                map[offload.To] = Card.Empty;
 
                 // Update the state.
                 emptyPilesLeft += offload.EmptyPilesUsed;

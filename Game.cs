@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    public class Game
+    public class Game : BaseGame
     {
         public static double[] FourSuitCoefficients = new double[] {
             /* 0 */ 8.42581707, 42.35984891, -0.1201269187, -4.841970863, -0.1252077493, 4.908558385, 8.502830004, 1,
@@ -28,10 +28,6 @@ namespace Spider
 
         public const int Group0 = 0;
         public const int Group1 = 8;
-
-        public static char Fence = '@';
-        public static char PrimarySeparator = '|';
-        public static char SecondarySeparator = '-';
 
         public const double InfiniteScore = double.MaxValue;
         public const double RejectScore = double.MinValue;
@@ -61,7 +57,6 @@ namespace Spider
         public PileMap UpPiles { get; private set; }
         public List<Pile> DiscardPiles { get; private set; }
 
-        public Pile ScratchPile { get; private set; }
         public MoveList Candidates { get; private set; }
         public MoveList SupplementaryMoves { get; private set; }
         public MoveList SupplementaryList { get; private set; }
@@ -75,7 +70,9 @@ namespace Spider
         public MoveList UncoveringMoves { get; private set; }
         public Game LastGame { get; private set; }
 
+        private GameInputOutput GameInputOutput { get; set; }
         private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
+        private MoveProcessor MoveProcessor { get; set; }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -124,7 +121,6 @@ namespace Spider
             UpPiles = new PileMap();
             DiscardPiles = new List<Pile>();
 
-            ScratchPile = new Pile();
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
@@ -142,19 +138,21 @@ namespace Spider
             UncoveringMoves = new MoveList();
             Coefficients = null;
 
+            GameInputOutput = new Spider.GameInputOutput(this);
             CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(this);
+            MoveProcessor = new MoveProcessor(this);
         }
 
-        public Game(string game)
+        public Game(string s)
             : this()
         {
-            FromAsciiString(game);
+            FromAsciiString(s);
         }
 
-        public Game(Game game)
+        public Game(Game other)
             : this()
         {
-            FromGame(game);
+            FromGame(other);
         }
 
         public void Play()
@@ -756,54 +754,7 @@ namespace Spider
             return holdingStack.Suits;
         }
 
-        public static int ExtraSuits(int emptyPiles)
-        {
-#if true
-            // The formula for how many intermediate runs can
-            // be moved is m: = sum(1 + 2 + ... + n).
-            return emptyPiles * (emptyPiles + 1) / 2;
-#else
-            // The formula for how many intermediate runs can
-            // be moved is m: = sum(1 + 2 + ... + 2^(n - 1)).
-            if (emptyPiles < 0)
-            {
-                return 0;
-            }
-            int power = 1;
-            for (int i = 0; i < emptyPiles; i++)
-            {
-                power *= 2;
-            }
-            return power - 1;
-#endif
-        }
-
-        public static int EmptyPilesUsed(int emptyPiles, int suits)
-        {
-            int used = 0;
-            for (int n = emptyPiles; n > 0 && suits > 0; n--)
-            {
-                used++;
-                suits -= n;
-            }
-            return used;
-        }
-
-        private int RoundUpExtraSuits(int suits)
-        {
-            int emptyPiles = 0;
-            while (true)
-            {
-                int extraSuits = ExtraSuits(emptyPiles);
-                if (extraSuits >= suits)
-                {
-                    return extraSuits;
-                }
-                emptyPiles++;
-            }
-        }
-
-        private int FindEmptyPiles()
+        public int FindEmptyPiles()
         {
             EmptyPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
@@ -1153,196 +1104,12 @@ namespace Spider
             }
 #endif
 
-            if (RecordComplex)
-            {
-                AddMove(move);
-            }
-
-            if (ComplexMoves)
-            {
-                MakeMove(move);
-            }
-            else
-            {
-                ConvertToSimpleMoves(move);
-            }
+            MoveProcessor.ProcessMove(move);
 
             return true;
         }
 
-        private void ConvertToSimpleMoves(Move move)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("CTSM: {0}", move);
-            }
-
-            // First move to the holding piles.
-            Stack<Move> moveStack = new Stack<Move>();
-            for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
-            {
-                HoldingInfo holding = HoldingList[holdingNext];
-                int undoFromRow = UpPiles[holding.To].Count;
-                MakeMoveUsingEmptyPiles(holding.From, holding.FromRow, holding.To);
-                moveStack.Push(new Move(holding.To, undoFromRow, holding.From == move.From ? move.To : move.From));
-            }
-            if (move.Type == MoveType.CompositeSinglePile)
-            {
-                // Composite single pile move.
-                MakeCompositeSinglePileMove(move.Next);
-            }
-            else if (move.Type == MoveType.Swap)
-            {
-                // Swap move.
-                SwapUsingEmptyPiles(move.From, move.FromRow, move.To, move.ToRow);
-            }
-            else
-            {
-                // Ordinary move.
-                MakeMoveUsingEmptyPiles(move.From, move.FromRow, move.To);
-            }
-
-            // Lastly move from the holding piles, if we still can.
-            while (moveStack.Count > 0)
-            {
-                TryToMakeMoveUsingEmptyPiles(moveStack.Pop());
-            }
-        }
-
-        private void MakeMove(Move move)
-        {
-            if (move.Next != -1)
-            {
-                for (int next = move.Next; next != -1; next = SupplementaryList[next].Next)
-                {
-                    Move subMove = SupplementaryList[next];
-                    MakeSingleMove(subMove);
-                }
-                return;
-            }
-            MakeSingleMove(move);
-        }
-
-        private void SwapUsingEmptyPiles(int from, int fromRow, int to, int toRow)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("SWUEP: {0}/{1} -> {2}/{3}", from, fromRow, to, toRow);
-            }
-            int emptyPiles = FindEmptyPiles();
-            int fromSuits = UpPiles.CountSuits(from, fromRow);
-            int toSuits = UpPiles.CountSuits(to, toRow);
-            if (fromSuits == 0 && toSuits == 0)
-            {
-                return;
-            }
-            if (fromSuits + toSuits - 1 > ExtraSuits(emptyPiles))
-            {
-                throw new InvalidMoveException("insufficient empty piles");
-            }
-            Stack<Move> moveStack = new Stack<Move>();
-            for (int n = emptyPiles; n > 0 && fromSuits + toSuits > 1; n--)
-            {
-                if (fromSuits >= toSuits)
-                {
-                    int moveSuits = toSuits != 0 ? fromSuits : fromSuits - 1;
-                    fromSuits -= MoveOffUsingEmptyPiles(from, fromRow, to, moveSuits, n, moveStack);
-                }
-                else
-                {
-                    int moveSuits = fromSuits != 0 ? toSuits : toSuits - 1;
-                    toSuits -= MoveOffUsingEmptyPiles(to, toRow, from, moveSuits, n, moveStack);
-                }
-            }
-            if (fromSuits + toSuits != 1 || fromSuits * toSuits != 0)
-            {
-                throw new Exception("bug: left over swap runs");
-            }
-            if (fromSuits == 1)
-            {
-                MakeSimpleMove(from, fromRow, to);
-            }
-            else
-            {
-                MakeSimpleMove(to, toRow, from);
-            }
-            while (moveStack.Count != 0)
-            {
-                Move move = moveStack.Pop();
-                MakeSimpleMove(move.From, move.FromRow, move.To);
-            }
-        }
-
-        private void UnloadToEmptyPiles(int from, int lastFromRow, int to, Stack<Move> moveStack)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("ULTEP: {0}/{1} -> {2}", from, lastFromRow, to);
-            }
-            int emptyPiles = FindEmptyPiles();
-            int suits = UpPiles.CountSuits(from, lastFromRow);
-            if (suits > ExtraSuits(emptyPiles))
-            {
-                throw new InvalidMoveException("insufficient empty piles");
-            }
-            int totalSuits = UpPiles.CountSuits(from, lastFromRow);
-            int remainingSuits = totalSuits;
-            int fromRow = UpPiles[from].Count;
-            for (int n = 0; n < emptyPiles; n++)
-            {
-                int m = Math.Min(emptyPiles, n + remainingSuits);
-                for (int i = m - 1; i >= n; i--)
-                {
-                    int runLength = UpPiles.GetRunUp(from, fromRow);
-                    fromRow -= runLength;
-                    fromRow = Math.Max(fromRow, lastFromRow);
-                    MakeSimpleMove(from, -runLength, EmptyPiles[i]);
-                    moveStack.Push(new Move(EmptyPiles[i], -runLength, to));
-                    remainingSuits--;
-                }
-                for (int i = n + 1; i < m; i++)
-                {
-                    int runLength = UpPiles[EmptyPiles[i]].Count;
-                    MakeSimpleMove(EmptyPiles[i], -runLength, EmptyPiles[n]);
-                    moveStack.Push(new Move(EmptyPiles[n], -runLength, EmptyPiles[i]));
-                }
-                if (remainingSuits == 0)
-                {
-                    break;
-                }
-            }
-        }
-
-        private int MoveOffUsingEmptyPiles(int from, int lastFromRow, int to, int remainingSuits, int n, Stack<Move> moveStack)
-        {
-            int suits = Math.Min(remainingSuits, n);
-            if (Diagnostics)
-            {
-                Utils.WriteLine("MOUEP: {0} -> {1}: {2}", from, to, suits);
-            }
-            for (int i = n - suits; i < n; i++)
-            {
-                // Move as much as possible but not too much.
-                Pile fromPile = UpPiles[from];
-                int fromRow = fromPile.Count - UpPiles.GetRunUp(from, fromPile.Count);
-                if (fromRow < lastFromRow)
-                {
-                    fromRow = lastFromRow;
-                }
-                int runLength = fromPile.Count - fromRow;
-                MakeSimpleMove(from, -runLength, EmptyPiles[i]);
-                moveStack.Push(new Move(EmptyPiles[i], -runLength, to));
-            }
-            for (int i = n - 2; i >= n - suits; i--)
-            {
-                int runLength = UpPiles[EmptyPiles[i]].Count;
-                MakeSimpleMove(EmptyPiles[i], -runLength, EmptyPiles[n - 1]);
-                moveStack.Push(new Move(EmptyPiles[n - 1], -runLength, EmptyPiles[i]));
-            }
-            return suits;
-        }
-
-        private Move Normalize(Move move)
+        public Move Normalize(Move move)
         {
             if (move.FromRow < 0)
             {
@@ -1355,279 +1122,7 @@ namespace Spider
             return move;
         }
 
-        private void MakeCompositeSinglePileMove(int first)
-        {
-            if (Diagnostics)
-            {
-                Utils.WriteLine("MCSPM");
-            }
-            int offloadPile = -1;
-            Stack<Move> moveStack = new Stack<Move>();
-            for (int next = first; next != -1; next = SupplementaryList[next].Next)
-            {
-                int emptyPiles = FindEmptyPiles();
-                Move move = Normalize(SupplementaryList[next]);
-                if (move.Type == MoveType.Unload)
-                {
-                    offloadPile = move.To;
-                    UnloadToEmptyPiles(move.From, move.FromRow, -1, moveStack);
-                }
-                else if (move.Type == MoveType.Reload)
-                {
-                    if (Diagnostics)
-                    {
-                        Utils.WriteLine("RL:");
-                    }
-                    while (moveStack.Count != 0)
-                    {
-                        Move subMove = moveStack.Pop();
-                        int to = subMove.To != -1 ? subMove.To : move.To;
-                        MakeSimpleMove(subMove.From, subMove.FromRow, to);
-                    }
-                    offloadPile = -1;
-
-                }
-                else if ((move.Flags & MoveFlags.UndoHolding) == MoveFlags.UndoHolding)
-                {
-                    TryToMakeMoveUsingEmptyPiles(move);
-                }
-                else
-                {
-                    if (!TryToMakeMoveUsingEmptyPiles(move))
-                    {
-                        // Things got messed up due to a discard.  There should
-                        // be another pile with the same target.
-                        bool foundAlternative = false;
-                        Pile fromPile = UpPiles[move.From];
-                        Card fromCard = fromPile[move.FromRow];
-                        for (int to = 0; to < NumberOfPiles; to++)
-                        {
-                            if (to == move.From)
-                            {
-                                continue;
-                            }
-                            Pile toPile = UpPiles[to];
-                            if (toPile.Count == 0)
-                            {
-                                continue;
-                            }
-                            if (fromCard.Face + 1 != toPile[toPile.Count - 1].Face)
-                            {
-                                continue;
-                            }
-                            MakeMoveUsingEmptyPiles(move.From, move.FromRow, to);
-                            foundAlternative = true;
-                            break;
-                        }
-                        if (!foundAlternative)
-                        {
-                            // This move is hopelessly messed up.
-                            break;
-                        }
-                    }
-                }
-            }
-            if (moveStack.Count != 0)
-            {
-                throw new Exception("missing reload move");
-            }
-        }
-
-        private bool TryToMakeMoveUsingEmptyPiles(Move move)
-        {
-            if (SimpleMoveIsValid(move))
-            {
-                if (SafeMakeMoveUsingEmptyPiles(move.From, move.FromRow, move.To) == null)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private bool SimpleMoveIsValid(Move move)
-        {
-            move = Normalize(move);
-            int from = move.From;
-            Pile fromPile = UpPiles[from];
-            int fromRow = move.FromRow;
-            int to = move.To;
-            Pile toPile = UpPiles[to];
-            int toRow = toPile.Count;
-            if (fromRow < 0 || fromRow >= fromPile.Count)
-            {
-                return false;
-            }
-            if (move.ToRow != toPile.Count)
-            {
-                return false;
-            }
-            if (toPile.Count == 0)
-            {
-                return true;
-            }
-            if (fromPile[fromRow].Face + 1 != toPile[toRow - 1].Face)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        private void MakeMovesUsingEmptyPiles(int first)
-        {
-            for (int next = first; next != -1; next = SupplementaryList[next].Next)
-            {
-                Move move = SupplementaryList[next];
-                MakeMoveUsingEmptyPiles(move.From, move.FromRow, move.To);
-            }
-        }
-
-        private void MakeMoveUsingEmptyPiles(int from, int lastFromRow, int to)
-        {
-            string error = SafeMakeMoveUsingEmptyPiles(from, lastFromRow, to);
-            if (error != null)
-            {
-                throw new InvalidMoveException(error);
-            }
-        }
-
-        private string SafeMakeMoveUsingEmptyPiles(int from, int lastFromRow, int to)
-        {
-            if (lastFromRow < 0)
-            {
-                lastFromRow += UpPiles[from].Count;
-            }
-            if (Diagnostics)
-            {
-                Utils.WriteLine("MMUEP: {0}/{1} -> {2}", from, lastFromRow, to);
-            }
-            int toRow = UpPiles[to].Count;
-            int extraSuits = UpPiles.CountSuits(from, lastFromRow) - 1;
-            if (extraSuits < 0)
-            {
-                return "not a single run";
-            }
-            if (extraSuits == 0)
-            {
-                MakeSimpleMove(from, lastFromRow, to);
-                return null;
-            }
-            int emptyPiles = FindEmptyPiles();
-            PileList usableEmptyPiles = new PileList(EmptyPiles);
-            if (toRow == 0)
-            {
-                usableEmptyPiles.Remove(to);
-                emptyPiles--;
-            }
-            int maxExtraSuits = ExtraSuits(emptyPiles);
-            if (extraSuits > maxExtraSuits)
-            {
-                return "insufficient empty piles";
-            }
-            int suits = 0;
-            int fromRow = UpPiles[from].Count;
-            Stack<Move> moveStack = new Stack<Move>();
-            for (int n = emptyPiles; n > 0; n--)
-            {
-                for (int i = 0; i < n; i++)
-                {
-                    int runLength = UpPiles.GetRunUp(from, fromRow);
-                    fromRow -= runLength;
-                    MakeSimpleMove(from, -runLength, usableEmptyPiles[i]);
-                    moveStack.Push(new Move(usableEmptyPiles[i], -runLength, to));
-                    suits++;
-                    if (suits == extraSuits)
-                    {
-                        break;
-                    }
-                }
-                if (suits == extraSuits)
-                {
-                    break;
-                }
-                for (int i = n - 2; i >= 0; i--)
-                {
-                    int runLength = UpPiles[usableEmptyPiles[i]].Count;
-                    MakeSimpleMove(usableEmptyPiles[i], -runLength, usableEmptyPiles[n - 1]);
-                    moveStack.Push(new Move(usableEmptyPiles[n - 1], -runLength, usableEmptyPiles[i]));
-                }
-            }
-            MakeSimpleMove(from, lastFromRow, to);
-            while (moveStack.Count != 0)
-            {
-                Move move = moveStack.Pop();
-                MakeSimpleMove(move.From, move.FromRow, move.To);
-            }
-            return null;
-        }
-
-        private void MakeSimpleMove(int from, int fromRow, int to)
-        {
-            if (fromRow < 0)
-            {
-                fromRow += UpPiles[from].Count;
-            }
-            if (Diagnostics)
-            {
-                Utils.WriteLine("    MSM: {0}/{1} -> {2}", from, fromRow, to);
-            }
-            Debug.Assert(UpPiles[from].Count != 0);
-            Debug.Assert(fromRow < UpPiles[from].Count);
-            Debug.Assert(UpPiles.CountSuits(from, fromRow) == 1);
-            Debug.Assert(UpPiles[to].Count == 0 || UpPiles[from][fromRow].Face + 1 == UpPiles[to][UpPiles[to].Count - 1].Face);
-            MakeMove(new Move(from, fromRow, to, UpPiles[to].Count));
-        }
-
-        private void MakeSingleMove(Move move)
-        {
-            // Record the move.
-            if (!RecordComplex)
-            {
-                AddMove(move);
-            }
-
-            // Make the moves.
-            Pile fromPile = UpPiles[move.From];
-            Pile toPile = UpPiles[move.To];
-            Pile scratchPile = ScratchPile;
-            int fromRow = move.FromRow;
-            int fromCount = fromPile.Count - fromRow;
-            scratchPile.Clear();
-            if (move.Type == MoveType.Swap)
-            {
-                int toRow = move.ToRow;
-                int toCount = toPile.Count - toRow;
-                scratchPile.AddRange(toPile, toRow, toCount);
-                toPile.RemoveRange(toRow, toCount);
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
-                fromPile.AddRange(scratchPile, 0, toCount);
-            }
-            else if (move.Type == MoveType.Basic)
-            {
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
-            }
-            else
-            {
-                throw new Exception("unsupported move type");
-            }
-            move.HoldingNext = -1;
-            Discard();
-            TurnOverCards();
-        }
-
-        private void AddMove(Move move)
-        {
-            move.Score = 0;
-            if (TraceMoves)
-            {
-                Utils.WriteLine("Move {0}: {1}", Moves.Count, move);
-            }
-            Moves.Add(move);
-        }
-
-        private void Discard()
+        public void Discard()
         {
             for (int i = 0; i < NumberOfPiles; i++)
             {
@@ -1656,7 +1151,7 @@ namespace Spider
             }
         }
 
-        private void TurnOverCards()
+        public void TurnOverCards()
         {
             for (int i = 0; i < NumberOfPiles; i++)
             {
@@ -1691,25 +1186,6 @@ namespace Spider
                 return;
             }
             PrintGamesSideBySide(LastGame, this);
-        }
-
-        public static void PrintGamesSideBySide(Game game1, Game game2)
-        {
-            string[] v1 = game1.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            string[] v2 = game2.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            int max = 0;
-            for (int i = 0; i < v1.Length; i++)
-            {
-                max = Math.Max(max, v1[i].Length);
-            }
-            string text = "";
-            for (int i = 0; i < v1.Length || i < v2.Length; i++)
-            {
-                string s1 = i < v1.Length ? v1[i] : "";
-                string s2 = i < v2.Length ? v2[i] : "";
-                text += s1.PadRight(max + 1) + s2 + Environment.NewLine;
-            }
-            Utils.ColorizeToConsole(text);
         }
 
         private void PrintMoves()
@@ -1760,277 +1236,32 @@ namespace Spider
 
         public string ToAsciiString()
         {
-            Pile discardRow = new Pile();
-            for (int i = 0; i < DiscardPiles.Count; i++)
-            {
-                Pile discardPile = DiscardPiles[i];
-                discardRow.Add(discardPile[discardPile.Count - 1]);
-            }
-
-            string s = "";
-
-            s += Fence;
-            s += Suits.ToString() + PrimarySeparator;
-            s += ToAsciiString(discardRow) + PrimarySeparator;
-            s += ToAsciiString(DownPiles) + PrimarySeparator;
-            s += ToAsciiString(UpPiles) + PrimarySeparator;
-            s += ToAsciiString(StockPile);
-            s += Fence;
-
-            return WrapString(s, 60);
-        }
-
-        private string WrapString(string s, int columns)
-        {
-            string t = "";
-            while (s.Length > columns)
-            {
-                t += s.Substring(0, columns) + Environment.NewLine;
-                s = s.Substring(columns);
-            }
-            return t + s;
-        }
-
-        private static string ToAsciiString(IList<Pile> piles)
-        {
-            string s = "";
-            int n = piles.Count;
-            while (n > 0 && piles[n - 1].Count == 0)
-            {
-                n--;
-            }
-            for (int i = 0; i < n; i++)
-            {
-                if (i != 0)
-                {
-                    s += SecondarySeparator;
-                }
-                s += ToAsciiString(piles[i]);
-            }
-            return s;
-        }
-
-        private static string ToAsciiString(Pile row)
-        {
-            string s = "";
-            for (int i = 0; i < row.Count; i++)
-            {
-                s += row[i].ToAsciiString();
-            }
-            return s;
+            return GameInputOutput.ToAsciiString();
         }
 
         public void FromAsciiString(string s)
         {
-            // Parse string.
-            StringBuilder b = new StringBuilder();
-            int i;
-            for (i = 0; i < s.Length && s[i] != Fence; i++)
-            {
-            }
-            if (i == s.Length)
-            {
-                throw new Exception("missing opening fence");
-            }
-            for (i++; i < s.Length && s[i] != Fence; i++)
-            {
-                char c = s[i];
-                if (!char.IsWhiteSpace(c))
-                {
-                    b.Append(s[i]);
-                }
-            }
-            if (i == s.Length)
-            {
-                throw new Exception("missing closing fence");
-            }
-            s = b.ToString();
-            string[] sections = s.Split(PrimarySeparator);
-            if (sections.Length != 5)
-            {
-                throw new Exception("wrong number of sections");
-            }
-
-            // Parse sections.
-            int suits = int.Parse(sections[0]);
-            if (suits != 1 && suits != 2 && suits != 4)
-            {
-                throw new Exception("invalid number of suits");
-            }
-            Pile discards = GetPileFromAsciiString(sections[1]);
-            Pile[] downPiles = GetPilesFromAsciiString(sections[2]);
-            Pile[] upPiles = GetPilesFromAsciiString(sections[3]);
-            Pile stock = GetPileFromAsciiString(sections[4]);
-            if (discards.Count > 8)
-            {
-                throw new Exception("too many discard piles");
-            }
-            if (downPiles.Length > NumberOfPiles)
-            {
-                throw new Exception("wrong number of down piles");
-            }
-            if (upPiles.Length > NumberOfPiles)
-            {
-                throw new Exception("wrong number of up piles");
-            }
-            if (stock.Count > 50)
-            {
-                throw new Exception("too many stock pile cards");
-            }
-
-            // Prepare game.
-            Suits = suits;
-            Initialize();
-            foreach (Card discardCard in discards)
-            {
-                Pile discardPile = new Pile();
-                for (Face face = Face.King; face >= Face.Ace; face--)
-                {
-                    discardPile.Add(new Card(face, discardCard.Suit));
-                }
-                DiscardPiles.Add(discardPile);
-            }
-            for (int column = 0; column < downPiles.Length; column++)
-            {
-                DownPiles[column] = downPiles[column];
-            }
-            for (int column = 0; column < upPiles.Length; column++)
-            {
-                UpPiles[column] = upPiles[column];
-            }
-            StockPile = stock;
+            GameInputOutput.FromAsciiString(s);
         }
 
-        private static Pile[] GetPilesFromAsciiString(string s)
+        public void FromGame(Game other)
         {
-            string[] rows = s.Split(SecondarySeparator);
-            int n = rows.Length;
-            Pile[] piles = new Pile[n];
-            for (int i = 0; i < n; i++)
-            {
-                piles[i] = GetPileFromAsciiString(rows[i]);
-            }
-            return piles;
-        }
-
-        private static Pile GetPileFromAsciiString(string s)
-        {
-            int n = s.Length / 2;
-            Pile pile = new Pile();
-            for (int i = 0; i < n; i++)
-            {
-                pile.Add(Utils.GetCard(s.Substring(2 * i, 2)));
-            }
-            return pile;
-        }
-
-        public void FromGame(Game game)
-        {
-            Suits = game.Suits;
-            Initialize();
-            foreach (Pile pile in game.DiscardPiles)
-            {
-                DiscardPiles.Add(pile);
-            }
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                DownPiles[column].Copy((game.DownPiles[column]));
-            }
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                UpPiles[column].Copy((game.UpPiles[column]));
-            }
-            StockPile.Copy((game.StockPile));
+            GameInputOutput.FromGame(other);
         }
 
         public string ToPrettyString()
         {
-            string s = Environment.NewLine;
-            s += "   Spider";
-            s += Environment.NewLine;
-            s += "--------------------------------";
-            s += Environment.NewLine;
-            Pile discardRow = new Pile();
-            for (int i = 0; i < DiscardPiles.Count; i++)
-            {
-                Pile discardPile = DiscardPiles[i];
-                discardRow.Add(discardPile[discardPile.Count - 1]);
-            }
-            s += ToPrettyString(-1, discardRow);
-            s += Environment.NewLine;
-            s += ToPrettyString(DownPiles);
-            s += Environment.NewLine;
-            s += "   0  1  2  3  4  5  6  7  8  9";
-            s += Environment.NewLine;
-            s += ToPrettyString(UpPiles);
-            s += Environment.NewLine;
-            for (int i = 0; i < StockPile.Count / NumberOfPiles; i++)
-            {
-                Pile row = new Pile();
-                for (int j = 0; j < NumberOfPiles; j++)
-                {
-                    int index = i * NumberOfPiles + j;
-                    int reverseIndex = StockPile.Count - index - 1;
-                    row.Add(StockPile[reverseIndex]);
-                }
-                s += ToPrettyString(i, row);
-            }
-
-            return s;
+            return GameInputOutput.ToPrettyString();
         }
 
-        private static string ToPrettyString(IList<Pile> piles)
+        public static void PrintGamesSideBySide(Game game1, Game game2)
         {
-            string s = "";
-            int max = 0;
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                max = Math.Max(max, piles[i].Count);
-            }
-            for (int j = 0; j < max; j++)
-            {
-                Pile row = new Pile();
-                for (int i = 0; i < NumberOfPiles; i++)
-                {
-                    if (j < piles[i].Count)
-                    {
-                        row.Add(piles[i][j]);
-                    }
-                    else
-                    {
-                        row.Add(Card.Empty);
-                    }
-                }
-                s += ToPrettyString(j, row);
-            }
-            return s;
-        }
-
-        private static string ToPrettyString(int row, Pile pile)
-        {
-            string s = "";
-            if (row == -1)
-            {
-                s += "   ";
-            }
-            else
-            {
-                s += string.Format("{0,2} ", row);
-            }
-            for (int i = 0; i < pile.Count; i++)
-            {
-                if (i > 0)
-                {
-                    s += " ";
-                }
-                s += (pile[i].IsEmpty) ? "  " : pile[i].ToString();
-            }
-            return s + Environment.NewLine;
+            GameInputOutput.PrintGamesSideBySide(game1, game2);
         }
 
         public override string ToString()
         {
-            return ToPrettyString();
+            return GameInputOutput.ToPrettyString();
         }
     }
 }

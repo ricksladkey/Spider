@@ -69,6 +69,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseGame.cs" />
     <Compile Include="Card.cs" />
     <Compile Include="ComplexMove.cs" />
     <Compile Include="CompositeSinglePileMoveFinder.cs" />
@@ -76,6 +77,8 @@
     <Compile Include="Deck.cs" />
     <Compile Include="EnumerableDebugView.cs" />
     <Compile Include="Face.cs" />
+    <Compile Include="GameHelper.cs" />
+    <Compile Include="GameInputOutput.cs" />
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
@@ -83,6 +86,7 @@
     <Compile Include="InvalidMoveException.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
+    <Compile Include="MoveProcessor.cs" />
     <Compile Include="MoveFlags.cs" />
     <Compile Include="MoveList.cs" />
     <Compile Include="MoveType.cs" />
