@@ -369,6 +369,15 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
+        [TestMethod]
+        public void CompositeSinglePileTest21()
+        {
+            // A 1/1/1 partial holding composite single pile move, 1 empty pile.
+            string data1 = "@2|||Ts8s6s5s4h7s-Ts5h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Ts8s7s6s5s4h-Ts5h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)

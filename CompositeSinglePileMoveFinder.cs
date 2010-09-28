@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -234,55 +235,25 @@ namespace Spider
                     emptyPilesLeft -= emptyPilesUsed;
                     offload = new OffloadInfo(n, to, suits, emptyPilesUsed, offloadPile);
                     offload.Pile.Clear();
-                    offload.Pile.AddRange(fromPile, rootRow, runLength);
+                    offload.Pile.AddRange(fromPile, rootRow, runLength - holdingStack.Set.Length);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
                     offloads++;
                 }
 
-                // Extract the holding set.
+                // Do the move and the holding moves.
                 HoldingSet holdingSet = holdingStack.Set;
                 bool undoHolding = !isOffload;
-                int remainingLength = runLength - holdingSet.Length;
+                AddSupplementaryMove(new Move(type, from, rootRow, to), fromPile, runLength, holdingSet, undoHolding);
 
+                // Update the map.
                 if (undoHolding)
                 {
-                    // Add moves to the holding piles.
-                    foreach (HoldingInfo holding in holdingSet.Forwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
-                    }
-
-                    // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootRow, to));
-
-                    // Undo moves to the holding piles.
-                    int toOffset = remainingLength;
-                    foreach (HoldingInfo holding in holdingSet.Backwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, to));
-                        toOffset += holding.Length;
-                    }
-                    Debug.Assert(toOffset == runLength);
-
-                    // Update the map.
                     map[to] = fromPile[rootRow + runLength - 1];
                 }
                 else
                 {
-                    // Add moves to the holding piles.
-                    foreach (HoldingInfo holding in holdingSet.Forwards)
-                    {
-                        SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, from, -holding.Length, holding.To));
-
-                        map[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
-                    }
-
-                    // Add the move.
-                    SupplementaryMoves.Add(new Move(type, from, rootRow, to));
-
-                    // Update the map.
-                    map[to] = fromPile[rootRow + remainingLength - 1];
+                    map[to] = fromPile[rootRow + runLength - holdingSet.Length - 1];
                 }
 
                 if (rootRow == 0 && DownPiles[from].Count == 0)
@@ -292,6 +263,7 @@ namespace Spider
                     emptyPilesLeft++;
                 }
 
+                // Check whether the offload matches the new to or from piles.
                 CheckOffload(rootRow, to);
             }
 
@@ -360,26 +332,31 @@ namespace Spider
                 return;
             }
 
+            holdingStack.Clear();
             if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
             {
-#if false
                 offloadSuits -= game.FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
                 if (offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Can't move the offload due to additional suits.
                     return;
                 }
-#else
-                return;
-#endif
             }
+            HoldingSet holdingSet = holdingStack.Set;
 
             if (!fromMatch.IsEmpty)
             {
                 // Offload matches from pile.
-                SupplementaryMoves.Add(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.To, 0, from));
+                int count = AddSupplementaryMove(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.To, 0, from), offload.Pile, offload.Pile.Count, holdingSet, true);
+
+                // Add the intermediate move.
                 AddMove(MoveFlags.Empty, order + Game.GetOrder(fromMatch, offloadRootCard));
-                SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
+
+                // Restore state of supplementary moves prior to intermediate move.
+                for (int i = 0; i < count; i++)
+                {
+                    SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
+                }
             }
 
             if (!toMatch.IsEmpty)
@@ -389,7 +366,7 @@ namespace Spider
 
                 // Found a home for the offload.
                 MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                SupplementaryMoves.Add(new Move(offloadType, offload.To, 0, to));
+                AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, offload.Pile.Count, holdingSet, true);
 
                 // Update the map.
                 map[to] = map[offload.To];
@@ -398,6 +375,43 @@ namespace Spider
                 // Update the state.
                 emptyPilesLeft += offload.EmptyPilesUsed;
                 offload = OffloadInfo.Empty;
+            }
+        }
+
+        private int AddSupplementaryMove(Move move, Pile pile, int runLength, HoldingSet holdingSet, bool undoHolding)
+        {
+            if (undoHolding)
+            {
+                // Add moves to the holding piles.
+                foreach (HoldingInfo holding in holdingSet.Forwards)
+                {
+                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
+                }
+
+                // Add the move.
+                SupplementaryMoves.Add(move);
+
+                // Undo moves from the holding piles.
+                foreach (HoldingInfo holding in holdingSet.Backwards)
+                {
+                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To));
+                }
+
+                return 2 * holdingSet.Count + 1;
+            }
+            else
+            {
+                foreach (HoldingInfo holding in holdingSet.Forwards)
+                {
+                    // Add holding move and update the map.
+                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
+                    map[holding.To] = pile[holding.FromRow + holding.Length - 1];
+                }
+
+                // Add the move and update the map.
+                SupplementaryMoves.Add(move);
+
+                return holdingSet.Count + 1;
             }
         }
 
