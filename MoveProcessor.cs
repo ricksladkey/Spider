@@ -264,8 +264,10 @@ namespace Spider
                             {
                                 continue;
                             }
-                            MakeMoveUsingEmptyPiles(move.From, move.FromRow, to);
-                            foundAlternative = true;
+                            if (TryToMakeMoveUsingEmptyPiles(new Move(move.From, move.FromRow, to)))
+                            {
+                                foundAlternative = true;
+                            }
                             break;
                         }
                         if (!foundAlternative)

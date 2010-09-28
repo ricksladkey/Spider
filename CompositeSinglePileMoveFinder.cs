@@ -97,7 +97,11 @@ namespace Spider
                 }
 
                 // Try again to find a composite single pile move.
+#if false
                 order = move.ToRow;
+#else
+                order = 0;
+#endif
                 move.ToRow = -1;
                 CheckOne(move);
             }
@@ -312,18 +316,99 @@ namespace Spider
             Card offloadRootCard = fromPile[offloadRootRow];
             int offloadSuits = offload.Suits;
             int offloadMaxExtraSuits = ExtraSuits(emptyPilesLeft);
-            Card fromMatch = Card.Empty;
-            Card toMatch = Card.Empty;
 
             if (rootRow > 0 && offloadRootCard.Face + 1 == fromPile[rootRow - 1].Face)
             {
                 // Offload matches from pile.
-                fromMatch = fromPile[rootRow - 1];
+                Card fromMatch = fromPile[rootRow - 1];
+
+                // Check whether we can make the move.
+                bool canMove = true;
+                holdingStack.Clear();
+                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+                {
+                    offloadSuits -= game.FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, from, offloadMaxExtraSuits);
+                    if (offloadSuits - 1 > offloadMaxExtraSuits)
+                    {
+                        // Can't move the offload due to additional suits.
+                        canMove = false;
+                    }
+                }
+
+                if (canMove)
+                {
+                    HoldingSet holdingSet = holdingStack.Set;
+                    // Offload matches from pile.
+                    int count = AddSupplementaryMove(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.To, 0, from), offload.Pile, offload.Pile.Count, holdingSet, true);
+
+                    // Add the intermediate move.
+                    AddMove(MoveFlags.Empty, order + Game.GetOrder(fromMatch, offloadRootCard));
+
+                    // Restore state of supplementary moves prior to intermediate move.
+                    for (int i = 0; i < count; i++)
+                    {
+                        SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
+                    }
+                }
             }
 
             if (offloadRootCard.Face + 1 == map[to].Face)
             {
                 // Offoad matches to pile.
+                Card toMatch = map[to];
+
+                // Check whether we can make the move.
+                bool canMove = true;
+                holdingStack.Clear();
+                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+                {
+                    offloadSuits -= game.FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
+                    if (offloadSuits - 1 > offloadMaxExtraSuits)
+                    {
+                        // Can't move the offload due to additional suits.
+                        canMove = false;
+                    }
+                }
+
+                if (canMove)
+                {
+                    // Record the order improvement.
+                    order += Game.GetOrder(toMatch, offloadRootCard);
+
+                    // Found a home for the offload.
+                    MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
+                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, offload.Pile.Count, holdingStack.Set, true);
+
+                    // Update the map.
+                    map[to] = map[offload.To];
+                    map[offload.To] = Card.Empty;
+
+                    // Update the state.
+                    emptyPilesLeft += offload.EmptyPilesUsed;
+                    offload = OffloadInfo.Empty;
+                }
+            }
+        }
+
+#if false
+        private void CheckOneRun(int rootRow, int to, int oneRun)
+        {
+            Pile oneRunPile = UpPiles[oneRun];
+            Card oneRunRootCard = oneRunPile[0];
+            int oneRunSuits = oneRunPile.CountSuits(0);
+            int oneRunMaxExtraSuits = ExtraSuits(emptyPilesLeft);
+            Card fromMatch = Card.Empty;
+            Card toMatch = Card.Empty;
+
+            if (rootRow > 0 && oneRunRootCard.Face + 1 == fromPile[rootRow - 1].Face)
+            {
+                // One run pile matches from pile.
+                fromMatch = fromPile[rootRow - 1];
+            }
+
+            if (oneRunRootCard.Face + 1 == map[to].Face)
+            {
+                // One run pile matches to pile.
                 toMatch = map[to];
             }
 
@@ -333,12 +418,12 @@ namespace Spider
             }
 
             holdingStack.Clear();
-            if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+            if (oneRunSuits - 1 > oneRunMaxExtraSuits)
             {
-                offloadSuits -= game.FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
-                if (offloadSuits - 1 > offloadMaxExtraSuits)
+                oneRunSuits -= game.FindHolding(map, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, to, oneRunMaxExtraSuits);
+                if (oneRunSuits - 1 > oneRunMaxExtraSuits)
                 {
-                    // Can't move the offload due to additional suits.
+                    // Can't move the oneRun due to additional suits.
                     return;
                 }
             }
@@ -347,10 +432,10 @@ namespace Spider
             if (!fromMatch.IsEmpty)
             {
                 // Offload matches from pile.
-                int count = AddSupplementaryMove(new Move(offload.SinglePile ? MoveType.Basic : MoveType.Reload, offload.To, 0, from), offload.Pile, offload.Pile.Count, holdingSet, true);
+                int count = AddSupplementaryMove(new Move(oneRun.SinglePile ? MoveType.Basic : MoveType.Reload, oneRun.To, 0, from), oneRun.Pile, oneRun.Pile.Count, holdingSet, true);
 
                 // Add the intermediate move.
-                AddMove(MoveFlags.Empty, order + Game.GetOrder(fromMatch, offloadRootCard));
+                AddMove(MoveFlags.Empty, order + Game.GetOrder(fromMatch, oneRunRootCard));
 
                 // Restore state of supplementary moves prior to intermediate move.
                 for (int i = 0; i < count; i++)
@@ -362,21 +447,22 @@ namespace Spider
             if (!toMatch.IsEmpty)
             {
                 // Record the order improvement.
-                order += Game.GetOrder(toMatch, offloadRootCard);
+                order += Game.GetOrder(toMatch, oneRunRootCard);
 
-                // Found a home for the offload.
-                MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
-                AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, offload.Pile.Count, holdingSet, true);
+                // Found a home for the oneRun.
+                MoveType oneRunType = oneRun.SinglePile ? MoveType.Basic : MoveType.Reload;
+                AddSupplementaryMove(new Move(oneRunType, oneRun.To, 0, to), oneRun.Pile, oneRun.Pile.Count, holdingSet, true);
 
                 // Update the map.
-                map[to] = map[offload.To];
-                map[offload.To] = Card.Empty;
+                map[to] = map[oneRun.To];
+                map[oneRun.To] = Card.Empty;
 
                 // Update the state.
-                emptyPilesLeft += offload.EmptyPilesUsed;
-                offload = OffloadInfo.Empty;
+                emptyPilesLeft += oneRun.EmptyPilesUsed;
+                oneRun = OffloadInfo.Empty;
             }
         }
+#endif
 
         private int AddSupplementaryMove(Move move, Pile pile, int runLength, HoldingSet holdingSet, bool undoHolding)
         {
@@ -417,6 +503,7 @@ namespace Spider
 
         private void AddMove(MoveFlags flags, int totalOrder)
         {
+#if true
             // Check which move is better.
             if (best != -1)
             {
@@ -449,6 +536,7 @@ namespace Spider
                 // Clear out the previous best move.
                 Candidates[best] = Move.Empty;
             }
+#endif
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
