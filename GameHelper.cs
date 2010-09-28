@@ -45,5 +45,40 @@ namespace Spider
         {
             return game.Normalize(move);
         }
+
+        public void PrintGame()
+        {
+            game.PrintGame();
+        }
+
+        public void PrintGames()
+        {
+            game.PrintGames();
+        }
+
+        private void PrintMoves()
+        {
+            game.PrintMoves();
+        }
+
+        private void PrintMoves(MoveList moves)
+        {
+            game.PrintMoves(moves);
+        }
+
+        private void PrintCandidates()
+        {
+            game.PrintCandidates();
+        }
+
+        private void PrintViableCandidates()
+        {
+            game.PrintViableCandidates();
+        }
+
+        public void PrintMove(Move move)
+        {
+            game.PrintMove(move);
+        }
     }
 }

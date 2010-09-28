@@ -53,5 +53,31 @@ namespace Spider
                 emptyPiles++;
             }
         }
+
+        public static int GetOrder(Card parent, Card child)
+        {
+            if (parent.Face - 1 != child.Face)
+            {
+                return 0;
+            }
+            if (parent.Suit != child.Suit)
+            {
+                return 1;
+            }
+            return 2;
+        }
+
+        public static int GetOrder(bool facesMatch, bool suitsMatch)
+        {
+            if (!facesMatch)
+            {
+                return 0;
+            }
+            if (!suitsMatch)
+            {
+                return 1;
+            }
+            return 2;
+        }
     }
 }

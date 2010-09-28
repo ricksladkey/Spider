@@ -700,7 +700,7 @@ namespace Spider
                         }
 
                         HoldingStack reverseHoldingStack = new HoldingStack();
-                        int reverseHoldingSuits = FindHolding(map, reverseHoldingStack, true, to, toRow, toPile.Count, from, maxExtraSuits);
+                        int reverseHoldingSuits = FindHolding(map, reverseHoldingStack, true, toPile, to, toRow, toPile.Count, from, maxExtraSuits);
                         if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + reverseHoldingSuits)
                         {
                             Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet, reverseHoldingStack.Set)));
@@ -711,10 +711,9 @@ namespace Spider
             }
         }
 
-        public int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
+        public int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
         {
             holdingStack.StartingRow = fromEnd;
-            Pile fromPile = UpPiles[from];
             int firstRow = fromStart + (inclusive ? 0 : 1);
             int lastRow = fromEnd - fromPile.GetRunUp(fromEnd);
             int extraSuits = 0;
@@ -1010,32 +1009,6 @@ namespace Spider
             return uses;
         }
 
-        public static int GetOrder(Card parent, Card child)
-        {
-            if (parent.Face - 1 != child.Face)
-            {
-                return 0;
-            }
-            if (parent.Suit != child.Suit)
-            {
-                return 1;
-            }
-            return 2;
-        }
-
-        public static int GetOrder(bool facesMatch, bool suitsMatch)
-        {
-            if (!facesMatch)
-            {
-                return 0;
-            }
-            if (!suitsMatch)
-            {
-                return 1;
-            }
-            return 2;
-        }
-
         private int GetNetRunLength(int order, int from, int fromRow, int to, int toRow)
         {
             int moveRun = UpPiles.GetRunDown(from, fromRow);
@@ -1080,6 +1053,7 @@ namespace Spider
             {
                 PrintGame();
                 PrintViableCandidates();
+                Console.WriteLine("Moves.Count = {0}", Moves.Count);
             }
 
             Move move = Candidates[0];
@@ -1188,12 +1162,12 @@ namespace Spider
             PrintGamesSideBySide(LastGame, this);
         }
 
-        private void PrintMoves()
+        public void PrintMoves()
         {
             PrintMoves(Moves);
         }
 
-        private void PrintMoves(MoveList moves)
+        public void PrintMoves(MoveList moves)
         {
             foreach (Move move in moves)
             {
@@ -1201,7 +1175,7 @@ namespace Spider
             }
         }
 
-        private void PrintCandidates()
+        public void PrintCandidates()
         {
             foreach (Move move in Candidates)
             {
@@ -1209,7 +1183,7 @@ namespace Spider
             }
         }
 
-        private void PrintViableCandidates()
+        public void PrintViableCandidates()
         {
             foreach (Move move in Candidates)
             {
