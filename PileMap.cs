@@ -65,32 +65,51 @@ namespace Spider
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
+        public void Update(PileMap other)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                array[i].Update(other.array[i]);
+            }
+        }
+
         public void Move(Move move)
         {
-            Pile fromPile = array[move.From];
-            Pile toPile = array[move.To];
-            int fromRow = move.FromRow;
-            int fromCount = fromPile.Count - fromRow;
             if (move.Type == MoveType.Basic)
             {
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
+                Move(move.From, move.FromRow, move.To);
             }
             else if (move.Type == MoveType.Swap)
             {
-                scratchPile.Clear();
-                int toRow = move.ToRow;
-                int toCount = toPile.Count - toRow;
-                scratchPile.AddRange(toPile, toRow, toCount);
-                toPile.RemoveRange(toRow, toCount);
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
-                fromPile.AddRange(scratchPile, 0, toCount);
+                Swap(move.From, move.FromRow, move.To, move.ToRow);
             }
             else
             {
                 throw new Exception("unsupported move type");
             }
+        }
+
+        public void Move(int from, int fromRow, int to)
+        {
+            Pile fromPile = array[from];
+            Pile toPile = array[to];
+            int fromCount = fromPile.Count - fromRow;
+            toPile.AddRange(fromPile, fromRow, fromCount);
+            fromPile.RemoveRange(fromRow, fromCount);
+        }
+
+        public void Swap(int from, int fromRow, int to, int toRow)
+        {
+            Pile fromPile = array[from];
+            Pile toPile = array[to];
+            int fromCount = fromPile.Count - fromRow;
+            int toCount = toPile.Count - toRow;
+            scratchPile.Clear();
+            scratchPile.AddRange(toPile, toRow, toCount);
+            toPile.RemoveRange(toRow, toCount);
+            toPile.AddRange(fromPile, fromRow, fromCount);
+            fromPile.RemoveRange(fromRow, fromCount);
+            fromPile.AddRange(scratchPile, 0, toCount);
         }
 
         #region IGetCard Members

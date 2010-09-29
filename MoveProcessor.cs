@@ -89,7 +89,7 @@ namespace Spider
             {
                 Utils.WriteLine("SWUEP: {0}/{1} -> {2}/{3}", from, fromRow, to, toRow);
             }
-            int emptyPiles = game.FindEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             int fromSuits = UpPiles.CountSuits(from, fromRow);
             int toSuits = UpPiles.CountSuits(to, toRow);
             if (fromSuits == 0 && toSuits == 0)
@@ -139,7 +139,7 @@ namespace Spider
             {
                 Utils.WriteLine("ULTEP: {0}/{1} -> {2}", from, lastFromRow, to);
             }
-            int emptyPiles = game.FindEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             int suits = UpPiles.CountSuits(from, lastFromRow);
             if (suits > ExtraSuits(emptyPiles))
             {
@@ -208,11 +208,12 @@ namespace Spider
             {
                 Utils.WriteLine("MCSPM");
             }
+            bool aborted = false;
             int offloadPile = -1;
             Stack<Move> moveStack = new Stack<Move>();
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
-                int emptyPiles = game.FindEmptyPiles();
+                int emptyPiles = FindEmptyPiles();
                 Move move = Normalize(SupplementaryList[next]);
                 if (move.Type == MoveType.Unload)
                 {
@@ -234,7 +235,7 @@ namespace Spider
                     offloadPile = -1;
 
                 }
-                else if ((move.Flags & MoveFlags.UndoHolding) == MoveFlags.UndoHolding)
+                else if (move.Flags.UndoHolding())
                 {
                     TryToMakeMoveUsingEmptyPiles(move);
                 }
@@ -242,41 +243,45 @@ namespace Spider
                 {
                     if (!TryToMakeMoveUsingEmptyPiles(move))
                     {
-                        // Things got messed up due to a discard.  There should
+                        // Things got messed up due to a discard.  There might
                         // be another pile with the same target.
                         bool foundAlternative = false;
                         Pile fromPile = UpPiles[move.From];
-                        Card fromCard = fromPile[move.FromRow];
-                        for (int to = 0; to < NumberOfPiles; to++)
+                        if (move.From >= 0 && move.From < fromPile.Count)
                         {
-                            if (to == move.From)
+                            Card fromCard = fromPile[move.FromRow];
+                            for (int to = 0; to < NumberOfPiles; to++)
                             {
-                                continue;
+                                if (to == move.From)
+                                {
+                                    continue;
+                                }
+                                Pile toPile = UpPiles[to];
+                                if (toPile.Count == 0)
+                                {
+                                    continue;
+                                }
+                                if (fromCard.Face + 1 != toPile[toPile.Count - 1].Face)
+                                {
+                                    continue;
+                                }
+                                if (TryToMakeMoveUsingEmptyPiles(new Move(move.From, move.FromRow, to)))
+                                {
+                                    foundAlternative = true;
+                                }
+                                break;
                             }
-                            Pile toPile = UpPiles[to];
-                            if (toPile.Count == 0)
-                            {
-                                continue;
-                            }
-                            if (fromCard.Face + 1 != toPile[toPile.Count - 1].Face)
-                            {
-                                continue;
-                            }
-                            if (TryToMakeMoveUsingEmptyPiles(new Move(move.From, move.FromRow, to)))
-                            {
-                                foundAlternative = true;
-                            }
-                            break;
                         }
                         if (!foundAlternative)
                         {
                             // This move is hopelessly messed up.
+                            aborted = true;
                             break;
                         }
                     }
                 }
             }
-            if (moveStack.Count != 0)
+            if (!aborted && moveStack.Count != 0)
             {
                 throw new Exception("missing reload move");
             }
@@ -284,12 +289,20 @@ namespace Spider
 
         private bool TryToMakeMoveUsingEmptyPiles(Move move)
         {
+            if (Diagnostics)
+            {
+                Utils.WriteLine("TTMMUEP: {0}/{1} -> {2}", move.From, move.FromRow, move.To);
+            }
             if (SimpleMoveIsValid(move))
             {
                 if (SafeMakeMoveUsingEmptyPiles(move.From, move.FromRow, move.To) == null)
                 {
                     return true;
                 }
+            }
+            if (Diagnostics)
+            {
+                Utils.WriteLine("*** failed to make move ***");
             }
             return false;
         }
@@ -361,7 +374,7 @@ namespace Spider
                 MakeSimpleMove(from, lastFromRow, to);
                 return null;
             }
-            int emptyPiles = game.FindEmptyPiles();
+            int emptyPiles = FindEmptyPiles();
             PileList usableEmptyPiles = new PileList(EmptyPiles);
             if (toRow == 0)
             {

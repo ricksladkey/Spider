@@ -21,6 +21,11 @@ namespace Spider
             Suit = suit;
         }
 
+        public void Clear()
+        {
+            this = Card.Empty;
+        }
+
         public string ToPrettyString()
         {
             return Utils.GetString(Face) + Utils.GetPrettyString(Suit);

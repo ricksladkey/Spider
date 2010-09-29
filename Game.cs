@@ -484,8 +484,9 @@ namespace Spider
             OneRunPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                int count = UpPiles[i].Count;
-                if (count != 0 && count != RunLengthsAnySuit[i])
+                int downCount = DownPiles[i].Count;
+                int upCount = UpPiles[i].Count;
+                if (downCount == 0 && upCount != 0 && upCount == RunLengthsAnySuit[i])
                 {
                     OneRunPiles.Add(i);
                 }
@@ -1053,7 +1054,7 @@ namespace Spider
             {
                 PrintGame();
                 PrintViableCandidates();
-                Console.WriteLine("Moves.Count = {0}", Moves.Count);
+                Utils.WriteLine("Moves.Count = {0}", Moves.Count);
             }
 
             Move move = Candidates[0];
@@ -1113,6 +1114,10 @@ namespace Spider
                 int runLength = pile.GetRunUp(pile.Count);
                 if (runLength == 13)
                 {
+                    if (Diagnostics)
+                    {
+                        Utils.WriteLine("*** discarding ***");
+                    }
                     int row = pile.Count - runLength;
                     Pile discard = new Pile();
                     for (int j = 0; j < 13; j++)
@@ -1133,6 +1138,10 @@ namespace Spider
                 Pile down = DownPiles[i];
                 if (up.Count == 0 && down.Count > 0)
                 {
+                    if (Diagnostics)
+                    {
+                        Utils.WriteLine("*** turning over card ***");
+                    }
                     up.Add(down.Next());
                 }
             }

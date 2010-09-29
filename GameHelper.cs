@@ -34,11 +34,17 @@ namespace Spider
         public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList EmptyPiles { get { return game.EmptyPiles; } }
+        public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public List<HoldingInfo> HoldingList { get { return game.HoldingList; } }
 
         public GameHelper(Game game)
         {
             this.game = game;
+        }
+
+        public int FindEmptyPiles()
+        {
+            return game.FindEmptyPiles();
         }
 
         public Move Normalize(Move move)

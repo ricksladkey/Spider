@@ -52,5 +52,14 @@ namespace Spider
             return (flags & MoveFlags.TurnsOverCard) == MoveFlags.TurnsOverCard;
         }
 
+        public static bool Holding(this MoveFlags flags)
+        {
+            return (flags & MoveFlags.Holding) == MoveFlags.Holding;
+        }
+
+        public static bool UndoHolding(this MoveFlags flags)
+        {
+            return (flags & MoveFlags.UndoHolding) == MoveFlags.UndoHolding;
+        }
     }
 }

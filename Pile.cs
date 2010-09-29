@@ -21,6 +21,12 @@ namespace Spider
             AddRange(other);
         }
 
+        public void Update(Pile other)
+        {
+            count = 0;
+            AddRange(other);
+        }
+
         public Card LastCard
         {
             get
