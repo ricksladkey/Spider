@@ -10,6 +10,8 @@ namespace Spider
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class PileMap : FastList<Pile>, IGetCard
     {
+        private Pile scratchPile;
+
         public PileMap()
             : base(Game.NumberOfPiles, Game.NumberOfPiles)
         {
@@ -17,6 +19,7 @@ namespace Spider
             {
                 array[row] = new Pile();
             }
+            scratchPile = new Pile();
         }
 
         public void ClearAll()
@@ -60,6 +63,34 @@ namespace Spider
         public int GetRunDelta(int from, int fromRow, int to, int toRow)
         {
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
+        }
+
+        public void Move(Move move)
+        {
+            Pile fromPile = array[move.From];
+            Pile toPile = array[move.To];
+            int fromRow = move.FromRow;
+            int fromCount = fromPile.Count - fromRow;
+            if (move.Type == MoveType.Basic)
+            {
+                toPile.AddRange(fromPile, fromRow, fromCount);
+                fromPile.RemoveRange(fromRow, fromCount);
+            }
+            else if (move.Type == MoveType.Swap)
+            {
+                scratchPile.Clear();
+                int toRow = move.ToRow;
+                int toCount = toPile.Count - toRow;
+                scratchPile.AddRange(toPile, toRow, toCount);
+                toPile.RemoveRange(toRow, toCount);
+                toPile.AddRange(fromPile, fromRow, fromCount);
+                fromPile.RemoveRange(fromRow, fromCount);
+                fromPile.AddRange(scratchPile, 0, toCount);
+            }
+            else
+            {
+                throw new Exception("unsupported move type");
+            }
         }
 
         #region IGetCard Members

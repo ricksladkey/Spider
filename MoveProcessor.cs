@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -7,12 +8,9 @@ namespace Spider
 {
     public class MoveProcessor : GameHelper
     {
-        private Pile scratchPile;
-
         public MoveProcessor(Game game)
             : base(game)
         {
-            scratchPile = new Pile();
         }
 
         public void ProcessMove(Move move)
@@ -437,32 +435,10 @@ namespace Spider
                 AddMove(move);
             }
 
-            // Make the moves.
-            Pile fromPile = UpPiles[move.From];
-            Pile toPile = UpPiles[move.To];
-            int fromRow = move.FromRow;
-            int fromCount = fromPile.Count - fromRow;
-            scratchPile.Clear();
-            if (move.Type == MoveType.Swap)
-            {
-                int toRow = move.ToRow;
-                int toCount = toPile.Count - toRow;
-                scratchPile.AddRange(toPile, toRow, toCount);
-                toPile.RemoveRange(toRow, toCount);
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
-                fromPile.AddRange(scratchPile, 0, toCount);
-            }
-            else if (move.Type == MoveType.Basic)
-            {
-                toPile.AddRange(fromPile, fromRow, fromCount);
-                fromPile.RemoveRange(fromRow, fromCount);
-            }
-            else
-            {
-                throw new Exception("unsupported move type");
-            }
-            move.HoldingNext = -1;
+            // Make the move.
+            UpPiles.Move(move);
+
+            // Perform required actions.
             game.Discard();
             game.TurnOverCards();
         }
