@@ -452,8 +452,8 @@ namespace Spider
             UpPiles.Move(move);
 
             // Perform required actions.
-            game.Discard();
-            game.TurnOverCards();
+            Discard();
+            TurnOverCards();
         }
 
         public void AddMove(Move move)

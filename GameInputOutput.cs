@@ -137,8 +137,8 @@ namespace Spider
             }
 
             // Prepare game.
-            game.Suits = suits;
-            game.Initialize();
+            Suits = suits;
+            Initialize();
             foreach (Card discardCard in discards)
             {
                 Pile discardPile = new Pile();
@@ -184,8 +184,8 @@ namespace Spider
 
         public void FromGame(Game other)
         {
-            game.Suits = other.Suits;
-            game.Initialize();
+            Suits = other.Suits;
+            Initialize();
             foreach (Pile pile in other.DiscardPiles)
             {
                 DiscardPiles.Add(pile);

@@ -11,7 +11,7 @@ namespace Spider
 
         public static int NumberOfPiles { get { return Game.NumberOfPiles; } }
 
-        public int Suits { get { return game.Suits; } }
+        public int Suits { get { return game.Suits; } set { game.Suits = value; } }
         public int Seed { get { return game.Seed; } }
         public double[] Coefficients { get { return game.Coefficients; } }
         public bool Diagnostics { get { return game.Diagnostics; } }
@@ -42,14 +42,39 @@ namespace Spider
             this.game = game;
         }
 
+        public void Initialize()
+        {
+            game.Initialize();
+        }
+
         public int FindEmptyPiles()
         {
             return game.FindEmptyPiles();
         }
 
+        public void Discard()
+        {
+            game.Discard();
+        }
+
+        public void TurnOverCards()
+        {
+            game.TurnOverCards();
+        }
+
         public Move Normalize(Move move)
         {
             return game.Normalize(move);
+        }
+
+        public int AddSupplementary()
+        {
+            return game.AddSupplementary();
+        }
+
+        public int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)
+        {
+            return game.FindHolding(map, holdingStack, inclusive, fromPile, from, fromStart, fromEnd, to, maxExtraSuits);
         }
 
         public void PrintGame()
