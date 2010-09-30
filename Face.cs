@@ -22,4 +22,17 @@ namespace Spider
         Queen = 12,
         King = 13,
     }
+
+    public static class FaceExensions
+    {
+        public static bool IsSourceFor(this Face face, Face other)
+        {
+            return face + 1 == other;
+        }
+
+        public static bool IsTargetFor(this Face face, Face other)
+        {
+            return face - 1 == other;
+        }
+    }
 }

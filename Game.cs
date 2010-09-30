@@ -332,7 +332,7 @@ namespace Spider
                     if (fromRow < fromPile.Count - 1)
                     {
                         Card previousCard = fromPile[fromRow + 1];
-                        if (previousCard.Face + 1 != fromCard.Face)
+                        if (!previousCard.IsSourceFor(fromCard))
                         {
                             break;
                         }
@@ -371,7 +371,7 @@ namespace Spider
 
                                 // Update the holding pile move.
                                 int holdingSuits = extraSuits;
-                                if (fromRow > 0 && (fromPile[fromRow - 1].Face - 1 != fromCard.Face || fromCard.Suit != fromPile[fromRow - 1].Suit))
+                                if (fromRow > 0 && (!fromPile[fromRow - 1].IsTargetFor(fromCard) || fromCard.Suit != fromPile[fromRow - 1].Suit))
                                 {
                                     holdingSuits++;
                                 }
@@ -408,7 +408,7 @@ namespace Spider
                             Card nextCard = fromPile[fromRow - 1];
                             if (fromCard.Suit == nextCard.Suit)
                             {
-                                if (nextCard.Face - 1 == fromCard.Face)
+                                if (nextCard.IsTargetFor(fromCard))
                                 {
                                     continue;
                                 }
@@ -578,7 +578,7 @@ namespace Spider
             if (fromRow != 0)
             {
                 fromCardParent = fromPile[fromRow - 1];
-                inSequence = fromCardParent.Face - 1 == fromCard.Face;
+                inSequence = fromCardParent.IsTargetFor(fromCard);
             }
             for (int to = 0; to < NumberOfPiles; to++)
             {
@@ -603,7 +603,7 @@ namespace Spider
                 {
                     // Try to swap with both runs out of sequence.
                     toRow = splitRow;
-                    if (fromRow != 0 && fromCardParent.Face - 1 != toPile[toRow].Face)
+                    if (fromRow != 0 && !fromCardParent.IsTargetFor(toPile[toRow]))
                     {
                         // Cards don't match.
                         continue;
@@ -622,7 +622,7 @@ namespace Spider
                         continue;
                     }
                 }
-                else if (toPile[toRow - 1].Face - 1 != fromCard.Face)
+                else if (!toPile[toRow - 1].IsTargetFor(fromCard))
                 {
                     // Cards don't match.
                     continue;
@@ -659,8 +659,8 @@ namespace Spider
                 }
 
                 // We've found a legal swap.
-                Debug.Assert(toRow == 0 || toPile[toRow - 1].Face - 1 == fromCard.Face);
-                Debug.Assert(fromRow == 0 || fromCardParent.Face - 1 == toPile[toRow].Face);
+                Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
+                Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
                 Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set)));
 #else
                 int toSuits = toPile.CountSuits(toRow);
@@ -679,8 +679,8 @@ namespace Spider
                     }
 
                     // We've found a legal swap.
-                    Debug.Assert(toRow == 0 || toPile[toRow - 1].Face - 1 == fromCard.Face);
-                    Debug.Assert(fromRow == 0 || fromCardParent.Face - 1 == toPile[toRow].Face);
+                    Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
+                    Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
                     Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet)));
                     foundSwap = true;
                     break;
@@ -736,7 +736,7 @@ namespace Spider
                     {
                         continue;
                     }
-                    if (fromCard.Face + 1 == map.GetCard(column).Face)
+                    if (fromCard.IsSourceFor(map.GetCard(column)))
                     {
                         int holdingSuits = extraSuits;
                         if (fromRow == fromStart || fromCard.Suit != fromPile[fromRow - 1].Suit)
@@ -914,7 +914,7 @@ namespace Spider
                     return RejectScore;
                 }
             }
-            else if (fromPile[move.FromRow - 1].Face - 1 == fromCard.Face)
+            else if (fromPile[move.FromRow - 1].IsTargetFor(fromCard))
             {
                 // No point in splitting consecutive cards
                 // unless they are part of a multi-move
@@ -966,7 +966,7 @@ namespace Spider
             Pile fromPile = UpPiles[move.From];
             Card fromCard = fromPile[move.FromRow];
             Card exposedCard = fromPile[move.FromRow - 1];
-            if (exposedCard.Face - 1 != fromCard.Face)
+            if (!exposedCard.IsTargetFor(fromCard))
             {
                 // Check whether the exposed card will be useful.
                 int emptyPiles = EmptyPiles.Count - 1;
@@ -986,7 +986,7 @@ namespace Spider
                         continue;
                     }
                     int nextFromRow = nextFromPile.Count - RunLengthsAnySuit[nextFrom];
-                    if (nextFromPile[nextFromRow].Face + 1 != exposedCard.Face)
+                    if (!nextFromPile[nextFromRow].IsSourceFor(exposedCard))
                     {
                         // Not the card we need.
                         continue;

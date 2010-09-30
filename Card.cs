@@ -26,6 +26,16 @@ namespace Spider
             this = Card.Empty;
         }
 
+        public bool IsSourceFor(Card other)
+        {
+            return Face.IsSourceFor(other.Face);
+        }
+
+        public bool IsTargetFor(Card other)
+        {
+            return Face.IsTargetFor(other.Face);
+        }
+
         public string ToPrettyString()
         {
             return Utils.GetString(Face) + Utils.GetPrettyString(Suit);

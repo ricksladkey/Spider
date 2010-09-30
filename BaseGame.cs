@@ -56,7 +56,7 @@ namespace Spider
 
         public static int GetOrder(Card parent, Card child)
         {
-            if (parent.Face - 1 != child.Face)
+            if (!parent.IsTargetFor(child))
             {
                 return 0;
             }

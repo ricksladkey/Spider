@@ -85,7 +85,7 @@ namespace Spider
                 bool matchesRoot = false;
                 for (int j = 1; j < roots.Count; j++)
                 {
-                    if (uncoveredCard.Face - 1 == fromPile[roots[j]].Face)
+                    if (uncoveredCard.IsTargetFor(fromPile[roots[j]]))
                     {
                         matchesRoot = true;
                         break;
@@ -145,7 +145,7 @@ namespace Spider
                         continue;
                     }
                     Card card = map.GetCard(i);
-                    if (!card.IsEmpty && card.Face - 1 == rootCard.Face)
+                    if (!card.IsEmpty && card.IsTargetFor(rootCard))
                     {
                         if (!offload.IsEmpty && to == offload.To)
                         {
@@ -264,7 +264,10 @@ namespace Spider
                 }
 
                 // Check whether the offload matches the new from or to piles.
-                CheckOffload(rootRow, to);
+                if (!isOffload)
+                {
+                    CheckOffload(rootRow, to);
+                }
 
                 // Check whether any of the one run piles now match
                 // the new from or to piles.
@@ -326,7 +329,7 @@ namespace Spider
             MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
 
             // Check whether offload matches from pile.
-            if (rootRow > 0 && offloadRootCard.Face + 1 == fromPile[rootRow - 1].Face)
+            if (rootRow > 0 && offloadRootCard.IsSourceFor(fromPile[rootRow - 1]))
             {
                 // Check whether we can make the move.
                 bool canMove = true;
@@ -360,7 +363,7 @@ namespace Spider
 
             // Check whether offoad matches to pile.
             Card toCard = map.GetCard(to);
-            if (offloadRootCard.Face + 1 == toCard.Face)
+            if (offloadRootCard.IsSourceFor(toCard))
             {
 
                 // Check whether we can make the move.
@@ -407,7 +410,7 @@ namespace Spider
             Card oneRunRootCard = oneRunPile[0];
 
             // Check whether one run pile matches from pile.
-            if (rootRow > 0 && oneRunRootCard.Face + 1 == fromPile[rootRow - 1].Face)
+            if (rootRow > 0 && oneRunRootCard.IsSourceFor(fromPile[rootRow - 1]))
             {
                 // Check whether we can make the move.
                 int oneRunSuits = oneRunPile.CountSuits(0);
@@ -437,7 +440,7 @@ namespace Spider
 
             // Check whether one run pile matches to pile.
             Card toCard = map.GetCard(to);
-            if (oneRunRootCard.Face + 1 == toCard.Face)
+            if (oneRunRootCard.IsSourceFor(toCard))
             {
                 // Check whether we can make the move.
                 int oneRunSuits = oneRunPile.CountSuits(0);

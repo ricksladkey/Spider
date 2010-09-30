@@ -67,7 +67,7 @@ namespace Spider
                 {
                     break;
                 }
-                if (nextCard.Face - 1 != card.Face)
+                if (!nextCard.IsTargetFor(card))
                 {
                     break;
                 }
@@ -92,7 +92,7 @@ namespace Spider
             do
             {
                 Face nextFace = array[i].Face;
-                if (nextFace - 1 != face)
+                if (!nextFace.IsTargetFor(face))
                 {
                     break;
                 }
@@ -121,7 +121,7 @@ namespace Spider
                 {
                     break;
                 }
-                if (nextCard.Face + 1 != card.Face)
+                if (!nextCard.IsSourceFor(card))
                 {
                     break;
                 }
@@ -145,7 +145,7 @@ namespace Spider
             do
             {
                 Face nextFace = array[i].Face;
-                if (nextFace + 1 != face)
+                if (!nextFace.IsSourceFor(face))
                 {
                     break;
                 }
@@ -179,7 +179,7 @@ namespace Spider
             }
             while (i < endRow)
             {
-                if (array[i - 1].Face - 1 != array[i].Face)
+                if (!array[i - 1].IsTargetFor(array[i]))
                 {
                     // Found an out of sequence run in the range.
                     return -1;

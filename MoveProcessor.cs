@@ -261,7 +261,7 @@ namespace Spider
                                 {
                                     continue;
                                 }
-                                if (fromCard.Face + 1 != toPile[toPile.Count - 1].Face)
+                                if (!fromCard.IsSourceFor(toPile[toPile.Count - 1]))
                                 {
                                     continue;
                                 }
@@ -328,7 +328,7 @@ namespace Spider
             {
                 return true;
             }
-            if (fromPile[fromRow].Face + 1 != toPile[toRow - 1].Face)
+            if (!fromPile[fromRow].IsSourceFor(toPile[toRow - 1]))
             {
                 return false;
             }
@@ -436,7 +436,7 @@ namespace Spider
             Debug.Assert(UpPiles[from].Count != 0);
             Debug.Assert(fromRow < UpPiles[from].Count);
             Debug.Assert(UpPiles.CountSuits(from, fromRow) == 1);
-            Debug.Assert(UpPiles[to].Count == 0 || UpPiles[from][fromRow].Face + 1 == UpPiles[to][UpPiles[to].Count - 1].Face);
+            Debug.Assert(UpPiles[to].Count == 0 || UpPiles[from][fromRow].IsSourceFor(UpPiles[to][UpPiles[to].Count - 1]));
             MakeMove(new Move(from, fromRow, to, UpPiles[to].Count));
         }
 

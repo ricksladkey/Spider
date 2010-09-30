@@ -1,10 +1,10 @@
+- make number of piles configurable
+- make number of decks configurable
+
 - review empty pile calculations when counting uses
 - could use holding piles for uncovering moves
 - could collect composite uncovering moves
 - promote one run delta to a full-fledged scoring feature
-- add MatchesSource and MatchesTarget Face extension methods and use them
-- collect one run piles
-- try targeting one run piles to the from or the to piles after a root iteration
 - rename test jig
 - retest complex
 - merge the multiple different places that empty pile algorithms are implemented
