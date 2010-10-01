@@ -353,11 +353,8 @@ namespace Spider
                     // Add the intermediate move.
                     AddMove(MoveFlags.Empty, order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
 
-                    // Restore state of supplementary moves prior to intermediate move.
-                    for (int i = 0; i < count; i++)
-                    {
-                        SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
-                    }
+                    // Restore supplementary moves.
+                    RestoreSupplementaryMoves(count);
                 }
             }
 
@@ -398,6 +395,15 @@ namespace Spider
             }
         }
 
+        private void RestoreSupplementaryMoves(int count)
+        {
+            // Restore state of supplementary moves prior to intermediate move.
+            for (int i = 0; i < count; i++)
+            {
+                SupplementaryMoves.RemoveAt(SupplementaryMoves.Count - 1);
+            }
+        }
+
         private bool CheckOneRun(int rootRow, int to, int oneRun)
         {
             if (!offload.IsEmpty)
@@ -406,34 +412,13 @@ namespace Spider
                 return false;
             }
 
-            Pile oneRunPile = map[oneRun];
-            Card oneRunRootCard = oneRunPile[0];
+            Card oneRunRootCard = map[oneRun][0];
 
             // Check whether one run pile matches from pile.
             if (rootRow > 0 && oneRunRootCard.IsSourceFor(fromPile[rootRow - 1]))
             {
-                // Check whether we can make the move.
-                int oneRunSuits = oneRunPile.CountSuits(0);
-                int oneRunMaxExtraSuits = ExtraSuits(emptyPilesLeft);
-                bool canMove = true;
-                holdingStack.Clear();
-                if (oneRunSuits - 1 > oneRunMaxExtraSuits)
+                if (TryToAddOneRunMove(oneRun, from, fromPile[rootRow - 1]))
                 {
-                    oneRunSuits -= FindHolding(map, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, from, oneRunMaxExtraSuits);
-                    if (oneRunSuits - 1 > oneRunMaxExtraSuits)
-                    {
-                        // Not enough empty piles and/or holding piles.
-                        canMove = false;
-                    }
-                }
-
-                if (canMove)
-                {
-                    // One run pile matches from pile.
-                    AddSupplementaryMove(new Move(oneRun, 0, from), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
-
-                    // Add the emptying move.
-                    AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(fromPile[rootRow - 1], oneRunRootCard));
                     return true;
                 }
             }
@@ -442,47 +427,50 @@ namespace Spider
             Card toCard = map.GetCard(to);
             if (oneRunRootCard.IsSourceFor(toCard))
             {
-                // Check whether we can make the move.
-                int oneRunSuits = oneRunPile.CountSuits(0);
-                int oneRunMaxExtraSuits = ExtraSuits(emptyPilesLeft);
-                bool canMove = true;
-                holdingStack.Clear();
-                if (oneRunSuits - 1 > oneRunMaxExtraSuits)
+                if (TryToAddOneRunMove(oneRun, to, toCard))
                 {
-                    // Not enough empty piles.
-                    oneRunSuits -= FindHolding(map, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, to, oneRunMaxExtraSuits);
-                    if (oneRunSuits - 1 > oneRunMaxExtraSuits)
-                    {
-                        // Not enough empty piles and/or holding piles.
-                        canMove = false;
-                    }
-                }
-
-                if (canMove)
-                {
-                    // Found a home for the one run pile.
-                    AddSupplementaryMove(new Move(oneRun, 0, to), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
-
-                    // Add the emptying move.
-                    AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(toCard, oneRunRootCard));
                     return true;
-#if false
-                    // Record the order improvement.
-                    order += GetOrder(toCard, oneRunRootCard);
-
-                    // Found a home for the one run pile.
-                    AddSupplementaryMove(new Move(oneRun, 0, to), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
-
-                    // Update the map.
-                    map.Move(oneRun, 0, to);
-
-                    // Update the state.
-                    emptyPilesLeft++;
-#endif
                 }
             }
 
             // Couldn't find an emptying move.
+            return false;
+        }
+
+        private bool TryToAddOneRunMove(int oneRun, int target, Card targetCard)
+        {
+            Pile oneRunPile = map[oneRun];
+            Card oneRunRootCard = oneRunPile[0];
+
+            // Check whether we can make the move.
+            int oneRunSuits = oneRunPile.CountSuits();
+            int oneRunMaxExtraSuits = ExtraSuits(emptyPilesLeft);
+            holdingStack.Clear();
+            if (oneRunSuits - 1 > oneRunMaxExtraSuits)
+            {
+                oneRunSuits -= FindHolding(map, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
+                if (oneRunSuits - 1 > oneRunMaxExtraSuits)
+                {
+                    // Not enough empty piles and/or holding piles.
+                    return false;
+                }
+            }
+
+            // Found a home for the one run pile.
+            int count = AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
+
+            if (DownPiles[oneRun].Count == 0)
+            {
+                // Add the emptying move.
+                AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
+                return true;
+            }
+
+            // Add the intermediate move.
+            AddMove(MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+
+            // Restore supplementary moves.
+            RestoreSupplementaryMoves(count);
             return false;
         }
 

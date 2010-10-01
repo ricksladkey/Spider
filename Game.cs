@@ -484,9 +484,8 @@ namespace Spider
             OneRunPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                int downCount = DownPiles[i].Count;
                 int upCount = UpPiles[i].Count;
-                if (downCount == 0 && upCount != 0 && upCount == RunLengthsAnySuit[i])
+                if (upCount != 0 && upCount == RunLengthsAnySuit[i])
                 {
                     OneRunPiles.Add(i);
                 }

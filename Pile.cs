@@ -157,6 +157,11 @@ namespace Spider
             return runLength;
         }
 
+        public int CountSuits()
+        {
+            return CountSuits(0, -1);
+        }
+
         public int CountSuits(int row)
         {
             return CountSuits(row, -1);
