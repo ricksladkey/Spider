@@ -10,10 +10,12 @@ namespace Spider
         public const int CreatesEmptyPileScore = 1000;
         public const int BaseScore = 0;
         public const int UsesEmptyPileScore = -1000;
+        public const int ReversibleScore = 500;
 
         public double[] Coefficients { get; set; }
         public int Coefficient0 { get; set; }
 
+        public bool Reversible { get; set; }
         public int Order { get; set; }
         public int FaceValue { get; set; }
         public int NetRunLength { get; set; }
@@ -32,6 +34,7 @@ namespace Spider
             get
             {
                 double score = BaseScore +
+                    ReversibleScore * (Reversible ? 1 : 0) +
                     CreatesEmptyPileScore * (CreatesEmptyPile ? 1 : 0) +
                     UsesEmptyPileScore * (UsesEmptyPile ? 1 : 0) +
                     FaceValue +

@@ -838,6 +838,7 @@ namespace Spider
             {
                 return RejectScore;
             }
+            score.Reversible = oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
             score.Uses = CountUses(move);
             score.OneRunDelta = !isSwap ? GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
             int faceFrom = (int)fromChild.Face;
