@@ -114,6 +114,8 @@
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />
+    <Compile Include="IGame.cs" />
+    <Compile Include="IGameSettings.cs" />
     <Compile Include="IGetCard.cs" />
     <Compile Include="InvalidMoveException.cs" />
     <Compile Include="lmmin.cs" />

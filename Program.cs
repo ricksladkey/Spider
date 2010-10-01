@@ -75,6 +75,12 @@ namespace Spider
                     i++;
                     continue;
                 }
+                if (arg == "--interactive")
+                {
+                    player.Interactive = true;
+                    i++;
+                    continue;
+                }
                 if (arg == "--show_results")
                 {
                     player.ShowResults = true;

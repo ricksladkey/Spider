@@ -9,7 +9,7 @@ using LevenbergMarquardtLeastSquaresFitting;
 
 namespace Spider
 {
-    public class Player
+    public class Player : IGameSettings
     {
         public double[] InitialCoefficients { get; set; }
         public int Coefficient { get; set; }
@@ -20,6 +20,7 @@ namespace Spider
         public bool ComplexMoves { get; set; }
         public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
+        public bool Interactive { get; set; }
 
         public bool ShowResults { get; set; }
 
@@ -58,19 +59,9 @@ namespace Spider
             RecordComplex = game.RecordComplex;
             ShowResults = false;
 
-#if true
             Games = 100000;
-#else
-            count = 10;
-#endif
-
             Suits = 2;
-#if true
             Seed = 0;
-#else
-            Random random = new Random();
-            Seed = random.Next();
-#endif
             Threads = -1;
         }
 
@@ -396,7 +387,7 @@ namespace Spider
             {
                 threads = Environment.ProcessorCount;
             }
-            if (Debugger.IsAttached)
+            if (Debugger.IsAttached || Interactive)
             {
                 threads = 1;
             }
@@ -441,6 +432,7 @@ namespace Spider
             game.ComplexMoves = ComplexMoves;
             game.RecordComplex = RecordComplex;
             game.Diagnostics = Diagnostics;
+            game.Interactive = Interactive;
 
             game.Coefficients = Coefficients;
             game.Suits = Suits;

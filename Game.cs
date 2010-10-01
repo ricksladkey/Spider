@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spider
 {
-    public class Game : BaseGame
+    public class Game : BaseGame, IGame
     {
         public static double[] FourSuitCoefficients = new double[] {
             /* 0 */ 8.42581707, 42.35984891, -0.1201269187, -4.841970863, -0.1252077493, 4.908558385, 8.502830004, 1,
@@ -45,6 +45,7 @@ namespace Spider
         public bool ComplexMoves { get; set; }
         public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
+        public bool Interactive { get; set; }
         public int Instance { get; set; }
 
         public bool Won { get; private set; }
@@ -168,6 +169,12 @@ namespace Spider
                 }
                 while (true)
                 {
+                    if (Interactive)
+                    {
+                        Console.Clear();
+                        PrintGames();
+                        Console.ReadKey();
+                    }
                     if (Moves.Count >= MaximumMoves)
                     {
                         if (TraceStartFinish)

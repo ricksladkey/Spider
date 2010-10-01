@@ -381,8 +381,18 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest22()
         {
+            // This tests a large offload that can be done as a single pile.
             string data1 = "@2||--Ks------Ks|QhJhTh9h8h7h6h5h--6h-9h----3h2hAh-Kh5hKsQsJhTs9s8s7h6s5s4s3s2sAs-As|@";
             string data2 = "@2||--Ks------Ks|-KsQsJhTs9s8s7h6s5s4s3s2sAs-6h5h-9h----3h2hAh-KhQhJhTh9h8h7h6h5h-As|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void CompositeSinglePileTest23()
+        {
+            // Same test a the previous but requires a holding pile.
+            string data1 = "@2||--Ks------Ks|QhJhTh9h8h7h6h5h--6h-9h----3h2hAh-Kh5hKsQsJhTs9h8s7h6s5s4s3s2sAh-Ah|@";
+            string data2 = "@2||--Ks------Ks|-KsQsJhTs9h-6h5h-9h8s7h6s5s----3h2hAh-KhQhJhTh9h8h7h6h5h4s3s2sAh-Ah|@";
             CheckMoveSucceeds(data1, data2);
         }
 

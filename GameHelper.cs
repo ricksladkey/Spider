@@ -5,20 +5,28 @@ using System.Text;
 
 namespace Spider
 {
-    public class GameHelper : BaseGame
+    public class GameHelper : BaseGame, IGame
     {
-        protected Game game;
+        protected IGame game;
 
         public static int NumberOfPiles { get { return Game.NumberOfPiles; } }
 
-        public int Suits { get { return game.Suits; } set { game.Suits = value; } }
-        public int Seed { get { return game.Seed; } }
-        public double[] Coefficients { get { return game.Coefficients; } }
-        public bool Diagnostics { get { return game.Diagnostics; } }
+        public GameHelper(IGame game)
+        {
+            this.game = game;
+        }
 
-        public bool TraceMoves { get { return game.TraceMoves; } }
-        public bool ComplexMoves { get { return game.ComplexMoves; } }
-        public bool RecordComplex { get { return game.RecordComplex; } }
+        #region IGameSettings Members
+
+        public int Suits { get { return game.Suits; } set { game.Suits = value; } }
+        public int Seed { get { return game.Seed; } set { game.Seed = value; } }
+        public double[] Coefficients { get { return game.Coefficients; } set { game.Coefficients = value; } }
+        public bool Diagnostics { get { return game.Diagnostics; } set { game.Diagnostics = value; } }
+        public bool Interactive { get { return game.Interactive; } set { game.Interactive = value; } }
+
+        public bool TraceMoves { get { return game.TraceMoves; } set { game.TraceMoves = value; } }
+        public bool ComplexMoves { get { return game.ComplexMoves; } set { game.ComplexMoves = value; } }
+        public bool RecordComplex { get { return game.RecordComplex; } set { game.RecordComplex = value; } }
 
         public MoveList Moves { get { return game.Moves; } }
 
@@ -36,11 +44,6 @@ namespace Spider
         public PileList EmptyPiles { get { return game.EmptyPiles; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public List<HoldingInfo> HoldingList { get { return game.HoldingList; } }
-
-        public GameHelper(Game game)
-        {
-            this.game = game;
-        }
 
         public void Initialize()
         {
@@ -87,22 +90,22 @@ namespace Spider
             game.PrintGames();
         }
 
-        private void PrintMoves()
+        public void PrintMoves()
         {
             game.PrintMoves();
         }
 
-        private void PrintMoves(MoveList moves)
+        public void PrintMoves(MoveList moves)
         {
             game.PrintMoves(moves);
         }
 
-        private void PrintCandidates()
+        public void PrintCandidates()
         {
             game.PrintCandidates();
         }
 
-        private void PrintViableCandidates()
+        public void PrintViableCandidates()
         {
             game.PrintViableCandidates();
         }
@@ -111,5 +114,7 @@ namespace Spider
         {
             game.PrintMove(move);
         }
+
+        #endregion
     }
 }
