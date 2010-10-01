@@ -31,6 +31,7 @@ namespace Spider
 
         public static int EmptyPilesUsed(int emptyPiles, int suits)
         {
+#if false
             int used = 0;
             for (int n = emptyPiles; n > 0 && suits > 0; n--)
             {
@@ -38,6 +39,15 @@ namespace Spider
                 suits -= n;
             }
             return used;
+#else
+            int used = 0;
+            while (suits > 0)
+            {
+                used++;
+                suits -= ExtraSuits(emptyPiles - 1) + 1;
+            }
+            return used;
+#endif
         }
 
         private static int RoundUpExtraSuits(int suits)

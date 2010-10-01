@@ -31,7 +31,7 @@ namespace Spider.Tests
             Game game1 = new Game(data1);
             Game game2 = new Game(game1.ToAsciiString());
             string data2 = game2.ToAsciiString();
-            Assert.AreEqual(Normalize(data2), Normalize(data1));
+            Assert.AreEqual(TrimAll(data2), TrimAll(data1));
         }
 
         [TestMethod]
@@ -284,7 +284,7 @@ namespace Spider.Tests
         {
             // A 1/4 composite single pile move, three empty piles.
             string data1 = "@2|||Ts8s7h6s5h-Js----Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||8s7h6s5h-JsTs----Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-JsTs-8s7h6s5h---Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -346,8 +346,8 @@ namespace Spider.Tests
         public void CompositeSinglePileTest18()
         {
             // A 1/1/1 partial composite single pile move, 1 empty pile.
-            string data1 = "@2|||7sAs5s3s4s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            string data2 = "@2|||7sAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data1 = "@2|||TsAs5s3s4s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||TsAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
         }
 
@@ -378,6 +378,14 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
+        [TestMethod]
+        public void CompositeSinglePileTest22()
+        {
+            string data1 = "@2||--Ks------Ks|QhJhTh9h8h7h6h5h--6h-9h----3h2hAh-Kh5hKsQsJhTs9s8s7h6s5s4s3s2sAs-As|@";
+            string data2 = "@2||--Ks------Ks|-KsQsJhTs9s8s7h6s5s4s3s2sAs-6h5h-9h----3h2hAh-KhQhJhTh9h8h7h6h5h-As|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)
@@ -397,7 +405,7 @@ namespace Spider.Tests
             game = new Game(initial);
             game.Diagnostics = true;
             Assert.IsTrue(game.MakeMove());
-            string actual = game.ToAsciiString();
+            string actual = TrimAll(game.ToAsciiString());
             CheckResults(initial, expected, actual);
         }
 
@@ -421,7 +429,7 @@ namespace Spider.Tests
             }
             else
             {
-                string actual = game.ToAsciiString();
+                string actual = TrimAll(game.ToAsciiString());
                 CheckResults(initial, initial, actual);
             }
         }
@@ -435,7 +443,7 @@ namespace Spider.Tests
             CheckMoveFails(FillEmptyPile(initial));
         }
 
-        private string Normalize(string s)
+        private string TrimAll(string s)
         {
             StringBuilder b = new StringBuilder();
             for (int i = 0; i < s.Length; i++)
@@ -446,7 +454,7 @@ namespace Spider.Tests
                     b.Append(c);
                 }
             }
-            return b.ToString().ToUpperInvariant();
+            return b.ToString();
         }
 
         private string FillEmptyPile(string data)

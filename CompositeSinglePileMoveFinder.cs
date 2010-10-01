@@ -20,6 +20,7 @@ namespace Spider
         private int best;
         private int order;
         private int emptyPilesLeft;
+        private bool turnsOverCard;
 
         public CompositeSinglePileMoveFinder(Game game)
             : base(game)
@@ -59,7 +60,6 @@ namespace Spider
             }
 
             // Check first with no uncovering moves.
-            order = 0;
             best = -1;
             CheckOne(Move.Empty);
 
@@ -97,11 +97,6 @@ namespace Spider
                 }
 
                 // Try again to find a composite single pile move.
-#if false
-                order = move.ToRow;
-#else
-                order = 0;
-#endif
                 move.ToRow = -1;
                 CheckOne(move);
             }
@@ -110,9 +105,11 @@ namespace Spider
         private void CheckOne(Move uncoveringMove)
         {
             // Prepare data structures.
+            order = 0;
             emptyPilesLeft = EmptyPiles.Count;
             int runs = roots.Count - 1;
             offload = OffloadInfo.Empty;
+            turnsOverCard = false;
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
@@ -120,6 +117,9 @@ namespace Spider
 
             if (!uncoveringMove.IsEmpty)
             {
+                // Update the map for the uncovering move but don't
+                // include its order contribution so we don't make
+                // the uncovering move unless it is really necessary.
                 map.Move(uncoveringMove);
                 SupplementaryMoves.Add(uncoveringMove);
             }
@@ -228,7 +228,8 @@ namespace Spider
                         return;
                     }
                     to = EmptyPiles[0];
-                    if (suits > maxExtraSuits)
+                    int maxExtraSuitsOnePile = ExtraSuits(emptyPilesLeft - 1) + 1;
+                    if (suits > maxExtraSuitsOnePile)
                     {
                         // Try using holding piles.
                         suits -= FindHolding(map, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
@@ -299,7 +300,7 @@ namespace Spider
             // Determine move type.
             int downCount = DownPiles[from].Count;
             MoveFlags flags = MoveFlags.Empty;
-            if (downCount != 0)
+            if (downCount != 0 || turnsOverCard)
             {
                 flags |= MoveFlags.TurnsOverCard;
             }
@@ -406,12 +407,6 @@ namespace Spider
 
         private bool CheckOneRun(int rootRow, int to, int oneRun)
         {
-            if (!offload.IsEmpty)
-            {
-                // Won't result in an emptying move.
-                return false;
-            }
-
             Card oneRunRootCard = map[oneRun][0];
 
             // Check whether one run pile matches from pile.
@@ -456,21 +451,49 @@ namespace Spider
                 }
             }
 
+            if (target == from && !offload.IsEmpty && DownPiles[oneRun].Count != 0)
+            {
+                // We can't find a satisfactory ending for this move
+                // unless the offload can be reloaded onto the
+                // from pile.
+                return false;
+            }
+
             // Found a home for the one run pile.
             int count = AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
 
-            if (DownPiles[oneRun].Count == 0)
+            if (offload.IsEmpty)
             {
-                // Add the emptying move.
-                AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
-                return true;
+                if (DownPiles[oneRun].Count == 0)
+                {
+                    // Add the emptying move.
+                    AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
+                    return true;
+                }
+
+                // Add the intermediate move.
+                AddMove(MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+
+                // Restore supplementary moves.
+                RestoreSupplementaryMoves(count);
+                return false;
             }
 
-            // Add the intermediate move.
-            AddMove(MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+            if (offload.SinglePile && DownPiles[oneRun].Count == 0)
+            {
+                // Add the intermediate empty pile preserving move.
+                AddMove(MoveFlags.Empty, order + GetOrder(targetCard, oneRunRootCard));
 
-            // Restore supplementary moves.
-            RestoreSupplementaryMoves(count);
+                // Restore supplementary moves.
+                RestoreSupplementaryMoves(count);
+                return false;
+            }
+
+            // Update the map.
+            map.Move(oneRun, 0, target);
+
+            // This move now turns over a card no matter what.
+            turnsOverCard = true;
             return false;
         }
 
