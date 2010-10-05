@@ -54,9 +54,7 @@ namespace Spider
         public Pile Deck { get; private set; }
         public Pile Shuffled { get; private set; }
         public Pile StockPile { get; private set; }
-        public PileMap DownPiles { get; private set; }
-        public PileMap UpPiles { get; private set; }
-        public List<Pile> DiscardPiles { get; private set; }
+        public Tableau Tableau { get; private set; }
 
         public MoveList Candidates { get; private set; }
         public MoveList SupplementaryMoves { get; private set; }
@@ -118,9 +116,7 @@ namespace Spider
             Moves = new MoveList();
             Shuffled = new Pile();
             StockPile = new Pile();
-            DownPiles = new PileMap();
-            UpPiles = new PileMap();
-            DiscardPiles = new List<Pile>();
+            Tableau = new Tableau();
 
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
@@ -154,6 +150,12 @@ namespace Spider
             : this()
         {
             FromGame(other);
+        }
+
+        public Game(Tableau tableau)
+            : this()
+        {
+            Tableau = tableau;
         }
 
         public void Play()
@@ -231,9 +233,7 @@ namespace Spider
             Candidates.Clear();
             Shuffled.Clear();
             StockPile.Clear();
-            DownPiles.ClearAll();
-            UpPiles.ClearAll();
-            DiscardPiles.Clear();
+            Tableau.ClearAll();
 
             if (Suits == 1)
             {
@@ -270,7 +270,7 @@ namespace Spider
             int column = 0;
             for (int i = 0; i < 44; i++)
             {
-                DownPiles[column].Add(StockPile.Next());
+                Tableau.DownPiles[column].Add(StockPile.Next());
                 column = (column + 1) % NumberOfPiles;
             }
             Deal();
@@ -294,9 +294,9 @@ namespace Spider
 
         private void Deal()
         {
-            for (int i = 0; i < NumberOfPiles; i++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
-                UpPiles[i].Add(StockPile.Next());
+                Tableau.Add(column, StockPile.Next());
             }
         }
 
@@ -329,7 +329,7 @@ namespace Spider
 
             for (int from = 0; from < NumberOfPiles; from++)
             {
-                Pile fromPile = UpPiles[from];
+                Pile fromPile = Tableau[from];
                 HoldingStack.Clear();
                 HoldingStack.StartingRow = fromPile.Count;
                 int extraSuits = 0;
@@ -373,7 +373,7 @@ namespace Spider
                                 }
 
                                 // We've found a legal move.
-                                Pile toPile = UpPiles[to];
+                                Pile toPile = Tableau[to];
                                 Candidates.Add(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
 
                                 // Update the holding pile move.
@@ -403,7 +403,7 @@ namespace Spider
                             // No point in moving from a full pile
                             // from one open position to another unless
                             // there are more cards to turn over.
-                            if (DownPiles[from].Count == 0)
+                            if (Tableau.GetDownCount(from) == 0)
                             {
                                 continue;
                             }
@@ -436,7 +436,7 @@ namespace Spider
                             }
 
                             // We've found a legal move.
-                            Pile toPile = UpPiles[to];
+                            Pile toPile = Tableau[to];
                             Candidates.Add(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
                             break;
                         }
@@ -462,7 +462,7 @@ namespace Spider
             UncoveringMoves.Clear();
             for (int from = 0; from < NumberOfPiles; from++)
             {
-                Pile fromPile = UpPiles[from];
+                Pile fromPile = Tableau[from];
                 int fromRow = fromPile.Count - RunLengthsAnySuit[from];
                 if (fromRow == 0)
                 {
@@ -478,7 +478,7 @@ namespace Spider
                 for (int i = 0; i < faceList.Count; i++)
                 {
                     int to = faceList[i];
-                    Pile toPile = UpPiles[to];
+                    Pile toPile = Tableau[to];
                     Card toCard = toPile[toPile.Count - 1];
                     int order = GetOrder(toCard, fromCard);
                     UncoveringMoves.Add(new Move(from, fromRow, to, order));
@@ -491,7 +491,7 @@ namespace Spider
             OneRunPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                int upCount = UpPiles[i].Count;
+                int upCount = Tableau[i].Count;
                 if (upCount != 0 && upCount == RunLengthsAnySuit[i])
                 {
                     OneRunPiles.Add(i);
@@ -572,12 +572,12 @@ namespace Spider
                 return;
             }
 #endif
-            if (fromRow == 0 && DownPiles[from].Count != 0)
+            if (fromRow == 0 && Tableau.GetDownCount(from) != 0)
             {
                 // Would turn over a card.
                 return;
             }
-            Pile fromPile = UpPiles[from];
+            Pile fromPile = Tableau[from];
             Card fromCard = fromPile[fromRow];
             Card fromCardParent = Card.Empty;
             bool inSequence = true;
@@ -588,7 +588,7 @@ namespace Spider
             }
             for (int to = 0; to < NumberOfPiles; to++)
             {
-                Pile toPile = UpPiles[to];
+                Pile toPile = Tableau[to];
                 if (to == from || toPile.Count == 0)
                 {
                     continue;
@@ -622,7 +622,7 @@ namespace Spider
                         // No point in swap both entire piles.
                         continue;
                     }
-                    if (DownPiles[to].Count != 0)
+                    if (Tableau.GetDownCount(to) != 0)
                     {
                         // Would turn over a card.
                         continue;
@@ -640,12 +640,12 @@ namespace Spider
                 if (extraSuits + toSuits > maxExtraSuits)
                 {
                     // Check whether forward holding piles will help.
-                    int forwardHoldingSuits = FindHolding(UpPiles, forwardHoldingStack, true, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                    int forwardHoldingSuits = FindHolding(Tableau, forwardHoldingStack, true, from, fromRow, fromPile.Count, to, maxExtraSuits);
                     if (extraSuits + toSuits > maxExtraSuits + forwardHoldingSuits)
                     {
                         // Prepare an accurate map.
                         CardMap map = new CardMap();
-                        map.Update(UpPiles);
+                        map.Update(Tableau);
                         foreach (HoldingInfo holding in forwardHoldingStack.Set)
                         {
                             map[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
@@ -700,7 +700,7 @@ namespace Spider
                     {
                         // Prepare an accurate map.
                         CardMap map = new CardMap();
-                        map.Update(UpPiles);
+                        map.Update(Tableau);
                         foreach (HoldingInfo holding in holdingSet)
                         {
                             map[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
@@ -765,7 +765,7 @@ namespace Spider
             EmptyPiles.Clear();
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                if (UpPiles[i].Count == 0)
+                if (Tableau[i].Count == 0)
                 {
                     EmptyPiles.Add(i);
                 }
@@ -784,7 +784,7 @@ namespace Spider
             for (int i = 0; i < NumberOfPiles; i++)
             {
                 // Prepare empty piles and face lists.
-                Pile pile = UpPiles[i];
+                Pile pile = Tableau[i];
                 if (pile.Count == 0)
                 {
                     EmptyPiles.Add(i);
@@ -818,8 +818,8 @@ namespace Spider
             {
                 return CalculateCompositeSinglePileScore(move);
             }
-            Pile fromPile = UpPiles[from];
-            Pile toPile = UpPiles[to];
+            Pile fromPile = Tableau[from];
+            Pile toPile = Tableau[to];
             if (toPile.Count == 0)
             {
                 return CalculateLastResortScore(move);
@@ -848,7 +848,7 @@ namespace Spider
             int netRunLengthFrom = GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
             int netRunLengthTo = isSwap ? GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
             score.NetRunLength = netRunLengthFrom + netRunLengthTo;
-            score.DownCount = DownPiles[from].Count;
+            score.DownCount = Tableau.GetDownCount(from);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.CreatesEmptyPile = wholePile && score.DownCount == 0;
             score.NoEmptyPiles = EmptyPiles.Count == 0;
@@ -861,7 +861,7 @@ namespace Spider
             {
                 if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
                 {
-                    delta = UpPiles.GetRunDelta(from, fromRow, to, toRow);
+                    delta = Tableau.GetRunDelta(from, fromRow, to, toRow);
                 }
                 if (delta <= 0)
                 {
@@ -880,7 +880,7 @@ namespace Spider
             score.Order = move.ToRow;
             score.FaceValue = 0;
             score.NetRunLength = 0;
-            score.DownCount = DownPiles[move.From].Count;
+            score.DownCount = Tableau.GetDownCount(move.From);
             score.TurnsOverCard = move.Flags.TurnsOverCard();
             score.CreatesEmptyPile = move.Flags.CreatesEmptyPile();
             score.UsesEmptyPile = move.Flags.UsesEmptyPile();
@@ -901,12 +901,12 @@ namespace Spider
         {
             ScoreInfo score = new ScoreInfo(Coefficients, Group1);
 
-            Pile fromPile = UpPiles[move.From];
-            Pile toPile = UpPiles[move.To];
+            Pile fromPile = Tableau[move.From];
+            Pile toPile = Tableau[move.To];
             Card fromCard = fromPile[move.FromRow];
             bool wholePile = move.FromRow == 0;
             score.UsesEmptyPile = true;
-            score.DownCount = DownPiles[move.From].Count;
+            score.DownCount = Tableau.GetDownCount(move.From);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.FaceValue = (int)fromCard.Face;
             score.IsKing = fromCard.Face == Face.King;
@@ -934,11 +934,11 @@ namespace Spider
 
         private int GetOneRunDelta(int oldOrder, int newOrder, Move move)
         {
-            bool fromFree = DownPiles[move.From].Count == 0;
-            bool toFree = DownPiles[move.To].Count == 0;
-            bool fromUpper = UpPiles.GetRunUp(move.From, move.FromRow) == move.FromRow;
+            bool fromFree = Tableau.GetDownCount(move.From) == 0;
+            bool toFree = Tableau.GetDownCount(move.To) == 0;
+            bool fromUpper = Tableau.GetRunUp(move.From, move.FromRow) == move.FromRow;
             bool fromLower = move.HoldingNext == -1;
-            bool toUpper = UpPiles.GetRunUp(move.To, move.ToRow) == move.ToRow;
+            bool toUpper = Tableau.GetRunUp(move.To, move.ToRow) == move.ToRow;
             bool oldFrom = move.FromRow == 0 ?
                 (fromFree && fromLower) :
                 (fromFree && fromUpper && fromLower && oldOrder == 2);
@@ -962,7 +962,7 @@ namespace Spider
 
         private int CountUses(Move move)
         {
-            if (move.FromRow == 0 || move.ToRow != UpPiles[move.To].Count)
+            if (move.FromRow == 0 || move.ToRow != Tableau[move.To].Count)
             {
                 // No exposed card, no uses.
                 return 0;
@@ -970,7 +970,7 @@ namespace Spider
 
             int uses = 0;
 
-            Pile fromPile = UpPiles[move.From];
+            Pile fromPile = Tableau[move.From];
             Card fromCard = fromPile[move.FromRow];
             Card exposedCard = fromPile[move.FromRow - 1];
             if (!exposedCard.IsTargetFor(fromCard))
@@ -986,7 +986,7 @@ namespace Spider
                         // Inappropriate column.
                         continue;
                     }
-                    Pile nextFromPile = UpPiles[nextFrom];
+                    Pile nextFromPile = Tableau[nextFrom];
                     if (nextFromPile.Count == 0)
                     {
                         // Column is empty.
@@ -1019,8 +1019,8 @@ namespace Spider
 
         private int GetNetRunLength(int order, int from, int fromRow, int to, int toRow)
         {
-            int moveRun = UpPiles.GetRunDown(from, fromRow);
-            int fromRun = UpPiles.GetRunUp(from, fromRow + 1) + moveRun - 1;
+            int moveRun = Tableau.GetRunDown(from, fromRow);
+            int fromRun = Tableau.GetRunUp(from, fromRow + 1) + moveRun - 1;
             if (order != 2)
             {
                 // The from card's suit doesn't match the to card's suit.
@@ -1031,7 +1031,7 @@ namespace Spider
                 }
                 return -fromRun;
             }
-            int toRun = UpPiles.GetRunUp(to, toRow);
+            int toRun = Tableau.GetRunUp(to, toRow);
             int newRun = moveRun + toRun;
             if (moveRun == fromRun)
             {
@@ -1095,54 +1095,21 @@ namespace Spider
         {
             if (move.FromRow < 0)
             {
-                move.FromRow += UpPiles[move.From].Count;
+                move.FromRow += Tableau[move.From].Count;
             }
             if (move.ToRow == -1)
             {
-                move.ToRow = UpPiles[move.To].Count;
+                move.ToRow = Tableau[move.To].Count;
             }
             return move;
-        }
-
-        public void Discard()
-        {
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                Pile pile = UpPiles[i];
-                if (pile.Count < 13)
-                {
-                    continue;
-                }
-                if (pile[pile.Count - 1].Face != Face.Ace)
-                {
-                    continue;
-                }
-
-                int runLength = pile.GetRunUp(pile.Count);
-                if (runLength == 13)
-                {
-                    if (Diagnostics)
-                    {
-                        Utils.WriteLine("*** discarding ***");
-                    }
-                    int row = pile.Count - runLength;
-                    Pile discard = new Pile();
-                    for (int j = 0; j < 13; j++)
-                    {
-                        discard.Add(pile[row + j]);
-                    }
-                    pile.RemoveRange(row, 13);
-                    DiscardPiles.Add(discard);
-                }
-            }
         }
 
         public void TurnOverCards()
         {
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                Pile up = UpPiles[i];
-                Pile down = DownPiles[i];
+                Pile up = Tableau.UpPiles[i];
+                Pile down = Tableau.DownPiles[i];
                 if (up.Count == 0 && down.Count > 0)
                 {
                     if (Diagnostics)

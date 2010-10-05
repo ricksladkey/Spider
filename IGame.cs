@@ -12,9 +12,7 @@ namespace Spider
         Pile Deck { get; }
         Pile Shuffled { get; }
         Pile StockPile { get; }
-        PileMap UpPiles { get; }
-        PileMap DownPiles { get; }
-        List<Pile> DiscardPiles { get; }
+        Tableau Tableau { get; }
 
         MoveList UncoveringMoves { get; }
         MoveList SupplementaryMoves { get; }
@@ -26,7 +24,6 @@ namespace Spider
 
         void Initialize();
         int FindEmptyPiles();
-        void Discard();
         void TurnOverCards();
         Move Normalize(Move move);
         int AddSupplementary();

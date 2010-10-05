@@ -42,7 +42,7 @@ namespace Spider
             for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
             {
                 HoldingInfo holding = HoldingList[holdingNext];
-                int undoFromRow = UpPiles[holding.To].Count;
+                int undoFromRow = Tableau[holding.To].Count;
                 MakeMoveUsingEmptyPiles(holding.From, holding.FromRow, holding.To);
                 moveStack.Push(new Move(holding.To, undoFromRow, holding.From == move.From ? move.To : move.From));
             }
@@ -90,8 +90,8 @@ namespace Spider
                 Utils.WriteLine("SWUEP: {0}/{1} -> {2}/{3}", from, fromRow, to, toRow);
             }
             int emptyPiles = FindEmptyPiles();
-            int fromSuits = UpPiles.CountSuits(from, fromRow);
-            int toSuits = UpPiles.CountSuits(to, toRow);
+            int fromSuits = Tableau.CountSuits(from, fromRow);
+            int toSuits = Tableau.CountSuits(to, toRow);
             if (fromSuits == 0 && toSuits == 0)
             {
                 return;
@@ -140,20 +140,20 @@ namespace Spider
                 Utils.WriteLine("ULTEP: {0}/{1} -> {2}", from, lastFromRow, to);
             }
             int emptyPiles = FindEmptyPiles();
-            int suits = UpPiles.CountSuits(from, lastFromRow);
+            int suits = Tableau.CountSuits(from, lastFromRow);
             if (suits > ExtraSuits(emptyPiles))
             {
                 throw new InvalidMoveException("insufficient empty piles");
             }
-            int totalSuits = UpPiles.CountSuits(from, lastFromRow);
+            int totalSuits = Tableau.CountSuits(from, lastFromRow);
             int remainingSuits = totalSuits;
-            int fromRow = UpPiles[from].Count;
+            int fromRow = Tableau[from].Count;
             for (int n = 0; n < emptyPiles; n++)
             {
                 int m = Math.Min(emptyPiles, n + remainingSuits);
                 for (int i = m - 1; i >= n; i--)
                 {
-                    int runLength = UpPiles.GetRunUp(from, fromRow);
+                    int runLength = Tableau.GetRunUp(from, fromRow);
                     fromRow -= runLength;
                     fromRow = Math.Max(fromRow, lastFromRow);
                     MakeSimpleMove(from, -runLength, EmptyPiles[i]);
@@ -162,7 +162,7 @@ namespace Spider
                 }
                 for (int i = n + 1; i < m; i++)
                 {
-                    int runLength = UpPiles[EmptyPiles[i]].Count;
+                    int runLength = Tableau[EmptyPiles[i]].Count;
                     MakeSimpleMove(EmptyPiles[i], -runLength, EmptyPiles[n]);
                     moveStack.Push(new Move(EmptyPiles[n], -runLength, EmptyPiles[i]));
                 }
@@ -183,8 +183,8 @@ namespace Spider
             for (int i = n - suits; i < n; i++)
             {
                 // Move as much as possible but not too much.
-                Pile fromPile = UpPiles[from];
-                int fromRow = fromPile.Count - UpPiles.GetRunUp(from, fromPile.Count);
+                Pile fromPile = Tableau[from];
+                int fromRow = fromPile.Count - Tableau.GetRunUp(from, fromPile.Count);
                 if (fromRow < lastFromRow)
                 {
                     fromRow = lastFromRow;
@@ -195,7 +195,7 @@ namespace Spider
             }
             for (int i = n - 2; i >= n - suits; i--)
             {
-                int runLength = UpPiles[EmptyPiles[i]].Count;
+                int runLength = Tableau[EmptyPiles[i]].Count;
                 MakeSimpleMove(EmptyPiles[i], -runLength, EmptyPiles[n - 1]);
                 moveStack.Push(new Move(EmptyPiles[n - 1], -runLength, EmptyPiles[i]));
             }
@@ -246,7 +246,7 @@ namespace Spider
                         // Things got messed up due to a discard.  There might
                         // be another pile with the same target.
                         bool foundAlternative = false;
-                        Pile fromPile = UpPiles[move.From];
+                        Pile fromPile = Tableau[move.From];
                         if (move.From >= 0 && move.From < fromPile.Count)
                         {
                             Card fromCard = fromPile[move.FromRow];
@@ -256,7 +256,7 @@ namespace Spider
                                 {
                                     continue;
                                 }
-                                Pile toPile = UpPiles[to];
+                                Pile toPile = Tableau[to];
                                 if (toPile.Count == 0)
                                 {
                                     continue;
@@ -311,10 +311,10 @@ namespace Spider
         {
             move = Normalize(move);
             int from = move.From;
-            Pile fromPile = UpPiles[from];
+            Pile fromPile = Tableau[from];
             int fromRow = move.FromRow;
             int to = move.To;
-            Pile toPile = UpPiles[to];
+            Pile toPile = Tableau[to];
             int toRow = toPile.Count;
             if (fromRow < 0 || fromRow >= fromPile.Count)
             {
@@ -357,14 +357,14 @@ namespace Spider
         {
             if (lastFromRow < 0)
             {
-                lastFromRow += UpPiles[from].Count;
+                lastFromRow += Tableau[from].Count;
             }
             if (Diagnostics)
             {
                 Utils.WriteLine("MMUEP: {0}/{1} -> {2}", from, lastFromRow, to);
             }
-            int toRow = UpPiles[to].Count;
-            int extraSuits = UpPiles.CountSuits(from, lastFromRow) - 1;
+            int toRow = Tableau[to].Count;
+            int extraSuits = Tableau.CountSuits(from, lastFromRow) - 1;
             if (extraSuits < 0)
             {
                 return "not a single run";
@@ -387,13 +387,13 @@ namespace Spider
                 return "insufficient empty piles";
             }
             int suits = 0;
-            int fromRow = UpPiles[from].Count;
+            int fromRow = Tableau[from].Count;
             Stack<Move> moveStack = new Stack<Move>();
             for (int n = emptyPiles; n > 0; n--)
             {
                 for (int i = 0; i < n; i++)
                 {
-                    int runLength = UpPiles.GetRunUp(from, fromRow);
+                    int runLength = Tableau.GetRunUp(from, fromRow);
                     fromRow -= runLength;
                     MakeSimpleMove(from, -runLength, usableEmptyPiles[i]);
                     moveStack.Push(new Move(usableEmptyPiles[i], -runLength, to));
@@ -409,7 +409,7 @@ namespace Spider
                 }
                 for (int i = n - 2; i >= 0; i--)
                 {
-                    int runLength = UpPiles[usableEmptyPiles[i]].Count;
+                    int runLength = Tableau[usableEmptyPiles[i]].Count;
                     MakeSimpleMove(usableEmptyPiles[i], -runLength, usableEmptyPiles[n - 1]);
                     moveStack.Push(new Move(usableEmptyPiles[n - 1], -runLength, usableEmptyPiles[i]));
                 }
@@ -427,17 +427,17 @@ namespace Spider
         {
             if (fromRow < 0)
             {
-                fromRow += UpPiles[from].Count;
+                fromRow += Tableau[from].Count;
             }
             if (Diagnostics)
             {
                 Utils.WriteLine("    MSM: {0}/{1} -> {2}", from, fromRow, to);
             }
-            Debug.Assert(UpPiles[from].Count != 0);
-            Debug.Assert(fromRow < UpPiles[from].Count);
-            Debug.Assert(UpPiles.CountSuits(from, fromRow) == 1);
-            Debug.Assert(UpPiles[to].Count == 0 || UpPiles[from][fromRow].IsSourceFor(UpPiles[to][UpPiles[to].Count - 1]));
-            MakeMove(new Move(from, fromRow, to, UpPiles[to].Count));
+            Debug.Assert(Tableau[from].Count != 0);
+            Debug.Assert(fromRow < Tableau[from].Count);
+            Debug.Assert(Tableau.CountSuits(from, fromRow) == 1);
+            Debug.Assert(Tableau[to].Count == 0 || Tableau[from][fromRow].IsSourceFor(Tableau[to][Tableau[to].Count - 1]));
+            MakeMove(new Move(from, fromRow, to, Tableau[to].Count));
         }
 
         private void MakeSingleMove(Move move)
@@ -449,11 +449,7 @@ namespace Spider
             }
 
             // Make the move.
-            UpPiles.Move(move);
-
-            // Perform required actions.
-            Discard();
-            TurnOverCards();
+            Tableau.Move(move);
         }
 
         public void AddMove(Move move)

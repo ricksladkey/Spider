@@ -19,9 +19,9 @@ namespace Spider
         public string ToAsciiString()
         {
             Pile discardRow = new Pile();
-            for (int i = 0; i < DiscardPiles.Count; i++)
+            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
             {
-                Pile discardPile = DiscardPiles[i];
+                Pile discardPile = Tableau.DiscardPiles[i];
                 discardRow.Add(discardPile[discardPile.Count - 1]);
             }
 
@@ -30,8 +30,8 @@ namespace Spider
             s += Fence;
             s += Suits.ToString() + PrimarySeparator;
             s += ToAsciiString(discardRow) + PrimarySeparator;
-            s += ToAsciiString(DownPiles) + PrimarySeparator;
-            s += ToAsciiString(UpPiles) + PrimarySeparator;
+            s += ToAsciiString(Tableau.DownPiles) + PrimarySeparator;
+            s += ToAsciiString(Tableau.UpPiles) + PrimarySeparator;
             s += ToAsciiString(StockPile);
             s += Fence;
 
@@ -146,15 +146,15 @@ namespace Spider
                 {
                     discardPile.Add(new Card(face, discardCard.Suit));
                 }
-                DiscardPiles.Add(discardPile);
+                Tableau.DiscardPiles.Add(discardPile);
             }
             for (int column = 0; column < downPiles.Length; column++)
             {
-                DownPiles[column] = downPiles[column];
+                Tableau.DownPiles[column] = downPiles[column];
             }
             for (int column = 0; column < upPiles.Length; column++)
             {
-                UpPiles[column] = upPiles[column];
+                Tableau.UpPiles[column] = upPiles[column];
             }
             StockPile.AddRange(stock);
         }
@@ -186,17 +186,17 @@ namespace Spider
         {
             Suits = other.Suits;
             Initialize();
-            foreach (Pile pile in other.DiscardPiles)
+            foreach (Pile pile in other.Tableau.DiscardPiles)
             {
-                DiscardPiles.Add(pile);
+                Tableau.DiscardPiles.Add(pile);
             }
             for (int column = 0; column < NumberOfPiles; column++)
             {
-                DownPiles[column].Copy((other.DownPiles[column]));
+                Tableau.DownPiles[column].Copy((other.Tableau.DownPiles[column]));
             }
             for (int column = 0; column < NumberOfPiles; column++)
             {
-                UpPiles[column].Copy((other.UpPiles[column]));
+                Tableau.UpPiles[column].Copy((other.Tableau.UpPiles[column]));
             }
             StockPile.Copy((other.StockPile));
         }
@@ -209,18 +209,18 @@ namespace Spider
             s += "--------------------------------";
             s += Environment.NewLine;
             Pile discardRow = new Pile();
-            for (int i = 0; i < DiscardPiles.Count; i++)
+            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
             {
-                Pile discardPile = DiscardPiles[i];
+                Pile discardPile = Tableau.DiscardPiles[i];
                 discardRow.Add(discardPile[discardPile.Count - 1]);
             }
             s += ToPrettyString(-1, discardRow);
             s += Environment.NewLine;
-            s += ToPrettyString(DownPiles);
+            s += ToPrettyString(Tableau.DownPiles);
             s += Environment.NewLine;
             s += "   0  1  2  3  4  5  6  7  8  9";
             s += Environment.NewLine;
-            s += ToPrettyString(UpPiles);
+            s += ToPrettyString(Tableau.UpPiles);
             s += Environment.NewLine;
             for (int i = 0; i < StockPile.Count / NumberOfPiles; i++)
             {

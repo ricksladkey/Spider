@@ -442,7 +442,7 @@ namespace Spider
             {
                 Interlocked.Increment(ref won);
             }
-            if (game.DiscardPiles.Count > 0)
+            if (game.Tableau.DiscardPiles.Count > 0)
             {
                 Interlocked.Increment(ref discards);
             }

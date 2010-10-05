@@ -8,56 +8,110 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class PileMap : FastList<Pile>, IGetCard
+    public class Tableau : IGetCard
     {
+        private bool autoAdjust;
+        private int count;
+        private Pile[] downPiles;
+        private Pile[] upPiles;
+        private FastList<Pile> discardPiles;
         private Pile scratchPile;
 
-        public PileMap()
-            : base(Game.NumberOfPiles, Game.NumberOfPiles)
+        public Tableau()
+            : this(true)
         {
-            for (int row = 0; row < Game.NumberOfPiles; row++)
+        }
+
+        public Tableau(bool autoAdjust)
+        {
+            this.autoAdjust = autoAdjust;
+            count = Game.NumberOfPiles;
+            downPiles = new Pile[count];
+            upPiles = new Pile[count];
+            discardPiles = new FastList<Pile>(count);
+            for (int row = 0; row < count; row++)
             {
-                array[row] = new Pile();
+                downPiles[row] = new Pile();
+                upPiles[row] = new Pile();
             }
             scratchPile = new Pile();
         }
 
+        public Pile this[int index]
+        {
+            get
+            {
+                return upPiles[index];
+            }
+        }
+
+        public IList<Pile> DownPiles
+        {
+            get
+            {
+                return downPiles;
+            }
+        }
+
+        public IList<Pile> UpPiles
+        {
+            get
+            {
+                return upPiles;
+            }
+        }
+
+        public IList<Pile> DiscardPiles
+        {
+            get
+            {
+                return discardPiles;
+            }
+        }
+
         public void ClearAll()
         {
-            for (int i = 0; i < Game.NumberOfPiles; i++)
+            for (int i = 0; i < count; i++)
             {
-                array[i].Clear();
+                downPiles[i].Clear();
+                upPiles[i].Clear();
             }
+            discardPiles.Clear();
+        }
+
+        public int GetDownCount(int column)
+        {
+            return downPiles[column].Count;
         }
 
         public int GetRunDown(int column, int row)
         {
-            return array[column].GetRunDown(row);
+            return upPiles[column].GetRunDown(row);
         }
 
         public int GetRunDownAnySuit(int column, int row)
         {
-            return array[column].GetRunDownAnySuit(row);
+            return upPiles[column].GetRunDownAnySuit(row);
         }
 
         public int GetRunUp(int column, int row)
         {
-            return array[column].GetRunUp(row);
+            return upPiles[column].GetRunUp(row);
         }
 
         public int GetRunUpAnySuit(int column, int row)
         {
-            return array[column].GetRunUpAnySuit(row);
+            return upPiles[column].GetRunUpAnySuit(row);
         }
 
         public int CountSuits(int column, int row)
         {
-            return array[column].CountSuits(row, -1);
+            return upPiles[column].CountSuits(row, -1);
         }
 
         public int CountSuits(int column, int startRow, int endRow)
         {
-            return array[column].CountSuits(startRow, endRow);
+            return upPiles[column].CountSuits(startRow, endRow);
         }
 
         public int GetRunDelta(int from, int fromRow, int to, int toRow)
@@ -65,11 +119,20 @@ namespace Spider
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
-        public void Update(PileMap other)
+        public void Update(Tableau other)
         {
             for (int i = 0; i < count; i++)
             {
-                array[i].Update(other.array[i]);
+                upPiles[i].Update(other.upPiles[i]);
+            }
+        }
+
+        public void Adjust()
+        {
+            for (int column = 0; column < count; column++)
+            {
+                CheckDiscard(column);
+                CheckTurnOverCard(column);
             }
         }
 
@@ -91,8 +154,8 @@ namespace Spider
 
         public void Move(int from, int fromRow, int to)
         {
-            Pile fromPile = array[from];
-            Pile toPile = array[to];
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
             int fromCount = fromPile.Count - fromRow;
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
@@ -102,8 +165,8 @@ namespace Spider
 
         public void Swap(int from, int fromRow, int to, int toRow)
         {
-            Pile fromPile = array[from];
-            Pile toPile = array[to];
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
             int fromCount = fromPile.Count - fromRow;
             int toCount = toPile.Count - toRow;
             scratchPile.Clear();
@@ -116,17 +179,24 @@ namespace Spider
             OnPileChanged(to);
         }
 
-        public void Discard()
+        public void Add(int column, Card card)
         {
-            for (int i = 0; i < count; i++)
+            upPiles[column].Add(card);
+            OnPileChanged(column);
+        }
+
+        private void OnPileChanged(int column)
+        {
+            if (autoAdjust)
             {
-                Discard(i);
+                CheckDiscard(column);
+                CheckTurnOverCard(column);
             }
         }
 
-        public void Discard(int column)
+        private void CheckDiscard(int column)
         {
-            Pile pile = array[column];
+            Pile pile = upPiles[column];
             if (pile.Count < 13)
             {
                 return;
@@ -143,27 +213,17 @@ namespace Spider
                 Pile sequence = new Pile();
                 sequence.AddRange(pile, row, 13);
                 pile.RemoveRange(row, 13);
-                OnDiscard(sequence);
+                discardPiles.Add(sequence);
             }
         }
 
-        public event Action<int> PileChangedEvent;
-
-        protected void OnPileChanged(int column)
+        public void CheckTurnOverCard(int column)
         {
-            if (PileChangedEvent != null)
+            Pile upPile = upPiles[column];
+            Pile downPile = downPiles[column];
+            if (upPile.Count == 0 && downPile.Count != 0)
             {
-                PileChangedEvent(column);
-            }
-        }
-
-        public event Action<Pile> DiscardEvent;
-
-        protected void OnDiscard(Pile sequence)
-        {
-            if (DiscardEvent != null)
-            {
-                DiscardEvent(sequence);
+                upPile.Add(downPile.Next());
             }
         }
 
@@ -171,7 +231,7 @@ namespace Spider
 
         public Card GetCard(int column)
         {
-            return array[column].LastCard;
+            return upPiles[column].LastCard;
         }
 
         #endregion

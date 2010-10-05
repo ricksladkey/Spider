@@ -11,7 +11,7 @@ namespace Spider
         private Pile offloadPile;
         private PileList used;
         private PileList roots;
-        private PileMap map;
+        private Tableau map;
         private HoldingStack holdingStack;
 
         private int from;
@@ -28,14 +28,14 @@ namespace Spider
             offloadPile = new Pile();
             used = new PileList();
             roots = new PileList();
-            map = new PileMap();
+            map = new Tableau();
             holdingStack = new HoldingStack();
         }
 
         public void Check(int column)
         {
             from = column;
-            fromPile = UpPiles[from];
+            fromPile = Tableau[from];
             if (fromPile.Count == 0)
             {
                 // No cards.
@@ -81,7 +81,7 @@ namespace Spider
                 used.Add(move.From);
 
                 // The uncovered card has to match a root to be useful.
-                Card uncoveredCard = UpPiles[move.From][move.FromRow - 1];
+                Card uncoveredCard = Tableau[move.From][move.FromRow - 1];
                 bool matchesRoot = false;
                 for (int j = 1; j < roots.Count; j++)
                 {
@@ -113,7 +113,8 @@ namespace Spider
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
-            map.Update(UpPiles);
+            map.ClearAll();
+            map.Update(Tableau);
 
             if (!uncoveringMove.IsEmpty)
             {
@@ -206,7 +207,7 @@ namespace Spider
                     }
 
                     // It doesn't make sense to offload the last root.
-                    if (n == roots.Count - 1)
+                    if (rootRow == 0)
                     {
                         if (runs - 1 >= 2)
                         {
@@ -257,7 +258,7 @@ namespace Spider
                 // Update the map.
                 map.Move(from, rootRow, to);
 
-                if (rootRow == 0 && DownPiles[from].Count == 0)
+                if (rootRow == 0 && Tableau.GetDownCount(from) == 0)
                 {
                     // Got to the bottom of the pile
                     // and created an empty pile.
@@ -285,7 +286,7 @@ namespace Spider
             // Check for unload that needs to be reloaded.
             if (!offload.IsEmpty && !offload.SinglePile)
             {
-                if (DownPiles[from].Count != 0)
+                if (Tableau.GetDownCount(from) != 0)
                 {
                     // Can't reload.
                     return;
@@ -298,7 +299,7 @@ namespace Spider
             }
 
             // Determine move type.
-            int downCount = DownPiles[from].Count;
+            int downCount = Tableau.GetDownCount(from);
             MoveFlags flags = MoveFlags.Empty;
             if (downCount != 0 || turnsOverCard)
             {
@@ -407,22 +408,22 @@ namespace Spider
 
         private bool CheckOneRun(int rootRow, int to, int oneRun)
         {
-            Card oneRunRootCard = map[oneRun][0];
+            Pile oneRunPile = map[oneRun];
 
-            // Check whether one run pile matches from pile.
-            if (rootRow > 0 && oneRunRootCard.IsSourceFor(fromPile[rootRow - 1]))
+            // Check whether the one run pile matches from pile.
+            if (rootRow > 0 && oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(fromPile[rootRow - 1]))
             {
-                if (TryToAddOneRunMove(oneRun, from, fromPile[rootRow - 1]))
+                if (TryToAddOneRunMove(rootRow, oneRun, from, fromPile[rootRow - 1]))
                 {
                     return true;
                 }
             }
 
-            // Check whether one run pile matches to pile.
+            // Check whether the one run pile matches to pile.
             Card toCard = map.GetCard(to);
-            if (oneRunRootCard.IsSourceFor(toCard))
+            if (oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(toCard))
             {
-                if (TryToAddOneRunMove(oneRun, to, toCard))
+                if (TryToAddOneRunMove(rootRow, oneRun, to, toCard))
                 {
                     return true;
                 }
@@ -432,7 +433,7 @@ namespace Spider
             return false;
         }
 
-        private bool TryToAddOneRunMove(int oneRun, int target, Card targetCard)
+        private bool TryToAddOneRunMove(int rootRow, int oneRun, int target, Card targetCard)
         {
             Pile oneRunPile = map[oneRun];
             Card oneRunRootCard = oneRunPile[0];
@@ -451,38 +452,65 @@ namespace Spider
                 }
             }
 
-            if (target == from && !offload.IsEmpty && DownPiles[oneRun].Count != 0)
-            {
-                // We can't find a satisfactory ending for this move
-                // unless the offload can be reloaded onto the
-                // from pile.
-                return false;
-            }
-
             // Found a home for the one run pile.
             int count = AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
 
+            // If we've already moved the whole from pile
+            // then we've inherited some flags.
+            MoveFlags baseFlags = MoveFlags.Empty;
+#if true
+            if (rootRow == 0)
+            {
+                baseFlags = Tableau.GetDownCount(from) == 0 ? MoveFlags.CreatesEmptyPile : MoveFlags.TurnsOverCard;
+            }
+#endif
+
+            // Handle the messy cases.
             if (offload.IsEmpty)
             {
-                if (DownPiles[oneRun].Count == 0)
+                if (Tableau.GetDownCount(oneRun) == 0)
                 {
                     // Add the emptying move.
-                    AddMove(MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
+                    AddMove(baseFlags | MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
                     return true;
                 }
 
                 // Add the intermediate move.
-                AddMove(MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+                AddMove(baseFlags | MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+                if (baseFlags.CreatesEmptyPile())
+                {
+                    return true;
+                }
 
                 // Restore supplementary moves.
                 RestoreSupplementaryMoves(count);
                 return false;
             }
 
-            if (offload.SinglePile && DownPiles[oneRun].Count == 0)
+            if (offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
             {
                 // Add the intermediate empty pile preserving move.
-                AddMove(MoveFlags.Empty, order + GetOrder(targetCard, oneRunRootCard));
+                AddMove(baseFlags, order + GetOrder(targetCard, oneRunRootCard));
+                if (baseFlags.CreatesEmptyPile())
+                {
+                    return true;
+                }
+
+                // Restore supplementary moves.
+                RestoreSupplementaryMoves(count);
+                return false;
+            }
+
+#if true
+            // Restore supplementary moves.
+            RestoreSupplementaryMoves(count);
+            return false;
+#else
+            if (target == from)
+            {
+                // We can't find a satisfactory ending for this move
+                // unless the offload can be reloaded onto the
+                // from pile.
 
                 // Restore supplementary moves.
                 RestoreSupplementaryMoves(count);
@@ -495,6 +523,7 @@ namespace Spider
             // This move now turns over a card no matter what.
             turnsOverCard = true;
             return false;
+#endif
         }
 
         private int AddSupplementaryMove(Move move, Pile pile, int runLength, HoldingSet holdingSet, bool undoHolding)

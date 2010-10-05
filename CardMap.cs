@@ -15,7 +15,12 @@ namespace Spider
         {
         }
 
-        public void Update(PileMap pileMap)
+        public void Update(Tableau tableau)
+        {
+            Update(tableau.UpPiles);
+        }
+
+        public void Update(IList<Pile> pileMap)
         {
             for (int column = 0; column < Count; column++)
             {

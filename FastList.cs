@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class FastList<T> : IList<T>
+    public class FastList<T> : IList<T>, IReadOnlyList<T>
     {
         protected int capacity;
         protected int count;
@@ -241,5 +241,48 @@ namespace Spider
             capacity = newCapacity;
             array = newArray;
         }
+
+        #region IReadOnlyList<T> Members
+
+        bool IReadOnlyList<T>.Contains(T item)
+        {
+            return Contains(item);
+        }
+
+        void IReadOnlyList<T>.CopyTo(T[] array, int index)
+        {
+            CopyTo(array, index);
+        }
+
+        int IReadOnlyList<T>.IndexOf(T item)
+        {
+            return IndexOf(item);
+        }
+
+        int IReadOnlyList<T>.Count
+        {
+            get
+            {
+                return count;
+            }
+        }
+
+        IList<T> IReadOnlyList<T>.Items
+        {
+            get
+            {
+                return this;
+            }
+        }
+
+        T IReadOnlyList<T>.this[int index]
+        {
+            get
+            {
+                return array[index];
+            }
+        }
+
+        #endregion
     }
 }

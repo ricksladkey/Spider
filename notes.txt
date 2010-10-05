@@ -1,7 +1,8 @@
 - make number of piles configurable
 - make number of decks configurable
 
-- try first doing all reversible moves, then general moves
+- assert that empty piles left is calculated correctly
+- assert that offload suits is calculated correctly
 - detect discards in composite single pile algorithm
 - move empty piles into pile map
 - undo holding piles if it increases the order

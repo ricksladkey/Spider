@@ -33,9 +33,7 @@ namespace Spider
         public Pile Deck { get { return game.Deck; } }
         public Pile Shuffled { get { return game.Shuffled; } }
         public Pile StockPile { get { return game.StockPile; } }
-        public PileMap UpPiles { get { return game.UpPiles; } }
-        public PileMap DownPiles { get { return game.DownPiles; } }
-        public List<Pile> DiscardPiles { get { return game.DiscardPiles; } }
+        public Tableau Tableau { get { return game.Tableau; } }
 
         public MoveList UncoveringMoves { get { return game.UncoveringMoves; } }
         public MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }
@@ -53,11 +51,6 @@ namespace Spider
         public int FindEmptyPiles()
         {
             return game.FindEmptyPiles();
-        }
-
-        public void Discard()
-        {
-            game.Discard();
         }
 
         public void TurnOverCards()
@@ -83,6 +76,11 @@ namespace Spider
         public void PrintGame()
         {
             game.PrintGame();
+        }
+
+        public static void PrintGame(Game other)
+        {
+            Game.PrintGame(other);
         }
 
         public void PrintGames()

@@ -118,6 +118,7 @@
     <Compile Include="IGameSettings.cs" />
     <Compile Include="IGetCard.cs" />
     <Compile Include="InvalidMoveException.cs" />
+    <Compile Include="IReadOnlyList.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveProcessor.cs" />
@@ -140,6 +141,7 @@
     <Compile Include="SimplexConstant.cs" />
     <Compile Include="FastList.cs" />
     <Compile Include="Suit.cs" />
+    <Compile Include="Tableau.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Vector.cs" />
   </ItemGroup>

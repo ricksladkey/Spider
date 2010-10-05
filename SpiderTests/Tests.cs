@@ -396,6 +396,15 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
+        [TestMethod]
+        public void CompositeSinglePileTest24()
+        {
+            // A composite single pile move with a discard.
+            string data1 = "@2|||8sKhQhJhTh9h8h7h6h5h4h3h-Ts2hAh7s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|Ah||8s7s-Ts--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMove(data1, data2);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)
