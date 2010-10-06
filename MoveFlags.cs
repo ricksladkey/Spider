@@ -14,7 +14,8 @@ namespace Spider
         UsesEmptyPile = 0x0004,
         Holding = 0x0008,
         UndoHolding = 0x0010,
-        Flagged = 0x0020,
+        Discards = 0x0020,
+        Flagged = 0x8000,
     }
 
     public static class MoveFlagsExensions
@@ -45,6 +46,11 @@ namespace Spider
         public static bool UsesEmptyPile(this MoveFlags flags)
         {
             return (flags & MoveFlags.UsesEmptyPile) == MoveFlags.UsesEmptyPile;
+        }
+
+        public static bool Discards(this MoveFlags flags)
+        {
+            return (flags & MoveFlags.Discards) == MoveFlags.Discards;
         }
 
         public static bool TurnsOverCard(this MoveFlags flags)

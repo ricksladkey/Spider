@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -11,6 +12,7 @@ namespace Spider
         public const int BaseScore = 0;
         public const int UsesEmptyPileScore = -1000;
         public const int ReversibleScore = 500;
+        public const int DiscardScore = 250;
 
         public double[] Coefficients { get; set; }
         public int Coefficient0 { get; set; }
@@ -22,6 +24,7 @@ namespace Spider
         public bool TurnsOverCard { get; set; }
         public bool CreatesEmptyPile { get; set; }
         public bool UsesEmptyPile { get; set; }
+        public bool Discards { get; set; }
         public int DownCount { get; set; }
         public bool IsCompositeSinglePile { get; set; }
         public bool NoEmptyPiles { get; set; }
@@ -35,6 +38,7 @@ namespace Spider
             {
                 double score = BaseScore +
                     ReversibleScore * (Reversible ? 1 : 0) +
+                    DiscardScore * (Discards ? 1 : 0) +
                     CreatesEmptyPileScore * (CreatesEmptyPile ? 1 : 0) +
                     UsesEmptyPileScore * (UsesEmptyPile ? 1 : 0) +
                     FaceValue +

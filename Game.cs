@@ -848,6 +848,9 @@ namespace Spider
             int netRunLengthFrom = GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
             int netRunLengthTo = isSwap ? GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
             score.NetRunLength = netRunLengthFrom + netRunLengthTo;
+#if false
+            score.Discards = netRunLengthFrom == 13 || netRunLengthTo == 13;
+#endif
             score.DownCount = Tableau.GetDownCount(from);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.CreatesEmptyPile = wholePile && score.DownCount == 0;
@@ -884,6 +887,7 @@ namespace Spider
             score.TurnsOverCard = move.Flags.TurnsOverCard();
             score.CreatesEmptyPile = move.Flags.CreatesEmptyPile();
             score.UsesEmptyPile = move.Flags.UsesEmptyPile();
+            score.Discards = move.Flags.Discards();
             score.IsCompositeSinglePile = true;
             score.NoEmptyPiles = EmptyPiles.Count == 0;
             score.OneRunDelta = 0;
