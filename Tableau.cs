@@ -119,6 +119,43 @@ namespace Spider
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
+        public int GetNetRunLength(int order, int from, int fromRow, int to, int toRow)
+        {
+            int moveRun = GetRunDown(from, fromRow);
+            int fromRun = GetRunUp(from, fromRow + 1) + moveRun - 1;
+            if (order != 2)
+            {
+                // The from card's suit doesn't match the to card's suit.
+                if (moveRun == fromRun)
+                {
+                    // The from card's suit doesn't match its parent.
+                    return 0;
+                }
+                return -fromRun;
+            }
+            int toRun = GetRunUp(to, toRow);
+            int newRun = moveRun + toRun;
+            if (moveRun == fromRun)
+            {
+                // The from card's suit doesn't match its parent.
+                return newRun;
+            }
+            return newRun - fromRun;
+        }
+
+        public int GetNewRunLength(int order, int from, int fromRow, int to, int toRow)
+        {
+            if (order != 2)
+            {
+                // The from card's suit doesn't match the to card's suit.
+                return 0;
+            }
+            int moveRun = GetRunDown(from, fromRow);
+            int toRun = GetRunUp(to, toRow);
+            int newRun = moveRun + toRun;
+            return newRun;
+        }
+
         public void CopyUpPiles(Tableau other)
         {
             for (int i = 0; i < count; i++)

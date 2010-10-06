@@ -845,11 +845,13 @@ namespace Spider
             int faceTo = isSwap ? (int)toChild.Face : 0;
             score.FaceValue = Math.Max(faceFrom, faceTo);
             bool wholePile = fromRow == 0 && toRow == toPile.Count;
-            int netRunLengthFrom = GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int netRunLengthTo = isSwap ? GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
+            int netRunLengthFrom = Tableau.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
+            int netRunLengthTo = isSwap ? Tableau.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
             score.NetRunLength = netRunLengthFrom + netRunLengthTo;
-#if false
-            score.Discards = netRunLengthFrom == 13 || netRunLengthTo == 13;
+#if true
+            int newRunLengthFrom = Tableau.GetNewRunLength(newOrderFrom, from, fromRow, to, toRow);
+            int newRunLengthTo = isSwap ? Tableau.GetNewRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
+            score.Discards = newRunLengthFrom == 13 || newRunLengthTo == 13;
 #endif
             score.DownCount = Tableau.GetDownCount(from);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
@@ -1019,30 +1021,6 @@ namespace Spider
                 }
             }
             return uses;
-        }
-
-        private int GetNetRunLength(int order, int from, int fromRow, int to, int toRow)
-        {
-            int moveRun = Tableau.GetRunDown(from, fromRow);
-            int fromRun = Tableau.GetRunUp(from, fromRow + 1) + moveRun - 1;
-            if (order != 2)
-            {
-                // The from card's suit doesn't match the to card's suit.
-                if (moveRun == fromRun)
-                {
-                    // The from card's suit doesn't match its parent.
-                    return 0;
-                }
-                return -fromRun;
-            }
-            int toRun = Tableau.GetRunUp(to, toRow);
-            int newRun = moveRun + toRun;
-            if (moveRun == fromRun)
-            {
-                // The from card's suit doesn't match its parent.
-                return newRun;
-            }
-            return newRun - fromRun;
         }
 
         private bool ChooseMove()
