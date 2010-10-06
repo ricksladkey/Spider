@@ -58,11 +58,6 @@ namespace Spider
             game.TurnOverCards();
         }
 
-        public Move Normalize(Move move)
-        {
-            return game.Normalize(move);
-        }
-
         public int AddSupplementary()
         {
             return game.AddSupplementary();

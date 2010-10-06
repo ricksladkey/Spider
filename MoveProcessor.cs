@@ -214,7 +214,7 @@ namespace Spider
             for (int next = first; next != -1; next = SupplementaryList[next].Next)
             {
                 int emptyPiles = FindEmptyPiles();
-                Move move = Normalize(SupplementaryList[next]);
+                Move move = Tableau.Normalize(SupplementaryList[next]);
                 if (move.Type == MoveType.Unload)
                 {
                     offloadPile = move.To;
@@ -309,30 +309,7 @@ namespace Spider
 
         private bool SimpleMoveIsValid(Move move)
         {
-            move = Normalize(move);
-            int from = move.From;
-            Pile fromPile = Tableau[from];
-            int fromRow = move.FromRow;
-            int to = move.To;
-            Pile toPile = Tableau[to];
-            int toRow = toPile.Count;
-            if (fromRow < 0 || fromRow >= fromPile.Count)
-            {
-                return false;
-            }
-            if (move.ToRow != toPile.Count)
-            {
-                return false;
-            }
-            if (toPile.Count == 0)
-            {
-                return true;
-            }
-            if (!fromPile[fromRow].IsSourceFor(toPile[toRow - 1]))
-            {
-                return false;
-            }
-            return true;
+            return Tableau.MoveIsValid(move);
         }
 
         private void MakeMovesUsingEmptyPiles(int first)

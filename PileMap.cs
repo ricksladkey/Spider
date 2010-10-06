@@ -65,11 +65,11 @@ namespace Spider
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
-        public void Update(PileMap other)
+        public void Copy(PileMap other)
         {
             for (int i = 0; i < count; i++)
             {
-                array[i].Update(other.array[i]);
+                array[i].Copy(other.array[i]);
             }
         }
 

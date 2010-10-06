@@ -11,7 +11,8 @@ namespace Spider
         private Pile offloadPile;
         private PileList used;
         private PileList roots;
-        private Tableau map;
+        private Tableau workingTableau;
+        private Tableau intermediateTableau;
         private HoldingStack holdingStack;
 
         private int from;
@@ -28,7 +29,8 @@ namespace Spider
             offloadPile = new Pile();
             used = new PileList();
             roots = new PileList();
-            map = new Tableau();
+            workingTableau = new Tableau();
+            intermediateTableau = new Tableau();
             holdingStack = new HoldingStack();
         }
 
@@ -113,16 +115,16 @@ namespace Spider
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
-            map.ClearAll();
-            map.Update(Tableau);
+            workingTableau.ClearAll();
+            workingTableau.CopyUpPiles(Tableau);
 
             if (!uncoveringMove.IsEmpty)
             {
                 // Update the map for the uncovering move but don't
                 // include its order contribution so we don't make
                 // the uncovering move unless it is really necessary.
-                map.Move(uncoveringMove);
                 SupplementaryMoves.Add(uncoveringMove);
+                workingTableau.Move(uncoveringMove);
             }
 
             // Check all the roots.
@@ -145,7 +147,7 @@ namespace Spider
                     {
                         continue;
                     }
-                    Card card = map.GetCard(i);
+                    Card card = workingTableau.GetCard(i);
                     if (!card.IsEmpty && card.IsTargetFor(rootCard))
                     {
                         if (!offload.IsEmpty && to == offload.To)
@@ -187,7 +189,7 @@ namespace Spider
                     if (suits - 1 > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits - 1 > maxExtraSuits)
                         {
                             // Not enough empty piles.
@@ -211,7 +213,7 @@ namespace Spider
                     {
                         if (runs - 1 >= 2)
                         {
-                            AddMove(MoveFlags.Empty, order);
+                            AddMove(workingTableau, MoveFlags.Empty, order);
                         }
                         return;
                     }
@@ -219,7 +221,7 @@ namespace Spider
                     // Check for partial offload.
                     if (offloads > 0)
                     {
-                        AddMove(MoveFlags.Empty, order);
+                        AddMove(workingTableau, MoveFlags.Empty, order);
                     }
 
                     // Try to offload this run.
@@ -233,7 +235,7 @@ namespace Spider
                     if (suits > maxExtraSuitsOnePile)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(map, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
                             // Still not enough empty piles.
@@ -253,10 +255,7 @@ namespace Spider
                 // Do the move and the holding moves.
                 HoldingSet holdingSet = holdingStack.Set;
                 bool undoHolding = !isOffload;
-                AddSupplementaryMove(new Move(type, from, rootRow, to), fromPile, runLength, holdingSet, undoHolding);
-
-                // Update the map.
-                map.Move(from, rootRow, to);
+                AddSupplementaryMove(workingTableau, new Move(type, from, rootRow, to), fromPile, holdingSet, undoHolding);
 
                 if (rootRow == 0 && Tableau.GetDownCount(from) == 0)
                 {
@@ -313,7 +312,7 @@ namespace Spider
             {
                 flags |= MoveFlags.UsesEmptyPile;
             }
-            AddMove(flags, order);
+            AddMove(workingTableau, flags, order);
         }
 
         private void CheckOffload(int rootRow, int to)
@@ -339,7 +338,7 @@ namespace Spider
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough empty piles.
-                    offloadSuits -= FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, from, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, from, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough empty piles and/or holding piles.
@@ -349,11 +348,15 @@ namespace Spider
 
                 if (canMove)
                 {
+                    // Prepare the intermediate tableau.
+                    intermediateTableau.ClearAll();
+                    intermediateTableau.CopyUpPiles(workingTableau);
+
                     // Offload matches from pile.
-                    int count = AddSupplementaryMove(new Move(offloadType, offload.To, 0, from), offload.Pile, offload.Pile.Count, holdingStack.Set, true);
+                    int count = AddSupplementaryMove(intermediateTableau, new Move(offloadType, offload.To, 0, from), offload.Pile, holdingStack.Set, true);
 
                     // Add the intermediate move.
-                    AddMove(MoveFlags.Empty, order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
+                    AddMove(intermediateTableau, MoveFlags.Empty, order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
 
                     // Restore supplementary moves.
                     RestoreSupplementaryMoves(count);
@@ -361,7 +364,7 @@ namespace Spider
             }
 
             // Check whether offoad matches to pile.
-            Card toCard = map.GetCard(to);
+            Card toCard = workingTableau.GetCard(to);
             if (offloadRootCard.IsSourceFor(toCard))
             {
 
@@ -371,7 +374,7 @@ namespace Spider
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough empty piles.
-                    offloadSuits -= FindHolding(map, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough empty piles and/or holding piles.
@@ -385,10 +388,7 @@ namespace Spider
                     order += GetOrder(toCard, offloadRootCard);
 
                     // Found a home for the offload.
-                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, offload.Pile.Count, holdingStack.Set, true);
-
-                    // Update the map.
-                    map.Move(offload.To, 0, to);
+                    AddSupplementaryMove(workingTableau, new Move(offloadType, offload.To, 0, to), offload.Pile, holdingStack.Set, true);
 
                     // Update the state.
                     emptyPilesLeft += offload.EmptyPilesUsed;
@@ -408,7 +408,7 @@ namespace Spider
 
         private bool CheckOneRun(int rootRow, int to, int oneRun)
         {
-            Pile oneRunPile = map[oneRun];
+            Pile oneRunPile = workingTableau[oneRun];
 
             // Check whether the one run pile matches from pile.
             if (rootRow > 0 && oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(fromPile[rootRow - 1]))
@@ -420,7 +420,7 @@ namespace Spider
             }
 
             // Check whether the one run pile matches to pile.
-            Card toCard = map.GetCard(to);
+            Card toCard = workingTableau.GetCard(to);
             if (oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(toCard))
             {
                 if (TryToAddOneRunMove(rootRow, oneRun, to, toCard))
@@ -435,7 +435,7 @@ namespace Spider
 
         private bool TryToAddOneRunMove(int rootRow, int oneRun, int target, Card targetCard)
         {
-            Pile oneRunPile = map[oneRun];
+            Pile oneRunPile = workingTableau[oneRun];
             Card oneRunRootCard = oneRunPile[0];
 
             // Check whether we can make the move.
@@ -444,7 +444,7 @@ namespace Spider
             holdingStack.Clear();
             if (oneRunSuits - 1 > oneRunMaxExtraSuits)
             {
-                oneRunSuits -= FindHolding(map, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
+                oneRunSuits -= FindHolding(workingTableau, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
                 if (oneRunSuits - 1 > oneRunMaxExtraSuits)
                 {
                     // Not enough empty piles and/or holding piles.
@@ -452,8 +452,12 @@ namespace Spider
                 }
             }
 
+            // Prepare the intermediate tableau.
+            intermediateTableau.ClearAll();
+            intermediateTableau.CopyUpPiles(workingTableau);
+
             // Found a home for the one run pile.
-            int count = AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, oneRunPile.Count, holdingStack.Set, true);
+            int count = AddSupplementaryMove(intermediateTableau, new Move(oneRun, 0, target), oneRunPile, holdingStack.Set, true);
 
             // If we've already moved the whole from pile
             // then we've inherited some flags.
@@ -471,12 +475,12 @@ namespace Spider
                 if (Tableau.GetDownCount(oneRun) == 0)
                 {
                     // Add the emptying move.
-                    AddMove(baseFlags | MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
+                    AddMove(intermediateTableau, baseFlags | MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
                     return true;
                 }
 
                 // Add the intermediate move.
-                AddMove(baseFlags | MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
+                AddMove(intermediateTableau, baseFlags | MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
                 if (baseFlags.CreatesEmptyPile())
                 {
                     return true;
@@ -490,7 +494,7 @@ namespace Spider
             if (offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
             {
                 // Add the intermediate empty pile preserving move.
-                AddMove(baseFlags, order + GetOrder(targetCard, oneRunRootCard));
+                AddMove(intermediateTableau, baseFlags, order + GetOrder(targetCard, oneRunRootCard));
                 if (baseFlags.CreatesEmptyPile())
                 {
                     return true;
@@ -526,44 +530,41 @@ namespace Spider
 #endif
         }
 
-        private int AddSupplementaryMove(Move move, Pile pile, int runLength, HoldingSet holdingSet, bool undoHolding)
+        private int AddSupplementaryMove(Tableau tableau, Move move, Pile pile, HoldingSet holdingSet, bool undoHolding)
         {
+            int count = 0;
+
+            // Add moves to the holding piles.
+            foreach (HoldingInfo holding in holdingSet.Forwards)
+            {
+                tableau.Move(holding.From, holding.FromRow, holding.To);
+                SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
+                count++;
+            }
+
+            // Add the primary move.
+            tableau.Move(move.From, move.FromRow, move.To);
+            SupplementaryMoves.Add(move);
+            count++;
+
             if (undoHolding)
             {
-                // Add moves to the holding piles.
-                foreach (HoldingInfo holding in holdingSet.Forwards)
-                {
-                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
-                }
-
-                // Add the move.
-                SupplementaryMoves.Add(move);
-
                 // Undo moves from the holding piles.
                 foreach (HoldingInfo holding in holdingSet.Backwards)
                 {
+                    if (!tableau.TryToMove(holding.To, -holding.Length, move.To))
+                    {
+                        break;
+                    }
                     SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To));
+                    count++;
                 }
-
-                return 2 * holdingSet.Count + 1;
             }
-            else
-            {
-                foreach (HoldingInfo holding in holdingSet.Forwards)
-                {
-                    // Add holding move and update the map.
-                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
-                    map.Move(holding.From, holding.FromRow, holding.To);
-                }
 
-                // Add the move and update the map.
-                SupplementaryMoves.Add(move);
-
-                return holdingSet.Count + 1;
-            }
+            return count;
         }
 
-        private void AddMove(MoveFlags flags, int totalOrder)
+        private void AddMove(Tableau tableau, MoveFlags flags, int totalOrder)
         {
 #if true
             // Check which move is better.

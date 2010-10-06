@@ -1091,19 +1091,6 @@ namespace Spider
             return true;
         }
 
-        public Move Normalize(Move move)
-        {
-            if (move.FromRow < 0)
-            {
-                move.FromRow += Tableau[move.From].Count;
-            }
-            if (move.ToRow == -1)
-            {
-                move.ToRow = Tableau[move.To].Count;
-            }
-            return move;
-        }
-
         public void TurnOverCards()
         {
             for (int i = 0; i < NumberOfPiles; i++)

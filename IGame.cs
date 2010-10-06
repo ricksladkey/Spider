@@ -25,7 +25,6 @@ namespace Spider
         void Initialize();
         int FindEmptyPiles();
         void TurnOverCards();
-        Move Normalize(Move move);
         int AddSupplementary();
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();

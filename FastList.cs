@@ -86,6 +86,7 @@ namespace Spider
 
         public void RemoveRange(int index, int count)
         {
+            Debug.Assert(index >= 0 && index + count <= this.count);
             for (int i = index + count; i < count; i++)
             {
                 array[i - count] = array[i];
@@ -95,6 +96,7 @@ namespace Spider
 
         public T Next()
         {
+            Debug.Assert(count > 0);
             return array[--count];
         }
 
@@ -128,6 +130,7 @@ namespace Spider
 
         public void RemoveAt(int index)
         {
+            Debug.Assert(index >= 0 && index < count);
             for (int i = index + 1; i < count; i++)
             {
                 array[i - 1] = array[i];

@@ -32,7 +32,7 @@ namespace Spider
             return false;
         }
 
-        public int To
+        public int From
         {
             get
             {
@@ -40,7 +40,7 @@ namespace Spider
                 {
                     return -1;
                 }
-                return Stack[Count - 1].To;
+                return Stack[Count - 1].From;
             }
         }
 
@@ -53,6 +53,18 @@ namespace Spider
                     return Stack.StartingRow;
                 }
                 return Stack[Count - 1].FromRow;
+            }
+        }
+
+        public int To
+        {
+            get
+            {
+                if (Count == 0)
+                {
+                    return -1;
+                }
+                return Stack[Count - 1].To;
             }
         }
 

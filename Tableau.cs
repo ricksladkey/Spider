@@ -119,11 +119,11 @@ namespace Spider
             return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
         }
 
-        public void Update(Tableau other)
+        public void CopyUpPiles(Tableau other)
         {
             for (int i = 0; i < count; i++)
             {
-                upPiles[i].Update(other.upPiles[i]);
+                upPiles[i].Copy(other.upPiles[i]);
             }
         }
 
@@ -134,6 +134,47 @@ namespace Spider
                 CheckDiscard(column);
                 CheckTurnOverCard(column);
             }
+        }
+
+        public Move Normalize(Move move)
+        {
+            if (move.FromRow < 0)
+            {
+                move.FromRow += upPiles[move.From].Count;
+            }
+            if (move.ToRow == -1)
+            {
+                move.ToRow = upPiles[move.To].Count;
+            }
+            return move;
+        }
+
+        public bool MoveIsValid(Move move)
+        {
+            return MoveIsValid(move.From, move.FromRow, move.To);
+        }
+
+        public bool MoveIsValid(int from, int fromRow, int to)
+        {
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
+            if (fromRow < 0)
+            {
+                fromRow += fromPile.Count;
+            }
+            if (fromRow < 0 || fromRow >= fromPile.Count)
+            {
+                return false;
+            }
+            if (toPile.Count == 0)
+            {
+                return true;
+            }
+            if (!fromPile[fromRow].IsSourceFor(toPile[toPile.Count - 1]))
+            {
+                return false;
+            }
+            return true;
         }
 
         public void Move(Move move)
@@ -152,11 +193,30 @@ namespace Spider
             }
         }
 
+        public bool TryToMove(int from, int fromRow, int to)
+        {
+            if (!MoveIsValid(from, fromRow, to))
+            {
+                return false;
+            }
+            Move(from, fromRow, to);
+            return true;
+        }
+
         public void Move(int from, int fromRow, int to)
         {
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
+
+            if (fromRow < 0)
+            {
+                fromRow += fromPile.Count;
+            }
             int fromCount = fromPile.Count - fromRow;
+
+            Debug.Assert(fromRow >= 0 && fromRow < fromPile.Count);
+            Debug.Assert(toPile.Count == 0 || fromPile[fromRow].IsSourceFor(toPile[toPile.Count - 1]));
+
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
             OnPileChanged(from);
@@ -225,6 +285,11 @@ namespace Spider
             {
                 upPile.Add(downPile.Next());
             }
+        }
+
+        public void PrintGame()
+        {
+            Game.PrintGame(new Game(this));
         }
 
         #region IGetCard Members
