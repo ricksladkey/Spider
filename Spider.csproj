@@ -142,7 +142,9 @@
     <Compile Include="FastList.cs" />
     <Compile Include="Suit.cs" />
     <Compile Include="Tableau.cs" />
+    <Compile Include="TableauInputOutput.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Variation.cs" />
     <Compile Include="Vector.cs" />
   </ItemGroup>
   <ItemGroup>

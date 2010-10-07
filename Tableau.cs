@@ -6,12 +6,14 @@ using System.Text;
 
 namespace Spider
 {
-    [DebuggerDisplay("Count = {count}")]
+    [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class Tableau : IGetCard
     {
-        private bool autoAdjust;
-        private int count;
+        public Variation Variation { get; set; }
+        public bool AutoAdjust { get; set; }
+        public int NumberOfPiles { get; set; }
+
         private Pile[] downPiles;
         private Pile[] upPiles;
         private Pile stockPile;
@@ -19,19 +21,20 @@ namespace Spider
         private Pile scratchPile;
 
         public Tableau()
-            : this(true)
         {
+            AutoAdjust = true;
+            Variation = Variation.Spider4;
+            Initialize();
         }
 
-        public Tableau(bool autoAdjust)
+        private void Initialize()
         {
-            this.autoAdjust = autoAdjust;
-            count = Game.NumberOfPiles;
+            NumberOfPiles = Variation.GetNumberOfPiles();
             stockPile = new Pile();
-            downPiles = new Pile[count];
-            upPiles = new Pile[count];
-            discardPiles = new FastList<Pile>(count);
-            for (int row = 0; row < count; row++)
+            downPiles = new Pile[NumberOfPiles];
+            upPiles = new Pile[NumberOfPiles];
+            discardPiles = new FastList<Pile>(NumberOfPiles);
+            for (int row = 0; row < NumberOfPiles; row++)
             {
                 downPiles[row] = new Pile();
                 upPiles[row] = new Pile();
@@ -81,8 +84,12 @@ namespace Spider
 
         public void ClearAll()
         {
+            if (NumberOfPiles != Variation.GetNumberOfPiles())
+            {
+                Initialize();
+            }
             stockPile.Clear();
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < NumberOfPiles; i++)
             {
                 downPiles[i].Clear();
                 upPiles[i].Clear();
@@ -188,7 +195,7 @@ namespace Spider
 
         public void CopyUpPiles(Tableau other)
         {
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < NumberOfPiles; i++)
             {
                 upPiles[i].Copy(other.upPiles[i]);
             }
@@ -196,7 +203,7 @@ namespace Spider
 
         public void Adjust()
         {
-            for (int column = 0; column < count; column++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
                 CheckDiscard(column);
                 CheckTurnOverCard(column);
@@ -308,7 +315,7 @@ namespace Spider
 
         public void Deal()
         {
-            for (int column = 0; column < count; column++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
                 Add(column, stockPile.Next());
             }
@@ -322,7 +329,7 @@ namespace Spider
 
         private void OnPileChanged(int column)
         {
-            if (autoAdjust)
+            if (AutoAdjust)
             {
                 CheckDiscard(column);
                 CheckTurnOverCard(column);
