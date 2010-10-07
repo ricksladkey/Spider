@@ -53,7 +53,6 @@ namespace Spider
 
         public Pile Deck { get; private set; }
         public Pile Shuffled { get; private set; }
-        public Pile StockPile { get; private set; }
         public Tableau Tableau { get; private set; }
 
         public MoveList Candidates { get; private set; }
@@ -115,7 +114,6 @@ namespace Spider
 
             Moves = new MoveList();
             Shuffled = new Pile();
-            StockPile = new Pile();
             Tableau = new Tableau();
 
             Candidates = new MoveList();
@@ -189,7 +187,7 @@ namespace Spider
                     CopyGame();
                     if (!MakeMove())
                     {
-                        if (StockPile.Count > 0)
+                        if (Tableau.StockPile.Count > 0)
                         {
                             PrepareToDeal();
                             if (TraceDeals)
@@ -197,7 +195,7 @@ namespace Spider
                                 PrintGame();
                                 Utils.WriteLine("dealing");
                             }
-                            Deal();
+                            Tableau.Deal();
                             RespondToDeal();
                             continue;
                         }
@@ -232,7 +230,6 @@ namespace Spider
             Moves.Clear();
             Candidates.Clear();
             Shuffled.Clear();
-            StockPile.Clear();
             Tableau.ClearAll();
 
             if (Suits == 1)
@@ -265,15 +262,15 @@ namespace Spider
             }
             Shuffled.AddRange(Deck);
             Shuffled.Shuffle(Seed);
-            StockPile.AddRange(Shuffled);
+            Tableau.StockPile.AddRange(Shuffled);
 
             int column = 0;
             for (int i = 0; i < 44; i++)
             {
-                Tableau.DownPiles[column].Add(StockPile.Next());
+                Tableau.DownPiles[column].Add(Tableau.StockPile.Next());
                 column = (column + 1) % NumberOfPiles;
             }
-            Deal();
+            Tableau.Deal();
         }
 
         private void SetDefaultCoefficients(double[] coefficients)
@@ -289,14 +286,6 @@ namespace Spider
             if (LastGame != null)
             {
                 LastGame.FromGame(this);
-            }
-        }
-
-        private void Deal()
-        {
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                Tableau.Add(column, StockPile.Next());
             }
         }
 
@@ -840,7 +829,7 @@ namespace Spider
             }
             score.Reversible = oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
             score.Uses = CountUses(move);
-            score.OneRunDelta = !isSwap ? GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
+            score.OneRunDelta = !isSwap ? Tableau.GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
             int faceFrom = (int)fromChild.Face;
             int faceTo = isSwap ? (int)toChild.Face : 0;
             score.FaceValue = Math.Max(faceFrom, faceTo);
@@ -936,34 +925,6 @@ namespace Spider
             }
 
             return score.LastResortScore;
-        }
-
-        private int GetOneRunDelta(int oldOrder, int newOrder, Move move)
-        {
-            bool fromFree = Tableau.GetDownCount(move.From) == 0;
-            bool toFree = Tableau.GetDownCount(move.To) == 0;
-            bool fromUpper = Tableau.GetRunUp(move.From, move.FromRow) == move.FromRow;
-            bool fromLower = move.HoldingNext == -1;
-            bool toUpper = Tableau.GetRunUp(move.To, move.ToRow) == move.ToRow;
-            bool oldFrom = move.FromRow == 0 ?
-                (fromFree && fromLower) :
-                (fromFree && fromUpper && fromLower && oldOrder == 2);
-            bool newFrom = fromFree && fromUpper;
-            bool oldTo = toFree && toUpper;
-            bool newTo = move.ToRow == 0 ?
-                (toFree && fromLower) :
-                (toFree && toUpper && fromLower && newOrder == 2);
-            int oneRunDelta = (newFrom ? 1 : 0) - (oldFrom ? 1 : 0) + (newTo ? 1 : 0) - (oldTo ? 1 : 0);
-#if false
-            if (oneRunDelta != 0)
-            {
-                Console.Clear();
-                PrintMove(move);
-                PrintGame();
-                Debugger.Break();
-            }
-#endif
-            return oneRunDelta > 0 ? 1 : 0;
         }
 
         private int CountUses(Move move)
@@ -1071,23 +1032,6 @@ namespace Spider
             MoveProcessor.ProcessMove(move);
 
             return true;
-        }
-
-        public void TurnOverCards()
-        {
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                Pile up = Tableau.UpPiles[i];
-                Pile down = Tableau.DownPiles[i];
-                if (up.Count == 0 && down.Count > 0)
-                {
-                    if (Diagnostics)
-                    {
-                        Utils.WriteLine("*** turning over card ***");
-                    }
-                    up.Add(down.Next());
-                }
-            }
         }
 
         public void PrintGame()

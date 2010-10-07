@@ -32,7 +32,7 @@ namespace Spider
             s += ToAsciiString(discardRow) + PrimarySeparator;
             s += ToAsciiString(Tableau.DownPiles) + PrimarySeparator;
             s += ToAsciiString(Tableau.UpPiles) + PrimarySeparator;
-            s += ToAsciiString(StockPile);
+            s += ToAsciiString(Tableau.StockPile);
             s += Fence;
 
             return WrapString(s, 60);
@@ -156,7 +156,7 @@ namespace Spider
             {
                 Tableau.UpPiles[column] = upPiles[column];
             }
-            StockPile.AddRange(stock);
+            Tableau.StockPile.AddRange(stock);
         }
 
         private static Pile[] GetPilesFromAsciiString(string s)
@@ -198,7 +198,7 @@ namespace Spider
             {
                 Tableau.UpPiles[column].Copy((other.Tableau.UpPiles[column]));
             }
-            StockPile.Copy((other.StockPile));
+            Tableau.StockPile.Copy((other.Tableau.StockPile));
         }
 
         public string ToPrettyString()
@@ -222,14 +222,14 @@ namespace Spider
             s += Environment.NewLine;
             s += ToPrettyString(Tableau.UpPiles);
             s += Environment.NewLine;
-            for (int i = 0; i < StockPile.Count / NumberOfPiles; i++)
+            for (int i = 0; i < Tableau.StockPile.Count / NumberOfPiles; i++)
             {
                 Pile row = new Pile();
                 for (int j = 0; j < NumberOfPiles; j++)
                 {
                     int index = i * NumberOfPiles + j;
-                    int reverseIndex = StockPile.Count - index - 1;
-                    row.Add(StockPile[reverseIndex]);
+                    int reverseIndex = Tableau.StockPile.Count - index - 1;
+                    row.Add(Tableau.StockPile[reverseIndex]);
                 }
                 s += ToPrettyString(i, row);
             }

@@ -1,5 +1,6 @@
 - make number of piles configurable
 - make number of decks configurable
+- move stock pile into tableau
 
 - assert that empty piles left is calculated correctly
 - assert that offload suits is calculated correctly

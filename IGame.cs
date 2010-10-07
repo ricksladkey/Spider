@@ -11,7 +11,6 @@ namespace Spider
 
         Pile Deck { get; }
         Pile Shuffled { get; }
-        Pile StockPile { get; }
         Tableau Tableau { get; }
 
         MoveList UncoveringMoves { get; }
@@ -24,7 +23,6 @@ namespace Spider
 
         void Initialize();
         int FindEmptyPiles();
-        void TurnOverCards();
         int AddSupplementary();
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();

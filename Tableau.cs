@@ -14,6 +14,7 @@ namespace Spider
         private int count;
         private Pile[] downPiles;
         private Pile[] upPiles;
+        private Pile stockPile;
         private FastList<Pile> discardPiles;
         private Pile scratchPile;
 
@@ -26,6 +27,7 @@ namespace Spider
         {
             this.autoAdjust = autoAdjust;
             count = Game.NumberOfPiles;
+            stockPile = new Pile();
             downPiles = new Pile[count];
             upPiles = new Pile[count];
             discardPiles = new FastList<Pile>(count);
@@ -42,6 +44,14 @@ namespace Spider
             get
             {
                 return upPiles[index];
+            }
+        }
+
+        public Pile StockPile
+        {
+            get
+            {
+                return stockPile;
             }
         }
 
@@ -71,6 +81,7 @@ namespace Spider
 
         public void ClearAll()
         {
+            stockPile.Clear();
             for (int i = 0; i < count; i++)
             {
                 downPiles[i].Clear();
@@ -154,6 +165,25 @@ namespace Spider
             int toRun = GetRunUp(to, toRow);
             int newRun = moveRun + toRun;
             return newRun;
+        }
+
+        public int GetOneRunDelta(int oldOrder, int newOrder, Move move)
+        {
+            bool fromFree = GetDownCount(move.From) == 0;
+            bool toFree = GetDownCount(move.To) == 0;
+            bool fromUpper = GetRunUp(move.From, move.FromRow) == move.FromRow;
+            bool fromLower = move.HoldingNext == -1;
+            bool toUpper = GetRunUp(move.To, move.ToRow) == move.ToRow;
+            bool oldFrom = move.FromRow == 0 ?
+                (fromFree && fromLower) :
+                (fromFree && fromUpper && fromLower && oldOrder == 2);
+            bool newFrom = fromFree && fromUpper;
+            bool oldTo = toFree && toUpper;
+            bool newTo = move.ToRow == 0 ?
+                (toFree && fromLower) :
+                (toFree && toUpper && fromLower && newOrder == 2);
+            int oneRunDelta = (newFrom ? 1 : 0) - (oldFrom ? 1 : 0) + (newTo ? 1 : 0) - (oldTo ? 1 : 0);
+            return oneRunDelta > 0 ? 1 : 0;
         }
 
         public void CopyUpPiles(Tableau other)
@@ -274,6 +304,14 @@ namespace Spider
             fromPile.AddRange(scratchPile, 0, toCount);
             OnPileChanged(from);
             OnPileChanged(to);
+        }
+
+        public void Deal()
+        {
+            for (int column = 0; column < count; column++)
+            {
+                Add(column, stockPile.Next());
+            }
         }
 
         public void Add(int column, Card card)
