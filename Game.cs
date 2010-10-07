@@ -56,31 +56,16 @@ namespace Spider
         public List<HoldingInfo> HoldingList { get; private set; }
         public int[] RunLengths { get; private set; }
         public int[] RunLengthsAnySuit { get; private set; }
-        public PileList EmptyPiles { get; private set; }
         public PileList OneRunPiles { get; private set; }
         public PileList[] FaceLists { get; private set; }
         public MoveList UncoveringMoves { get; private set; }
         public Game LastGame { get; private set; }
+        public int NumberOfPiles { get; private set; }
+        public int NumberOfSuits { get; private set; }
 
         private TableauInputOutput TableauInputOutput { get; set; }
         private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
         private MoveProcessor MoveProcessor { get; set; }
-
-        public int NumberOfPiles
-        {
-            get
-            {
-                return Variation.NumberOfPiles;
-            }
-        }
-
-        public int NumberOfSuits
-        {
-            get
-            {
-                return Variation.NumberOfSuits;
-            }
-        }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -92,14 +77,6 @@ namespace Spider
                     result.Add(new ComplexMove(i, Candidates, SupplementaryList, HoldingList));
                 }
                 return result;
-            }
-        }
-
-        public int NumberOfEmptyPiles
-        {
-            get
-            {
-                return FindEmptyPiles();
             }
         }
 
@@ -128,9 +105,6 @@ namespace Spider
             SupplementaryList = new MoveList();
             HoldingStack = new HoldingStack();
             HoldingList = new List<HoldingInfo>();
-            RunLengths = new int[NumberOfPiles];
-            RunLengthsAnySuit = new int[NumberOfPiles];
-            EmptyPiles = new PileList();
             OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
@@ -234,6 +208,10 @@ namespace Spider
         private void Initialize()
         {
             Tableau.Variation = Variation;
+            NumberOfPiles = Variation.NumberOfPiles;
+            NumberOfSuits = Variation.NumberOfSuits;
+            RunLengths = new int[NumberOfPiles];
+            RunLengthsAnySuit = new int[NumberOfPiles];
             Won = false;
             Moves.Clear();
             Shuffled.Clear();
@@ -290,7 +268,7 @@ namespace Spider
         {
             Analyze();
 
-            if (EmptyPiles.Count == NumberOfPiles)
+            if (Tableau.NumberOfEmptyPiles == NumberOfPiles)
             {
                 Won = true;
                 return true;
@@ -306,7 +284,7 @@ namespace Spider
             SupplementaryList.Clear();
             HoldingList.Clear();
 
-            int emptyPiles = EmptyPiles.Count;
+            int emptyPiles = Tableau.NumberOfEmptyPiles;
             int maxExtraSuits = ExtraSuits(emptyPiles);
             int maxExtraSuitsToEmptyPile = ExtraSuits(emptyPiles - 1);
 
@@ -380,9 +358,9 @@ namespace Spider
                     }
 
                     // Add moves to an empty pile.
-                    for (int i = 0; i < EmptyPiles.Count; i++)
+                    for (int i = 0; i < Tableau.NumberOfEmptyPiles; i++)
                     {
-                        int to = EmptyPiles[0];
+                        int to = Tableau.EmptyPiles[i];
 
                         if (fromRow == 0)
                         {
@@ -746,22 +724,8 @@ namespace Spider
             return holdingStack.Suits;
         }
 
-        public int FindEmptyPiles()
-        {
-            EmptyPiles.Clear();
-            for (int i = 0; i < NumberOfPiles; i++)
-            {
-                if (Tableau[i].Count == 0)
-                {
-                    EmptyPiles.Add(i);
-                }
-            }
-            return EmptyPiles.Count;
-        }
-
         private void Analyze()
         {
-            EmptyPiles.Clear();
             for (int i = (int)Face.Ace; i <= (int)Face.King; i++)
             {
                 FaceLists[i].Clear();
@@ -771,11 +735,7 @@ namespace Spider
             {
                 // Prepare empty piles and face lists.
                 Pile pile = Tableau[i];
-                if (pile.Count == 0)
-                {
-                    EmptyPiles.Add(i);
-                }
-                else
+                if (pile.Count != 0)
                 {
                     FaceLists[(int)pile[pile.Count - 1].Face].Add(i);
                 }
@@ -842,7 +802,7 @@ namespace Spider
             score.DownCount = Tableau.GetDownCount(from);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.CreatesEmptyPile = wholePile && score.DownCount == 0;
-            score.NoEmptyPiles = EmptyPiles.Count == 0;
+            score.NoEmptyPiles = Tableau.NumberOfEmptyPiles == 0;
             if (score.Order == 0 && score.NetRunLength < 0)
             {
                 return RejectScore;
@@ -877,7 +837,7 @@ namespace Spider
             score.UsesEmptyPile = move.Flags.UsesEmptyPile();
             score.Discards = move.Flags.Discards();
             score.IsCompositeSinglePile = true;
-            score.NoEmptyPiles = EmptyPiles.Count == 0;
+            score.NoEmptyPiles = Tableau.NumberOfEmptyPiles == 0;
             score.OneRunDelta = 0;
 
             if (score.UsesEmptyPile)
@@ -940,7 +900,7 @@ namespace Spider
             if (!exposedCard.IsTargetFor(fromCard))
             {
                 // Check whether the exposed card will be useful.
-                int emptyPiles = EmptyPiles.Count - 1;
+                int emptyPiles = Tableau.NumberOfEmptyPiles - 1;
                 int maxExtraSuits = ExtraSuits(emptyPiles);
                 int fromSuits = fromPile.CountSuits(move.FromRow);
                 for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)

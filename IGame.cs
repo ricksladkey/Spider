@@ -18,11 +18,9 @@ namespace Spider
         MoveList SupplementaryMoves { get; }
         MoveList SupplementaryList { get; }
         MoveList Candidates { get; }
-        PileList EmptyPiles { get; }
         PileList OneRunPiles { get; }
         List<HoldingInfo> HoldingList { get; }
 
-        int FindEmptyPiles();
         int AddSupplementary();
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();

@@ -110,7 +110,7 @@ namespace Spider
         {
             // Prepare data structures.
             order = 0;
-            emptyPilesLeft = EmptyPiles.Count;
+            emptyPilesLeft = Tableau.NumberOfEmptyPiles;
             int runs = roots.Count - 1;
             offload = OffloadInfo.Empty;
             turnsOverCard = false;
@@ -230,7 +230,7 @@ namespace Spider
                         // Not enough empty piles.
                         return;
                     }
-                    to = EmptyPiles[0];
+                    to = Tableau.EmptyPiles[0];
                     int maxExtraSuitsOnePile = ExtraSuits(emptyPilesLeft - 1) + 1;
                     if (suits > maxExtraSuitsOnePile)
                     {

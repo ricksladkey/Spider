@@ -15,7 +15,7 @@ namespace Spider
         {
         }
 
-        public PileList(PileList other)
+        public PileList(IList<int> other)
             : this()
         {
             AddRange(other);

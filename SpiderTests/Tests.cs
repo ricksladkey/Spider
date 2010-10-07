@@ -433,11 +433,11 @@ namespace Spider.Tests
             // Check that the move is not made
             // or that a last resort move was made.
             game = new Game(initial);
-            int before = game.NumberOfEmptyPiles;
+            int before = game.Tableau.NumberOfEmptyPiles;
             bool moved = game.MakeMove();
             if (moved)
             {
-                int after = game.NumberOfEmptyPiles;
+                int after = game.Tableau.NumberOfEmptyPiles;
                 if (!(after < before))
                 {
                     PrintGame(new Game(initial));

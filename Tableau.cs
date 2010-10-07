@@ -11,18 +11,19 @@ namespace Spider
     public class Tableau : IEnumerable<Pile>, IGetCard
     {
         public Variation Variation { get; set; }
-        public bool AutoAdjust { get; set; }
-        public int NumberOfPiles { get; set; }
+        public int NumberOfPiles { get; private set; }
+        public int NumberOfEmptyPiles { get; private set; }
 
         private Pile[] downPiles;
         private Pile[] upPiles;
+        private bool[] emptyPileFlags;
         private Pile stockPile;
         private FastList<Pile> discardPiles;
+        private FastList<int> emptyPiles;
         private Pile scratchPile;
 
         public Tableau()
         {
-            AutoAdjust = true;
             Variation = Variation.Spider4;
             Initialize();
         }
@@ -33,7 +34,9 @@ namespace Spider
             stockPile = new Pile();
             downPiles = new Pile[NumberOfPiles];
             upPiles = new Pile[NumberOfPiles];
+            emptyPileFlags = new bool[NumberOfPiles];
             discardPiles = new FastList<Pile>(NumberOfPiles);
+            emptyPiles = new FastList<int>(NumberOfPiles);
             for (int row = 0; row < NumberOfPiles; row++)
             {
                 downPiles[row] = new Pile();
@@ -82,6 +85,24 @@ namespace Spider
             }
         }
 
+        public IList<int> EmptyPiles
+        {
+            get
+            {
+                if (emptyPiles.Count == 0 && NumberOfEmptyPiles != 0)
+                {
+                    for (int column = 0; column < NumberOfPiles; column++)
+                    {
+                        if (emptyPileFlags[column])
+                        {
+                            emptyPiles.Add(column);
+                        }
+                    }
+                }
+                return emptyPiles;
+            }
+        }
+
         public void ClearAll()
         {
             if (NumberOfPiles != Variation.NumberOfPiles)
@@ -89,12 +110,13 @@ namespace Spider
                 Initialize();
             }
             stockPile.Clear();
-            for (int i = 0; i < NumberOfPiles; i++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
-                downPiles[i].Clear();
-                upPiles[i].Clear();
+                downPiles[column].Clear();
+                upPiles[column].Clear();
             }
             discardPiles.Clear();
+            emptyPiles.Clear();
         }
 
         public int GetDownCount(int column)
@@ -196,9 +218,21 @@ namespace Spider
         public void CopyUpPiles(Tableau other)
         {
             ClearAll();
-            for (int i = 0; i < NumberOfPiles; i++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
-                upPiles[i].Copy(other.upPiles[i]);
+                upPiles[column].Copy(other.upPiles[column]);
+            }
+            Refresh();
+        }
+
+        public void Refresh()
+        {
+            NumberOfEmptyPiles = 0;
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                bool isEmpty = upPiles[column].Count == 0;
+                emptyPileFlags[column] = isEmpty;
+                NumberOfEmptyPiles += isEmpty ? 1 : 0;
             }
         }
 
@@ -352,11 +386,9 @@ namespace Spider
 
         private void OnPileChanged(int column)
         {
-            if (AutoAdjust)
-            {
-                CheckDiscard(column);
-                CheckTurnOverCard(column);
-            }
+            CheckDiscard(column);
+            CheckTurnOverCard(column);
+            CheckEmpty(column);
         }
 
         private void CheckDiscard(int column)
@@ -389,6 +421,17 @@ namespace Spider
             if (upPile.Count == 0 && downPile.Count != 0)
             {
                 upPile.Add(downPile.Next());
+            }
+        }
+
+        public void CheckEmpty(int column)
+        {
+            bool isEmpty = upPiles[column].Count == 0;
+            if (isEmpty != emptyPileFlags[column])
+            {
+                NumberOfEmptyPiles += (isEmpty ? 1 : 0) - (emptyPileFlags[column] ? 1 : 0);
+                emptyPileFlags[column] = isEmpty;
+                emptyPiles.Clear();
             }
         }
 
