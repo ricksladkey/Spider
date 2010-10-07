@@ -118,6 +118,7 @@
     <Compile Include="IGetCard.cs" />
     <Compile Include="InvalidMoveException.cs" />
     <Compile Include="IReadOnlyList.cs" />
+    <Compile Include="LayoutPart.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveProcessor.cs" />
@@ -130,7 +131,6 @@
     <Compile Include="Pile.cs" />
     <Compile Include="PileList.cs" />
     <Compile Include="CardMap.cs" />
-    <Compile Include="PileMap.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

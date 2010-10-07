@@ -117,24 +117,24 @@ namespace Spider
             }
 
             // Parse sections.
-            Variation variation = Variation.ParseAsciiString(sections[0]);
-            Pile discards = GetPileFromAsciiString(sections[1]);
+            Variation variation = Variation.FromAsciiString(sections[0]);
+            Pile discardCards = GetPileFromAsciiString(sections[1]);
             Pile[] downPiles = GetPilesFromAsciiString(sections[2]);
             Pile[] upPiles = GetPilesFromAsciiString(sections[3]);
-            Pile stock = GetPileFromAsciiString(sections[4]);
-            if (discards.Count > 8)
+            Pile stockPile = GetPileFromAsciiString(sections[4]);
+            if (discardCards.Count > variation.NumberOfFoundations)
             {
                 throw new Exception("too many discard piles");
             }
-            if (downPiles.Length > Tableau.NumberOfPiles)
+            if (downPiles.Length > variation.NumberOfPiles)
             {
                 throw new Exception("wrong number of down piles");
             }
-            if (upPiles.Length > Tableau.NumberOfPiles)
+            if (upPiles.Length > variation.NumberOfPiles)
             {
                 throw new Exception("wrong number of up piles");
             }
-            if (stock.Count > 50)
+            if (stockPile.Count > variation.NumberOfStockCards)
             {
                 throw new Exception("too many stock pile cards");
             }
@@ -142,7 +142,7 @@ namespace Spider
             // Prepare game.
             Tableau.Variation = variation;
             Tableau.ClearAll();
-            foreach (Card discardCard in discards)
+            foreach (Card discardCard in discardCards)
             {
                 Pile discardPile = new Pile();
                 for (Face face = Face.King; face >= Face.Ace; face--)
@@ -153,13 +153,13 @@ namespace Spider
             }
             for (int column = 0; column < downPiles.Length; column++)
             {
-                Tableau.DownPiles[column] = downPiles[column];
+                Tableau.DownPiles[column].Copy(downPiles[column]);
             }
             for (int column = 0; column < upPiles.Length; column++)
             {
-                Tableau.UpPiles[column] = upPiles[column];
+                Tableau.UpPiles[column].Copy(upPiles[column]);
             }
-            Tableau.StockPile.AddRange(stock);
+            Tableau.StockPile.Copy(stockPile);
         }
 
         private static Pile[] GetPilesFromAsciiString(string s)
@@ -221,23 +221,37 @@ namespace Spider
             s += Environment.NewLine;
             s += ToPrettyString(Tableau.DownPiles);
             s += Environment.NewLine;
-            s += "   0  1  2  3  4  5  6  7  8  9";
+            s += "    " + ColumnHeadings(Tableau.NumberOfPiles);
             s += Environment.NewLine;
             s += ToPrettyString(Tableau.UpPiles);
             s += Environment.NewLine;
-            for (int i = 0; i < Tableau.StockPile.Count / Tableau.NumberOfPiles; i++)
+            int rowIndex = 0;
+            Pile row = new Pile();
+            for (int index = Tableau.StockPile.Count - 1; index >= 0; index--)
             {
-                Pile row = new Pile();
-                for (int j = 0; j < Tableau.NumberOfPiles; j++)
+                row.Add(Tableau.StockPile[index]);
+                if (row.Count == Tableau.NumberOfPiles)
                 {
-                    int index = i * Tableau.NumberOfPiles + j;
-                    int reverseIndex = Tableau.StockPile.Count - index - 1;
-                    row.Add(Tableau.StockPile[reverseIndex]);
+                    s += ToPrettyString(rowIndex++, row);
+                    row.Clear();
                 }
-                s += ToPrettyString(i, row);
+            }
+            if (row.Count != 0)
+            {
+                s += ToPrettyString(rowIndex, row);
             }
 
             return s;
+        }
+
+        private static string ColumnHeadings(int columns)
+        {
+            string text = "";
+            for (int column = 0; column < columns; column++)
+            {
+                text += string.Format("{0,-3}", column);
+            }
+            return text;
         }
 
         private static string ToPrettyString(IList<Pile> piles)

@@ -15,6 +15,11 @@ namespace Spider
         protected T[] array;
         protected IEqualityComparer<T> comparer;
 
+        public FastList()
+            : this(10, 0)
+        {
+        }
+
         public FastList(int capacity)
             : this(capacity, 0)
         {

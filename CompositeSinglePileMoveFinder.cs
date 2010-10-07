@@ -8,7 +8,6 @@ namespace Spider
 {
     public class CompositeSinglePileMoveFinder : GameHelper
     {
-        private Pile offloadPile;
         private PileList used;
         private PileList roots;
         private Tableau workingTableau;
@@ -26,7 +25,6 @@ namespace Spider
         public CompositeSinglePileMoveFinder(Game game)
             : base(game)
         {
-            offloadPile = new Pile();
             used = new PileList();
             roots = new PileList();
             workingTableau = new Tableau();
@@ -43,6 +41,10 @@ namespace Spider
                 // No cards.
                 return;
             }
+
+            // Configure the data structures.
+            workingTableau.Variation = Variation;
+            intermediateTableau.Variation = Variation;
 
             // Find roots.
             roots.Clear();
@@ -115,7 +117,6 @@ namespace Spider
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
-            workingTableau.ClearAll();
             workingTableau.CopyUpPiles(Tableau);
 
             if (!uncoveringMove.IsEmpty)
@@ -182,7 +183,6 @@ namespace Spider
 
                         // Update the state.
                         offload.Suits += suits - (suitsMatch ? 1 : 0);
-                        offload.Pile.AddRange(fromPile, rootRow, runLength);
                     }
 
                     // Try to move this run.
@@ -244,9 +244,7 @@ namespace Spider
                     }
                     int emptyPilesUsed = EmptyPilesUsed(emptyPilesLeft, suits);
                     emptyPilesLeft -= emptyPilesUsed;
-                    offload = new OffloadInfo(n, to, suits, emptyPilesUsed, offloadPile);
-                    offload.Pile.Clear();
-                    offload.Pile.AddRange(fromPile, rootRow, runLength - holdingStack.Set.Length);
+                    offload = new OffloadInfo(n, to, suits, emptyPilesUsed, workingTableau[to]);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
                     offloads++;
@@ -349,7 +347,6 @@ namespace Spider
                 if (canMove)
                 {
                     // Prepare the intermediate tableau.
-                    intermediateTableau.ClearAll();
                     intermediateTableau.CopyUpPiles(workingTableau);
 
                     // Offload matches from pile.
@@ -453,7 +450,6 @@ namespace Spider
             }
 
             // Prepare the intermediate tableau.
-            intermediateTableau.ClearAll();
             intermediateTableau.CopyUpPiles(workingTableau);
 
             // Found a home for the one run pile.

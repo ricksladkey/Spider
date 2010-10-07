@@ -32,7 +32,6 @@ namespace Spider
 
         public MoveList Moves { get { return game.Moves; } }
 
-        public Pile Deck { get { return game.Deck; } }
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
@@ -45,11 +44,6 @@ namespace Spider
         public PileList EmptyPiles { get { return game.EmptyPiles; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public List<HoldingInfo> HoldingList { get { return game.HoldingList; } }
-
-        public void Initialize()
-        {
-            game.Initialize();
-        }
 
         public int FindEmptyPiles()
         {

@@ -1,11 +1,6 @@
-- make number of piles configurable
-- make number of decks configurable
-- move stock pile into tableau
-
 - assert that empty piles left is calculated correctly
 - assert that offload suits is calculated correctly
-- detect discards in composite single pile algorithm
-- move empty piles into pile map
+- move empty piles into the tableau
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
 

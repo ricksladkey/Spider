@@ -31,10 +31,6 @@ namespace Spider
         public const double InfiniteScore = double.MaxValue;
         public const double RejectScore = double.MinValue;
 
-        public static Deck OneSuitDeck { get; private set; }
-        public static Deck TwoSuitDeck { get; private set; }
-        public static Deck FourSuitDeck { get; private set; }
-
         public Variation Variation { get; set; }
         public int Seed { get; set; }
         public double[] Coefficients { get; set; }
@@ -50,7 +46,6 @@ namespace Spider
         public bool Won { get; private set; }
         public MoveList Moves { get; private set; }
 
-        public Pile Deck { get; private set; }
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
 
@@ -110,9 +105,6 @@ namespace Spider
 
         static Game()
         {
-            OneSuitDeck = new Deck(2, 1);
-            TwoSuitDeck = new Deck(2, 2);
-            FourSuitDeck = new Deck(2, 4);
         }
 
         public Game()
@@ -239,11 +231,11 @@ namespace Spider
             }
         }
 
-        public void Initialize()
+        private void Initialize()
         {
+            Tableau.Variation = Variation;
             Won = false;
             Moves.Clear();
-            Candidates.Clear();
             Shuffled.Clear();
             Tableau.ClearAll();
 
@@ -251,21 +243,18 @@ namespace Spider
             if (suits == 1)
             {
                 SetDefaultCoefficients(OneSuitCoefficients);
-                Deck = OneSuitDeck;
             }
             else if (suits == 2)
             {
                 SetDefaultCoefficients(TwoSuitCoefficients);
-                Deck = TwoSuitDeck;
             }
             else if (suits == 4)
             {
                 SetDefaultCoefficients(FourSuitCoefficients);
-                Deck = FourSuitDeck;
             }
             else
             {
-                throw new Exception("Invalid number of suits");
+                throw new Exception("invalid number of suits");
             }
         }
 
@@ -276,17 +265,9 @@ namespace Spider
                 Random random = new Random();
                 Seed = random.Next();
             }
-            Shuffled.AddRange(Deck);
+            Shuffled.Copy(Variation.Deck);
             Shuffled.Shuffle(Seed);
-            Tableau.StockPile.AddRange(Shuffled);
-
-            int column = 0;
-            for (int i = 0; i < 44; i++)
-            {
-                Tableau.DownPiles[column].Add(Tableau.StockPile.Next());
-                column = (column + 1) % NumberOfPiles;
-            }
-            Tableau.Deal();
+            Tableau.Layout(Shuffled);
         }
 
         private void SetDefaultCoefficients(double[] coefficients)

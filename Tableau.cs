@@ -195,6 +195,7 @@ namespace Spider
 
         public void CopyUpPiles(Tableau other)
         {
+            ClearAll();
             for (int i = 0; i < NumberOfPiles; i++)
             {
                 upPiles[i].Copy(other.upPiles[i]);
@@ -313,10 +314,32 @@ namespace Spider
             OnPileChanged(to);
         }
 
+        public void Layout(Pile shuffled)
+        {
+            stockPile.AddRange(shuffled);
+            foreach (LayoutPart layoutPart in Variation.LayoutParts)
+            {
+                for (int i = 0; i < layoutPart.Count; i++)
+                {
+                    int column = layoutPart.Column + i;
+                    downPiles[column].Add(stockPile.Next());
+                }
+            }
+            Deal();
+        }
+
         public void Deal()
         {
+            if (stockPile.Count == 0)
+            {
+                throw new Exception("no stock left to deal");
+            }
             for (int column = 0; column < NumberOfPiles; column++)
             {
+                if (stockPile.Count == 0)
+                {
+                    break;
+                }
                 Add(column, stockPile.Next());
             }
         }

@@ -38,7 +38,7 @@ namespace Spider
                 }
                 if (arg == "--variation")
                 {
-                    player.Variation = (Variation)Enum.Parse(typeof(Variation), args[i + 1]);
+                    player.Variation = Variation.FromAsciiString(args[i + 1]);
                     i += 2;
                     continue;
                 }
