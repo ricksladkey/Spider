@@ -55,7 +55,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest1()
         {
-            // A 1/1 swap move, 1 empty pile.
+            // A 1/1 swap move, 1 space.
             string data1 = "@2|||9s8h-9h8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||9s8s-9h8h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -64,7 +64,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest2()
         {
-            // A 1/1 whole pile swap move, 1 empty pile.
+            // A 1/1 whole pile swap move, 1 space.
             string data1 = "@2|||8h-9h8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s-9h8h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -73,7 +73,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest3()
         {
-            // A 1/3 swap move, 2 empty piles.
+            // A 1/3 swap move, 2 spaces.
             string data1 = "@2|||9s8h-9h8s7s6s5h---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||9s8s7s6s5h-9h8h---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -82,7 +82,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest4()
         {
-            // A 2/2 swap move, 2 empty piles.
+            // A 2/2 swap move, 2 spaces.
             string data1 = "@2|||Ts4h3s-5h9s8h---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||Ts9s8h-5h4h3s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -91,7 +91,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest5()
         {
-            // A 2/2 whole pile swap move, 2 empty piles.
+            // A 2/2 whole pile swap move, 2 spaces.
             string data1 = "@2|||4h3s-5h9s8h---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||9s8h-5h4h3s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -100,7 +100,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest6()
         {
-            // A 1/6 swap move, 3 empty piles.
+            // A 1/6 swap move, 3 spaces.
             string data1 = "@2|||Ts4h-5h9s8h7s6h5s4h----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||Ts9s8h7s6h5s4h-5h4h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -109,7 +109,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest7()
         {
-            // A 2/5 swap move, 3 empty piles.
+            // A 2/5 swap move, 3 spaces.
             string data1 = "@2|||Js4h3s-5hTs9h8s7h6s----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||JsTs9h8s7h6s-5h4h3s----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -118,7 +118,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest8()
         {
-            // A 3/4 swap move, 3 empty piles.
+            // A 3/4 swap move, 3 spaces.
             string data1 = "@2|||Js4h3s2h-5hTs9h8s7h----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||JsTs9h8s7h-5h4h3s2h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -127,7 +127,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest9()
         {
-            // A 4/3 swap move, 3 empty piles.
+            // A 4/3 swap move, 3 spaces.
             string data1 = "@2|||5hTs9h8s7h-Js4h3s2h----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||5h4h3s2h-JsTs9h8s7h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -136,7 +136,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest10()
         {
-            // A 5/2 swap move, 3 empty piles.
+            // A 5/2 swap move, 3 spaces.
             string data1 = "@2|||5hTs9h8s7h6s-Js4h3s----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||5h4h3s-JsTs9h8s7h6s----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -145,7 +145,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest11()
         {
-            // A 6/1 swap move, 3 empty piles.
+            // A 6/1 swap move, 3 spaces.
             string data1 = "@2|||5h9s8h7s6h5s4h-Ts4h----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||5h4h-Ts9s8h7s6h5s4h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -154,7 +154,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest12()
         {
-            // A 1/1 out-of-order swap move, 0 empty piles, 1 holding pile.
+            // A 1/1 out-of-order swap move, 0 spaces, 1 holding pile.
             string data1 = "@2|||9s3h-4h8s-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||9s8s-4h3h-4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
@@ -163,7 +163,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest13()
         {
-            // A 1/1 in-order swap move, 0 empty piles, 1 holding pile.
+            // A 1/1 in-order swap move, 0 spaces, 1 holding pile.
             string data1 = "@4|||4s3h-4h3s-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@4|||4s3s-4h3h-4d-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
@@ -172,7 +172,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest14()
         {
-            // A 1/1 in-order swap move, 0 empty piles, 2 holding piles.
+            // A 1/1 in-order swap move, 0 spaces, 2 holding piles.
             string data1 = "@4|||4s3h-4h3s2h-4d-4c3c-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@4|||4s3s2h-4h3h-4d-4c3c-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
@@ -181,7 +181,7 @@ namespace Spider.Tests
         [TestMethod]
         public void SwapTest15()
         {
-            // A 2/2 out-of-order swap move, 1 empty piles, 1 holding piles.
+            // A 2/2 out-of-order swap move, 1 spaces, 1 holding piles.
             string data1 = "@4|||As6h2hAs-As3h5h4s-4d3d--Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@4|||As6h5h4s-As3h2hAs-4d3d--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
@@ -190,7 +190,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest1()
         {
-            // A 1/1 composite single pile move, 1 empty pile.
+            // A 1/1 composite single pile move, 1 space.
             string data1 = "@2|||4s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5s4s-8s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -199,7 +199,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest2()
         {
-            // A 1/1 inversion move, 1 empty pile.
+            // A 1/1 inversion move, 1 space.
             string data1 = "@2|||4s5s-8s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-8s-5s4s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -208,7 +208,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest3()
         {
-            // A 1/1/1 composite single pile move, 1 empty pile.
+            // A 1/1/1 composite single pile move, 1 space.
             string data1 = "@2|||Ts3s2s6s-4s-Js--Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-4s3s2s-JsTs-6s-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -217,7 +217,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest4()
         {
-            // A 1/1/1 inversion move, 1 empty pile.
+            // A 1/1/1 inversion move, 1 space.
             string data1 = "@2|||As2s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-3s2sAs-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -226,7 +226,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest5()
         {
-            // A 1/1/1 mixed composite single pile move, 1 empty pile.
+            // A 1/1/1 mixed composite single pile move, 1 space.
             string data1 = "@2|||5s2s3s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-6s5s-3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -235,7 +235,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest6()
         {
-            // A 1/1/1 inversion move, 1 empty pile
+            // A 1/1/1 inversion move, 1 space
             // with one holding pile.
             string data1 = "@2|||2s3s4s3s2h-5h4h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5h4h3s2h-4s3s2s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -245,7 +245,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest7()
         {
-            // A 1/1/1 inversion move, 1 empty pile
+            // A 1/1/1 inversion move, 1 space
             // with two holding piles.
             string data1 = "@2|||2s3s4s3h2s-4h3h-5s4s--Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-4h3h2s-5s4s3h-4s3s2s-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -255,7 +255,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest8()
         {
-            // A 1/2 composite single pile move, 2 empty piles.
+            // A 1/2 composite single pile move, 2 spaces.
             string data1 = "@2|||As8s7h-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-2sAs-8s7h--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -264,7 +264,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest9()
         {
-            // A 1/3 composite single pile move, 2 empty piles.
+            // A 1/3 composite single pile move, 2 spaces.
             string data1 = "@2|||As8s7h6s-2s---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s-2sAs---Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -273,7 +273,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest10()
         {
-            // A 2/2 composite single pile move, 2 empty piles.
+            // A 2/2 composite single pile move, 2 spaces.
             string data1 = "@2|||Ts9h7h6s-Js---Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-JsTs9h-7h6s--Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -282,7 +282,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest11()
         {
-            // A 1/4 composite single pile move, three empty piles.
+            // A 1/4 composite single pile move, three spaces.
             string data1 = "@2|||Ts8s7h6s5h-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-JsTs-8s7h6s5h---Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -291,7 +291,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest12()
         {
-            // A 1/6 composite single pile move, three empty piles.
+            // A 1/6 composite single pile move, three spaces.
             string data1 = "@2|||Ts8s7h6s5h4s3h-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s5h4s3h-JsTs----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -300,7 +300,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest13()
         {
-            // A 2/5 composite single pile move, three empty piles.
+            // A 2/5 composite single pile move, three spaces.
             string data1 = "@2|||9s8h8s7h6s5h4s-Ts----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||8s7h6s5h4s-Ts9s8h----Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -309,7 +309,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest14()
         {
-            // A 4/3 composite single pile move, three empty piles.
+            // A 4/3 composite single pile move, three spaces.
             string data1 = "@2|||Ts9h8s7h8s7h6s-Js----Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-JsTs9h8s7h-8s7h6s---Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -318,7 +318,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest15()
         {
-            // A 1/1/1/1 composite single pile move with reused piles, 1 empty pile.
+            // A 1/1/1/1 composite single pile move with reused piles, 1 space.
             string data1 = "@2|||3s4s7s8s-5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5s4s3s-8s7s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -327,7 +327,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest16()
         {
-            // A 1/1 composite single pile move, 0 empty piles.
+            // A 1/1 composite single pile move, 0 spaces.
             string data1 = "@2|||4s8s-5s-9s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-5s4s-9s8s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMoveSucceeds(data1, data2);
@@ -336,7 +336,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest17()
         {
-            // A 1/1/1 composite single pile move with reused pile, 1 empty pile.
+            // A 1/1/1 composite single pile move with reused pile, 1 space.
             string data1 = "@2|||As3s2s6s-4s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-4s3s2sAs-6s-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -345,7 +345,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest18()
         {
-            // A 1/1/1 partial composite single pile move, 1 empty pile.
+            // A 1/1/1 partial composite single pile move, 1 space.
             string data1 = "@2|||TsAs5s3s4s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||TsAs-6s5s4s3s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -354,7 +354,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest19()
         {
-            // A 1/1/1 reload to from composite single pile move, 1 empty pile.
+            // A 1/1/1 reload to from composite single pile move, 1 space.
             string data1 = "@2|||Ts9s5s8s-6s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||Ts9s8s-6s5s--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -363,7 +363,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest20()
         {
-            // A 1/1/1 interior holding composite single pile move, 1 empty pile.
+            // A 1/1/1 interior holding composite single pile move, 1 space.
             string data1 = "@2|||8s5s4h9h-6s-6h5h--Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||-6s5s4h-6h5h-9h8s-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -372,7 +372,7 @@ namespace Spider.Tests
         [TestMethod]
         public void CompositeSinglePileTest21()
         {
-            // A 1/1/1 partial holding composite single pile move, 1 empty pile.
+            // A 1/1/1 partial holding composite single pile move, 1 space.
             string data1 = "@2|||Ts8s6s5s4h7s-Ts5h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||Ts8s7s6s5s4h-Ts5h--Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
             CheckMove(data1, data2);
@@ -433,11 +433,11 @@ namespace Spider.Tests
             // Check that the move is not made
             // or that a last resort move was made.
             game = new Game(initial);
-            int before = game.Tableau.NumberOfEmptyPiles;
+            int before = game.Tableau.NumberOfSpaces;
             bool moved = game.MakeMove();
             if (moved)
             {
-                int after = game.Tableau.NumberOfEmptyPiles;
+                int after = game.Tableau.NumberOfSpaces;
                 if (!(after < before))
                 {
                     PrintGame(new Game(initial));
@@ -458,8 +458,8 @@ namespace Spider.Tests
             // Check that the only available move is made.
             CheckMoveSucceeds(initial, expected);
 
-            // Check that the move is not made with one fewer empty pile.
-            CheckMoveFails(FillEmptyPile(initial));
+            // Check that the move is not made with one fewer space.
+            CheckMoveFails(FillSpace(initial));
         }
 
         private string TrimAll(string s)
@@ -476,7 +476,7 @@ namespace Spider.Tests
             return b.ToString();
         }
 
-        private string FillEmptyPile(string data)
+        private string FillSpace(string data)
         {
             return data.Replace("--", "-Ks-");
         }

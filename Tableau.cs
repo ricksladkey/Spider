@@ -12,14 +12,14 @@ namespace Spider
     {
         public Variation Variation { get; set; }
         public int NumberOfPiles { get; private set; }
-        public int NumberOfEmptyPiles { get; private set; }
+        public int NumberOfSpaces { get; private set; }
 
         private Pile[] downPiles;
         private Pile[] upPiles;
-        private bool[] emptyPileFlags;
+        private bool[] spaceFlags;
         private Pile stockPile;
         private FastList<Pile> discardPiles;
-        private FastList<int> emptyPiles;
+        private FastList<int> spaces;
         private Pile scratchPile;
 
         public Tableau()
@@ -34,9 +34,9 @@ namespace Spider
             stockPile = new Pile();
             downPiles = new Pile[NumberOfPiles];
             upPiles = new Pile[NumberOfPiles];
-            emptyPileFlags = new bool[NumberOfPiles];
+            spaceFlags = new bool[NumberOfPiles];
             discardPiles = new FastList<Pile>(NumberOfPiles);
-            emptyPiles = new FastList<int>(NumberOfPiles);
+            spaces = new FastList<int>(NumberOfPiles);
             for (int row = 0; row < NumberOfPiles; row++)
             {
                 downPiles[row] = new Pile();
@@ -85,21 +85,21 @@ namespace Spider
             }
         }
 
-        public IList<int> EmptyPiles
+        public IList<int> Spaces
         {
             get
             {
-                if (emptyPiles.Count == 0 && NumberOfEmptyPiles != 0)
+                if (spaces.Count == 0 && NumberOfSpaces != 0)
                 {
                     for (int column = 0; column < NumberOfPiles; column++)
                     {
-                        if (emptyPileFlags[column])
+                        if (spaceFlags[column])
                         {
-                            emptyPiles.Add(column);
+                            spaces.Add(column);
                         }
                     }
                 }
-                return emptyPiles;
+                return spaces;
             }
         }
 
@@ -116,7 +116,7 @@ namespace Spider
                 upPiles[column].Clear();
             }
             discardPiles.Clear();
-            emptyPiles.Clear();
+            spaces.Clear();
         }
 
         public int GetDownCount(int column)
@@ -217,7 +217,6 @@ namespace Spider
 
         public void CopyUpPiles(Tableau other)
         {
-            ClearAll();
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 upPiles[column].Copy(other.upPiles[column]);
@@ -225,14 +224,25 @@ namespace Spider
             Refresh();
         }
 
+        public void BlockDownPiles(Tableau other)
+        {
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                if (other.downPiles[column].Count != 0)
+                {
+                    downPiles[column].Add(Card.Empty);
+                }
+            }
+        }
+
         public void Refresh()
         {
-            NumberOfEmptyPiles = 0;
+            NumberOfSpaces = 0;
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 bool isEmpty = upPiles[column].Count == 0;
-                emptyPileFlags[column] = isEmpty;
-                NumberOfEmptyPiles += isEmpty ? 1 : 0;
+                spaceFlags[column] = isEmpty;
+                NumberOfSpaces += isEmpty ? 1 : 0;
             }
         }
 
@@ -427,11 +437,11 @@ namespace Spider
         public void CheckEmpty(int column)
         {
             bool isEmpty = upPiles[column].Count == 0;
-            if (isEmpty != emptyPileFlags[column])
+            if (isEmpty != spaceFlags[column])
             {
-                NumberOfEmptyPiles += (isEmpty ? 1 : 0) - (emptyPileFlags[column] ? 1 : 0);
-                emptyPileFlags[column] = isEmpty;
-                emptyPiles.Clear();
+                NumberOfSpaces += (isEmpty ? 1 : 0) - (spaceFlags[column] ? 1 : 0);
+                spaceFlags[column] = isEmpty;
+                spaces.Clear();
             }
         }
 

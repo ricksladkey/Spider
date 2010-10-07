@@ -1,18 +1,17 @@
-- assert that empty piles left is calculated correctly
+- assert that spaces left is calculated correctly
 - assert that offload suits is calculated correctly
-- move empty piles into the tableau
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
 
 - promote one run delta to a full-fledged scoring feature
 - consider length of to pile down count when scoring
 
-- review empty pile calculations when counting uses
+- review space calculations when counting uses
 - could use holding piles for uncovering moves
 - could collect composite uncovering moves
 - rename test jig
 - retest complex
-- merge the multiple different places that empty pile algorithms are implemented
+- merge the multiple different places that space algorithms are implemented
 - upgrade to full power of two extra suits algorithm
 - convert holding list to use supplementary list instead
 - improve scoring of offload moves
@@ -20,14 +19,14 @@
 - for offload consider trying to find homes for homeless runs by uncovering targets
 
 - optimize scoring factors using designed experiments
-- before playing onto an empty pile search for an empty pile preserving sequence
+- before playing onto an space search for an space preserving sequence
 
 - prefer holding moves that match suit
 
 - prefer long exposed runs even if it means splitting a run, just before a deal
 
 - figure out why simple consistently gets better results than complex
-- theory: prefer to have a single run on an empty pile
+- theory: prefer to have a single run on an space
 - calculate oneRunDelta correctly for swaps
 - check whether moves with oneRunDelta > 0 are rejected
 

@@ -268,7 +268,7 @@ namespace Spider
         {
             Analyze();
 
-            if (Tableau.NumberOfEmptyPiles == NumberOfPiles)
+            if (Tableau.NumberOfSpaces == NumberOfPiles)
             {
                 Won = true;
                 return true;
@@ -284,9 +284,9 @@ namespace Spider
             SupplementaryList.Clear();
             HoldingList.Clear();
 
-            int emptyPiles = Tableau.NumberOfEmptyPiles;
-            int maxExtraSuits = ExtraSuits(emptyPiles);
-            int maxExtraSuitsToEmptyPile = ExtraSuits(emptyPiles - 1);
+            int numberOfSpaces = Tableau.NumberOfSpaces;
+            int maxExtraSuits = ExtraSuits(numberOfSpaces);
+            int maxExtraSuitsToSpace = ExtraSuits(numberOfSpaces - 1);
 
             FindUncoveringMoves(maxExtraSuits);
             FindOneRunPiles();
@@ -357,10 +357,10 @@ namespace Spider
                         }
                     }
 
-                    // Add moves to an empty pile.
-                    for (int i = 0; i < Tableau.NumberOfEmptyPiles; i++)
+                    // Add moves to an space.
+                    for (int i = 0; i < Tableau.NumberOfSpaces; i++)
                     {
-                        int to = Tableau.EmptyPiles[i];
+                        int to = Tableau.Spaces[i];
 
                         if (fromRow == 0)
                         {
@@ -375,7 +375,7 @@ namespace Spider
                         else
                         {
                             // No point in moving anything less than
-                            // as much as possible to an empty pile.
+                            // as much as possible to an space.
                             Card nextCard = fromPile[fromRow - 1];
                             if (fromCard.Suit == nextCard.Suit)
                             {
@@ -393,9 +393,9 @@ namespace Spider
                                 // No cards left to move.
                                 continue;
                             }
-                            if (extraSuits > maxExtraSuitsToEmptyPile + holdingSet.Suits)
+                            if (extraSuits > maxExtraSuitsToSpace + holdingSet.Suits)
                             {
-                                // Not enough empty piles.
+                                // Not enough spaces.
                                 continue;
                             }
 
@@ -405,8 +405,8 @@ namespace Spider
                             break;
                         }
 
-                        // Only need to check the first empty pile
-                        // since all empty piles are the same
+                        // Only need to check the first space
+                        // since all spaces are the same
                         // except for undealt cards.
                         break;
                     }
@@ -532,7 +532,7 @@ namespace Spider
 #if false
             if (extraSuits + 1 > maxExtraSuits + HoldingStack.Suits)
             {
-                // Need at least one empty pile or a holding pile to swap.
+                // Need at least one space or a holding pile to swap.
                 return;
             }
 #endif
@@ -644,7 +644,7 @@ namespace Spider
                     }
                     if (extraSuits + toSuits > maxExtraSuits + holdingSet.Suits)
                     {
-                        // Not enough empty piles.
+                        // Not enough spaces.
                         continue;
                     }
 
@@ -733,7 +733,7 @@ namespace Spider
 
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                // Prepare empty piles and face lists.
+                // Prepare spaces and face lists.
                 Pile pile = Tableau[i];
                 if (pile.Count != 0)
                 {
@@ -801,8 +801,8 @@ namespace Spider
 #endif
             score.DownCount = Tableau.GetDownCount(from);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
-            score.CreatesEmptyPile = wholePile && score.DownCount == 0;
-            score.NoEmptyPiles = Tableau.NumberOfEmptyPiles == 0;
+            score.CreatesSpace = wholePile && score.DownCount == 0;
+            score.NoSpaces = Tableau.NumberOfSpaces == 0;
             if (score.Order == 0 && score.NetRunLength < 0)
             {
                 return RejectScore;
@@ -833,14 +833,14 @@ namespace Spider
             score.NetRunLength = 0;
             score.DownCount = Tableau.GetDownCount(move.From);
             score.TurnsOverCard = move.Flags.TurnsOverCard();
-            score.CreatesEmptyPile = move.Flags.CreatesEmptyPile();
-            score.UsesEmptyPile = move.Flags.UsesEmptyPile();
+            score.CreatesSpace = move.Flags.CreatesSpace();
+            score.UsesSpace = move.Flags.UsesSpace();
             score.Discards = move.Flags.Discards();
             score.IsCompositeSinglePile = true;
-            score.NoEmptyPiles = Tableau.NumberOfEmptyPiles == 0;
+            score.NoSpaces = Tableau.NumberOfSpaces == 0;
             score.OneRunDelta = 0;
 
-            if (score.UsesEmptyPile)
+            if (score.UsesSpace)
             {
                 // XXX: should calculate uses, is king, etc.
                 score.Coefficient0 = Group1;
@@ -857,7 +857,7 @@ namespace Spider
             Pile toPile = Tableau[move.To];
             Card fromCard = fromPile[move.FromRow];
             bool wholePile = move.FromRow == 0;
-            score.UsesEmptyPile = true;
+            score.UsesSpace = true;
             score.DownCount = Tableau.GetDownCount(move.From);
             score.TurnsOverCard = wholePile && score.DownCount != 0;
             score.FaceValue = (int)fromCard.Face;
@@ -900,8 +900,8 @@ namespace Spider
             if (!exposedCard.IsTargetFor(fromCard))
             {
                 // Check whether the exposed card will be useful.
-                int emptyPiles = Tableau.NumberOfEmptyPiles - 1;
-                int maxExtraSuits = ExtraSuits(emptyPiles);
+                int numberOfSpaces = Tableau.NumberOfSpaces - 1;
+                int maxExtraSuits = ExtraSuits(numberOfSpaces);
                 int fromSuits = fromPile.CountSuits(move.FromRow);
                 for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
                 {

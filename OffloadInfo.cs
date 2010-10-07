@@ -9,27 +9,27 @@ namespace Spider
     {
         public static OffloadInfo Empty = new OffloadInfo(-1, -1, -1, -1, null);
 
-        public OffloadInfo(int root, int to, int suits, int emptyPilesUsed, Pile pile)
+        public OffloadInfo(int root, int to, int suits, int numberOfSpacesUsed, Pile pile)
             : this()
         {
             Root = root;
             To = to;
             Suits = suits;
-            EmptyPilesUsed = emptyPilesUsed;
+            NumberOfSpacesUsed = numberOfSpacesUsed;
             Pile = pile;
         }
 
         public int Root { get; set; }
         public int To { get; set; }
         public int Suits { get; set; }
-        public int EmptyPilesUsed { get; set; }
+        public int NumberOfSpacesUsed { get; set; }
         public Pile Pile { get; set; }
 
         public bool SinglePile
         {
             get
             {
-                return EmptyPilesUsed == 1;
+                return NumberOfSpacesUsed == 1;
             }
         }
 

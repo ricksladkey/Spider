@@ -7,21 +7,21 @@ namespace Spider
 {
     public class BaseGame
     {
-        public static int ExtraSuits(int emptyPiles)
+        public static int ExtraSuits(int numberOfSpaces)
         {
 #if true
             // The formula for how many intermediate runs can
             // be moved is m: = sum(1 + 2 + ... + n).
-            return emptyPiles * (emptyPiles + 1) / 2;
+            return numberOfSpaces * (numberOfSpaces + 1) / 2;
 #else
             // The formula for how many intermediate runs can
             // be moved is m: = sum(1 + 2 + ... + 2^(n - 1)).
-            if (emptyPiles < 0)
+            if (numberOfSpaces < 0)
             {
                 return 0;
             }
             int power = 1;
-            for (int i = 0; i < emptyPiles; i++)
+            for (int i = 0; i < numberOfSpaces; i++)
             {
                 power *= 2;
             }
@@ -29,11 +29,11 @@ namespace Spider
 #endif
         }
 
-        public static int EmptyPilesUsed(int emptyPiles, int suits)
+        public static int SpacesUsed(int numberOfSpaces, int suits)
         {
 #if false
             int used = 0;
-            for (int n = emptyPiles; n > 0 && suits > 0; n--)
+            for (int n = numberOfSpaces; n > 0 && suits > 0; n--)
             {
                 used++;
                 suits -= n;
@@ -44,7 +44,7 @@ namespace Spider
             while (suits > 0)
             {
                 used++;
-                suits -= ExtraSuits(emptyPiles - 1) + 1;
+                suits -= ExtraSuits(numberOfSpaces - 1) + 1;
             }
             return used;
 #endif
@@ -52,15 +52,15 @@ namespace Spider
 
         private static int RoundUpExtraSuits(int suits)
         {
-            int emptyPiles = 0;
+            int numberOfSpaces = 0;
             while (true)
             {
-                int extraSuits = ExtraSuits(emptyPiles);
+                int extraSuits = ExtraSuits(numberOfSpaces);
                 if (extraSuits >= suits)
                 {
                     return extraSuits;
                 }
-                emptyPiles++;
+                numberOfSpaces++;
             }
         }
 

@@ -14,12 +14,12 @@ namespace Spider
         private Tableau intermediateTableau;
         private HoldingStack holdingStack;
 
+        private int numberOfSpacesLeft;
         private int from;
         private Pile fromPile;
         private OffloadInfo offload;
         private int best;
         private int order;
-        private int emptyPilesLeft;
         private bool turnsOverCard;
 
         public CompositeSinglePileMoveFinder(Game game)
@@ -110,14 +110,16 @@ namespace Spider
         {
             // Prepare data structures.
             order = 0;
-            emptyPilesLeft = Tableau.NumberOfEmptyPiles;
+            numberOfSpacesLeft = Tableau.NumberOfSpaces;
             int runs = roots.Count - 1;
             offload = OffloadInfo.Empty;
             turnsOverCard = false;
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
+            workingTableau.ClearAll();
             workingTableau.CopyUpPiles(Tableau);
+            workingTableau.BlockDownPiles(Tableau);
 
             if (!uncoveringMove.IsEmpty)
             {
@@ -136,7 +138,7 @@ namespace Spider
                 Card rootCard = fromPile[rootRow];
                 int runLength = roots[n - 1] - roots[n];
                 int suits = fromPile.CountSuits(rootRow, rootRow + runLength);
-                int maxExtraSuits = ExtraSuits(emptyPilesLeft);
+                int maxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
                 bool suitsMatch = false;
                 holdingStack.Clear();
 
@@ -177,7 +179,7 @@ namespace Spider
                     {
                         if (!offload.SinglePile)
                         {
-                            // Not enough empty piles to invert.
+                            // Not enough spaces to invert.
                             return;
                         }
 
@@ -192,7 +194,7 @@ namespace Spider
                         suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits - 1 > maxExtraSuits)
                         {
-                            // Not enough empty piles.
+                            // Not enough spaces.
                             return;
                         }
                     }
@@ -225,26 +227,26 @@ namespace Spider
                     }
 
                     // Try to offload this run.
-                    if (emptyPilesLeft == 0)
+                    if (GetNumberOfSpacesLeft() == 0)
                     {
-                        // Not enough empty piles.
+                        // Not enough spaces.
                         return;
                     }
-                    to = Tableau.EmptyPiles[0];
-                    int maxExtraSuitsOnePile = ExtraSuits(emptyPilesLeft - 1) + 1;
+                    to = Tableau.Spaces[0];
+                    int maxExtraSuitsOnePile = ExtraSuits(GetNumberOfSpacesLeft() - 1) + 1;
                     if (suits > maxExtraSuitsOnePile)
                     {
                         // Try using holding piles.
                         suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
-                            // Still not enough empty piles.
+                            // Still not enough spaces.
                             return;
                         }
                     }
-                    int emptyPilesUsed = EmptyPilesUsed(emptyPilesLeft, suits);
-                    emptyPilesLeft -= emptyPilesUsed;
-                    offload = new OffloadInfo(n, to, suits, emptyPilesUsed, workingTableau[to]);
+                    int numberOfSpacesUsed = SpacesUsed(GetNumberOfSpacesLeft(), suits);
+                    numberOfSpacesLeft -= numberOfSpacesUsed;
+                    offload = new OffloadInfo(n, to, suits, numberOfSpacesUsed, workingTableau[to]);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
                     offloads++;
@@ -258,8 +260,8 @@ namespace Spider
                 if (rootRow == 0 && Tableau.GetDownCount(from) == 0)
                 {
                     // Got to the bottom of the pile
-                    // and created an empty pile.
-                    emptyPilesLeft++;
+                    // and created a space.
+                    numberOfSpacesLeft++;
                 }
 
                 // Check whether the offload matches the new from or to piles.
@@ -290,7 +292,7 @@ namespace Spider
                 }
                 else
                 {
-                    // Reload the offload onto the now empty pile.
+                    // Reload the offload onto the now space.
                     SupplementaryMoves.Add(new Move(MoveType.Reload, offload.To, 0, from, 0));
                 }
             }
@@ -304,13 +306,29 @@ namespace Spider
             }
             if (offload.IsEmpty && downCount == 0)
             {
-                flags |= MoveFlags.CreatesEmptyPile;
+                flags |= MoveFlags.CreatesSpace;
             }
             if (!offload.IsEmpty && downCount != 0)
             {
-                flags |= MoveFlags.UsesEmptyPile;
+                flags |= MoveFlags.UsesSpace;
             }
             AddMove(workingTableau, flags, order);
+        }
+
+        private int GetNumberOfSpacesLeft()
+        {
+            int n = workingTableau.NumberOfSpaces;
+            if (!offload.IsEmpty)
+            {
+                n += offload.NumberOfSpacesUsed - 1;
+            }
+#if false
+            if (n != numberOfSpacesLeft)
+            {
+                Debugger.Break();
+            }
+#endif
+            return n;
         }
 
         private void CheckOffload(int rootRow, int to)
@@ -324,7 +342,7 @@ namespace Spider
             int offloadRootRow = roots[offload.Root];
             Card offloadRootCard = fromPile[offloadRootRow];
             int offloadSuits = offload.Suits;
-            int offloadMaxExtraSuits = ExtraSuits(emptyPilesLeft);
+            int offloadMaxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
             MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
 
             // Check whether offload matches from pile.
@@ -335,11 +353,11 @@ namespace Spider
                 holdingStack.Clear();
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
-                    // Not enough empty piles.
+                    // Not enough spaces.
                     offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, from, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
-                        // Not enough empty piles and/or holding piles.
+                        // Not enough spaces and/or holding piles.
                         canMove = false;
                     }
                 }
@@ -347,6 +365,7 @@ namespace Spider
                 if (canMove)
                 {
                     // Prepare the intermediate tableau.
+                    intermediateTableau.ClearAll();
                     intermediateTableau.CopyUpPiles(workingTableau);
 
                     // Offload matches from pile.
@@ -370,11 +389,11 @@ namespace Spider
                 holdingStack.Clear();
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
-                    // Not enough empty piles.
+                    // Not enough spaces.
                     offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
-                        // Not enough empty piles and/or holding piles.
+                        // Not enough spaces and/or holding piles.
                         canMove = false;
                     }
                 }
@@ -388,7 +407,7 @@ namespace Spider
                     AddSupplementaryMove(workingTableau, new Move(offloadType, offload.To, 0, to), offload.Pile, holdingStack.Set, true);
 
                     // Update the state.
-                    emptyPilesLeft += offload.EmptyPilesUsed;
+                    numberOfSpacesLeft += offload.NumberOfSpacesUsed;
                     offload = OffloadInfo.Empty;
                 }
             }
@@ -437,19 +456,20 @@ namespace Spider
 
             // Check whether we can make the move.
             int oneRunSuits = oneRunPile.CountSuits();
-            int oneRunMaxExtraSuits = ExtraSuits(emptyPilesLeft);
+            int oneRunMaxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
             holdingStack.Clear();
             if (oneRunSuits - 1 > oneRunMaxExtraSuits)
             {
                 oneRunSuits -= FindHolding(workingTableau, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
                 if (oneRunSuits - 1 > oneRunMaxExtraSuits)
                 {
-                    // Not enough empty piles and/or holding piles.
+                    // Not enough spaces and/or holding piles.
                     return false;
                 }
             }
 
             // Prepare the intermediate tableau.
+            intermediateTableau.ClearAll();
             intermediateTableau.CopyUpPiles(workingTableau);
 
             // Found a home for the one run pile.
@@ -461,7 +481,7 @@ namespace Spider
 #if true
             if (rootRow == 0)
             {
-                baseFlags = Tableau.GetDownCount(from) == 0 ? MoveFlags.CreatesEmptyPile : MoveFlags.TurnsOverCard;
+                baseFlags = Tableau.GetDownCount(from) == 0 ? MoveFlags.CreatesSpace : MoveFlags.TurnsOverCard;
             }
 #endif
 
@@ -471,13 +491,13 @@ namespace Spider
                 if (Tableau.GetDownCount(oneRun) == 0)
                 {
                     // Add the emptying move.
-                    AddMove(intermediateTableau, baseFlags | MoveFlags.CreatesEmptyPile, order + GetOrder(targetCard, oneRunRootCard));
+                    AddMove(intermediateTableau, baseFlags | MoveFlags.CreatesSpace, order + GetOrder(targetCard, oneRunRootCard));
                     return true;
                 }
 
                 // Add the intermediate move.
                 AddMove(intermediateTableau, baseFlags | MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
-                if (baseFlags.CreatesEmptyPile())
+                if (baseFlags.CreatesSpace())
                 {
                     return true;
                 }
@@ -489,9 +509,9 @@ namespace Spider
 
             if (offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
             {
-                // Add the intermediate empty pile preserving move.
+                // Add the intermediate space preserving move.
                 AddMove(intermediateTableau, baseFlags, order + GetOrder(targetCard, oneRunRootCard));
-                if (baseFlags.CreatesEmptyPile())
+                if (baseFlags.CreatesSpace())
                 {
                     return true;
                 }
@@ -567,11 +587,11 @@ namespace Spider
             if (best != -1)
             {
                 Move previous = Candidates[best];
-                int previousChangeInEmptyPiles = previous.Flags.ChangeInEmptyPiles();
-                int currentChangeInEmptyPiles = flags.ChangeInEmptyPiles();
-                if (previousChangeInEmptyPiles >= currentChangeInEmptyPiles)
+                int previousChangeInSpaces = previous.Flags.ChangeInSpaces();
+                int currentChangeInSpaces = flags.ChangeInSpaces();
+                if (previousChangeInSpaces >= currentChangeInSpaces)
                 {
-                    if (previousChangeInEmptyPiles > currentChangeInEmptyPiles)
+                    if (previousChangeInSpaces > currentChangeInSpaces)
                     {
                         return;
                     }

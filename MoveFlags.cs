@@ -9,9 +9,9 @@ namespace Spider
     public enum MoveFlags
     {
         Empty = 0x0000,
-        CreatesEmptyPile = 0x0001,
+        CreatesSpace = 0x0001,
         TurnsOverCard = 0x0002,
-        UsesEmptyPile = 0x0004,
+        UsesSpace = 0x0004,
         Holding = 0x0008,
         UndoHolding = 0x0010,
         Discards = 0x0020,
@@ -20,32 +20,32 @@ namespace Spider
 
     public static class MoveFlagsExtensions
     {
-        public static int ChangeInEmptyPiles(this MoveFlags flags)
+        public static int ChangeInSpaces(this MoveFlags flags)
         {
-            if ((flags & MoveFlags.CreatesEmptyPile) == MoveFlags.CreatesEmptyPile)
+            if ((flags & MoveFlags.CreatesSpace) == MoveFlags.CreatesSpace)
             {
                 return 1;
             }
-            if ((flags & MoveFlags.UsesEmptyPile) == MoveFlags.UsesEmptyPile)
+            if ((flags & MoveFlags.UsesSpace) == MoveFlags.UsesSpace)
             {
                 return -1;
             }
             return 0;
         }
 
-        public static bool CreatesEmptyPile(this MoveFlags flags)
+        public static bool CreatesSpace(this MoveFlags flags)
         {
-            return (flags & MoveFlags.CreatesEmptyPile) == MoveFlags.CreatesEmptyPile;
+            return (flags & MoveFlags.CreatesSpace) == MoveFlags.CreatesSpace;
         }
 
-        public static bool PreservesEmptyPiles(this MoveFlags flags)
+        public static bool PreservesSpace(this MoveFlags flags)
         {
-            return (flags & (MoveFlags.CreatesEmptyPile | MoveFlags.UsesEmptyPile)) == MoveFlags.Empty;
+            return (flags & (MoveFlags.CreatesSpace | MoveFlags.UsesSpace)) == MoveFlags.Empty;
         }
 
-        public static bool UsesEmptyPile(this MoveFlags flags)
+        public static bool UsesSpace(this MoveFlags flags)
         {
-            return (flags & MoveFlags.UsesEmptyPile) == MoveFlags.UsesEmptyPile;
+            return (flags & MoveFlags.UsesSpace) == MoveFlags.UsesSpace;
         }
 
         public static bool Discards(this MoveFlags flags)
