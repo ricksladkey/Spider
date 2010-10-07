@@ -11,7 +11,7 @@ namespace Spider
     public class PileList : FastList<int>
     {
         public PileList()
-            : base(Game.NumberOfPiles)
+            : base(10)
         {
         }
 

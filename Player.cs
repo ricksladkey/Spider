@@ -26,7 +26,7 @@ namespace Spider
 
         public int Threads { get; set; }
         public int Games { get; set; }
-        public int Suits { get; set; }
+        public Variation Variation { get; set; }
         public int Seed { get; set; }
 
         public int Played { get { return played; } }
@@ -60,23 +60,24 @@ namespace Spider
             ShowResults = false;
 
             Games = 100000;
-            Suits = 2;
+            Variation = Variation.Spider2;
             Seed = 0;
             Threads = -1;
         }
 
         private void SetCoefficients()
         {
+            int suits = Variation.NumberOfSuits;
             double[] coefficients = null;
-            if (Suits == 1)
+            if (suits == 1)
             {
                 coefficients = Game.OneSuitCoefficients;
             }
-            else if (Suits == 2)
+            else if (suits == 2)
             {
                 coefficients = Game.TwoSuitCoefficients;
             }
-            else if (Suits == 4)
+            else if (suits == 4)
             {
                 coefficients = Game.FourSuitCoefficients;
             }
@@ -435,7 +436,7 @@ namespace Spider
             game.Interactive = Interactive;
 
             game.Coefficients = Coefficients;
-            game.Suits = Suits;
+            game.Variation = Variation;
             game.Seed = Interlocked.Increment(ref currentSeed) - 1;
             game.Play();
             if (game.Won)

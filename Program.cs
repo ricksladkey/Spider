@@ -36,9 +36,9 @@ namespace Spider
                     i += 2;
                     continue;
                 }
-                if (arg == "--suits")
+                if (arg == "--variation")
                 {
-                    player.Suits = int.Parse(args[i + 1]);
+                    player.Variation = (Variation)Enum.Parse(typeof(Variation), args[i + 1]);
                     i += 2;
                     continue;
                 }

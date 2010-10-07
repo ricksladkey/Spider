@@ -110,7 +110,6 @@
     <Compile Include="EnumerableDebugView.cs" />
     <Compile Include="Face.cs" />
     <Compile Include="GameHelper.cs" />
-    <Compile Include="GameInputOutput.cs" />
     <Compile Include="HoldingInfo.cs" />
     <Compile Include="HoldingSet.cs" />
     <Compile Include="HoldingStack.cs" />

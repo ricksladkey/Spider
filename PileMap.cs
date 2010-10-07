@@ -12,10 +12,10 @@ namespace Spider
     {
         private Pile scratchPile;
 
-        public PileMap()
-            : base(Game.NumberOfPiles, Game.NumberOfPiles)
+        public PileMap(Tableau tableau)
+            : base(tableau.NumberOfPiles, tableau.NumberOfPiles)
         {
-            for (int row = 0; row < Game.NumberOfPiles; row++)
+            for (int row = 0; row < count; row++)
             {
                 array[row] = new Pile();
             }
@@ -24,7 +24,7 @@ namespace Spider
 
         public void ClearAll()
         {
-            for (int i = 0; i < Game.NumberOfPiles; i++)
+            for (int i = 0; i < count; i++)
             {
                 array[i].Clear();
             }

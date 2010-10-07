@@ -23,7 +23,6 @@ namespace Spider
             /* 8 */ 1.756489081, 0.0002561898898, -0.04347481483, -0.1737026135, 3.471266012, 1,
         };
 
-        public const int NumberOfPiles = 10;
         public const int MaximumMoves = 1500;
 
         public const int Group0 = 0;
@@ -36,7 +35,7 @@ namespace Spider
         public static Deck TwoSuitDeck { get; private set; }
         public static Deck FourSuitDeck { get; private set; }
 
-        public int Suits { get; set; }
+        public Variation Variation { get; set; }
         public int Seed { get; set; }
         public double[] Coefficients { get; set; }
         public bool TraceStartFinish { get; set; }
@@ -68,9 +67,25 @@ namespace Spider
         public MoveList UncoveringMoves { get; private set; }
         public Game LastGame { get; private set; }
 
-        private GameInputOutput GameInputOutput { get; set; }
+        private TableauInputOutput TableauInputOutput { get; set; }
         private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
         private MoveProcessor MoveProcessor { get; set; }
+
+        public int NumberOfPiles
+        {
+            get
+            {
+                return Variation.NumberOfPiles;
+            }
+        }
+
+        public int NumberOfSuits
+        {
+            get
+            {
+                return Variation.NumberOfSuits;
+            }
+        }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -102,7 +117,7 @@ namespace Spider
 
         public Game()
         {
-            Suits = 4;
+            Variation = Variation.Spider4;
             Seed = -1;
             TraceStartFinish = false;
             TraceDeals = false;
@@ -133,7 +148,7 @@ namespace Spider
             UncoveringMoves = new MoveList();
             Coefficients = null;
 
-            GameInputOutput = new Spider.GameInputOutput(this);
+            TableauInputOutput = new Spider.TableauInputOutput(this);
             CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(this);
             MoveProcessor = new MoveProcessor(this);
         }
@@ -153,7 +168,7 @@ namespace Spider
         public Game(Tableau tableau)
             : this()
         {
-            Tableau = tableau;
+            FromTableau(tableau);
         }
 
         public void Play()
@@ -232,17 +247,18 @@ namespace Spider
             Shuffled.Clear();
             Tableau.ClearAll();
 
-            if (Suits == 1)
+            int suits = Variation.NumberOfSuits;
+            if (suits == 1)
             {
                 SetDefaultCoefficients(OneSuitCoefficients);
                 Deck = OneSuitDeck;
             }
-            else if (Suits == 2)
+            else if (suits == 2)
             {
                 SetDefaultCoefficients(TwoSuitCoefficients);
                 Deck = TwoSuitDeck;
             }
-            else if (Suits == 4)
+            else if (suits == 4)
             {
                 SetDefaultCoefficients(FourSuitCoefficients);
                 Deck = FourSuitDeck;
@@ -1106,32 +1122,40 @@ namespace Spider
 
         public string ToAsciiString()
         {
-            return GameInputOutput.ToAsciiString();
+            return TableauInputOutput.ToAsciiString();
         }
 
         public void FromAsciiString(string s)
         {
-            GameInputOutput.FromAsciiString(s);
+            Initialize();
+            TableauInputOutput.FromAsciiString(s);
         }
 
         public void FromGame(Game other)
         {
-            GameInputOutput.FromGame(other);
+            Initialize();
+            TableauInputOutput.FromTableau(other.Tableau);
+        }
+
+        public void FromTableau(Tableau tableau)
+        {
+            Initialize();
+            TableauInputOutput.FromTableau(tableau);
         }
 
         public string ToPrettyString()
         {
-            return GameInputOutput.ToPrettyString();
+            return TableauInputOutput.ToPrettyString();
         }
 
         public static void PrintGamesSideBySide(Game game1, Game game2)
         {
-            GameInputOutput.PrintGamesSideBySide(game1, game2);
+            TableauInputOutput.PrintGamesSideBySide(game1, game2);
         }
 
         public override string ToString()
         {
-            return GameInputOutput.ToPrettyString();
+            return TableauInputOutput.ToPrettyString();
         }
     }
 }

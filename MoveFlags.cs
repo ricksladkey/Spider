@@ -18,7 +18,7 @@ namespace Spider
         Flagged = 0x8000,
     }
 
-    public static class MoveFlagsExensions
+    public static class MoveFlagsExtensions
     {
         public static int ChangeInEmptyPiles(this MoveFlags flags)
         {

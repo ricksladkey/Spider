@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class Tableau : IGetCard
+    public class Tableau : IEnumerable<Pile>, IGetCard
     {
         public Variation Variation { get; set; }
         public bool AutoAdjust { get; set; }
@@ -29,7 +29,7 @@ namespace Spider
 
         private void Initialize()
         {
-            NumberOfPiles = Variation.GetNumberOfPiles();
+            NumberOfPiles = Variation.NumberOfPiles;
             stockPile = new Pile();
             downPiles = new Pile[NumberOfPiles];
             upPiles = new Pile[NumberOfPiles];
@@ -84,7 +84,7 @@ namespace Spider
 
         public void ClearAll()
         {
-            if (NumberOfPiles != Variation.GetNumberOfPiles())
+            if (NumberOfPiles != Variation.NumberOfPiles)
             {
                 Initialize();
             }
@@ -373,6 +373,27 @@ namespace Spider
         {
             Game.PrintGame(new Game(this));
         }
+
+        #region IEnumerable<Pile> Members
+
+        public IEnumerator<Pile> GetEnumerator()
+        {
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                yield return upPiles[column];
+            }
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
 
         #region IGetCard Members
 

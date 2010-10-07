@@ -7,7 +7,7 @@ namespace Spider
 {
     public interface IGameSettings
     {
-        int Suits { get; set; }
+        Variation Variation { get; set; }
         int Seed { get; set; }
         double[] Coefficients { get; set; }
         bool Diagnostics { get; set; }

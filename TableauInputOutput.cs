@@ -35,7 +35,7 @@ namespace Spider
             string s = "";
 
             s += Fence;
-            s += Tableau.Variation.ToString() + PrimarySeparator;
+            s += Tableau.Variation.ToAsciiString() + PrimarySeparator;
             s += ToAsciiString(discardRow) + PrimarySeparator;
             s += ToAsciiString(Tableau.DownPiles) + PrimarySeparator;
             s += ToAsciiString(Tableau.UpPiles) + PrimarySeparator;
@@ -117,7 +117,7 @@ namespace Spider
             }
 
             // Parse sections.
-            Variation variation = (Variation)Enum.Parse(typeof(Variation), sections[0]);
+            Variation variation = Variation.ParseAsciiString(sections[0]);
             Pile discards = GetPileFromAsciiString(sections[1]);
             Pile[] downPiles = GetPilesFromAsciiString(sections[2]);
             Pile[] upPiles = GetPilesFromAsciiString(sections[3]);
@@ -126,11 +126,11 @@ namespace Spider
             {
                 throw new Exception("too many discard piles");
             }
-            if (downPiles.Length > Game.NumberOfPiles)
+            if (downPiles.Length > Tableau.NumberOfPiles)
             {
                 throw new Exception("wrong number of down piles");
             }
-            if (upPiles.Length > Game.NumberOfPiles)
+            if (upPiles.Length > Tableau.NumberOfPiles)
             {
                 throw new Exception("wrong number of up piles");
             }
@@ -185,23 +185,23 @@ namespace Spider
             return pile;
         }
 
-        public void FromGame(Game other)
+        public void FromTableau(Tableau tableau)
         {
-            Tableau.Variation = other.Tableau.Variation;
+            Tableau.Variation = tableau.Variation;
             Tableau.ClearAll();
-            foreach (Pile pile in other.Tableau.DiscardPiles)
+            foreach (Pile pile in tableau.DiscardPiles)
             {
                 Tableau.DiscardPiles.Add(pile);
             }
-            for (int column = 0; column < Game.NumberOfPiles; column++)
+            for (int column = 0; column < Tableau.NumberOfPiles; column++)
             {
-                Tableau.DownPiles[column].Copy((other.Tableau.DownPiles[column]));
+                Tableau.DownPiles[column].Copy((tableau.DownPiles[column]));
             }
-            for (int column = 0; column < Game.NumberOfPiles; column++)
+            for (int column = 0; column < Tableau.NumberOfPiles; column++)
             {
-                Tableau.UpPiles[column].Copy((other.Tableau.UpPiles[column]));
+                Tableau.UpPiles[column].Copy((tableau.UpPiles[column]));
             }
-            Tableau.StockPile.Copy((other.Tableau.StockPile));
+            Tableau.StockPile.Copy((tableau.StockPile));
         }
 
         public string ToPrettyString()
@@ -225,12 +225,12 @@ namespace Spider
             s += Environment.NewLine;
             s += ToPrettyString(Tableau.UpPiles);
             s += Environment.NewLine;
-            for (int i = 0; i < Tableau.StockPile.Count / Game.NumberOfPiles; i++)
+            for (int i = 0; i < Tableau.StockPile.Count / Tableau.NumberOfPiles; i++)
             {
                 Pile row = new Pile();
-                for (int j = 0; j < Game.NumberOfPiles; j++)
+                for (int j = 0; j < Tableau.NumberOfPiles; j++)
                 {
-                    int index = i * Game.NumberOfPiles + j;
+                    int index = i * Tableau.NumberOfPiles + j;
                     int reverseIndex = Tableau.StockPile.Count - index - 1;
                     row.Add(Tableau.StockPile[reverseIndex]);
                 }
@@ -244,14 +244,14 @@ namespace Spider
         {
             string s = "";
             int max = 0;
-            for (int i = 0; i < Game.NumberOfPiles; i++)
+            for (int i = 0; i < piles.Count; i++)
             {
                 max = Math.Max(max, piles[i].Count);
             }
             for (int j = 0; j < max; j++)
             {
                 Pile row = new Pile();
-                for (int i = 0; i < Game.NumberOfPiles; i++)
+                for (int i = 0; i < piles.Count; i++)
                 {
                     if (j < piles[i].Count)
                     {

@@ -12,6 +12,8 @@ namespace Spider
         Pile Deck { get; }
         Pile Shuffled { get; }
         Tableau Tableau { get; }
+        int NumberOfPiles { get; }
+        int NumberOfSuits { get; }
 
         MoveList UncoveringMoves { get; }
         MoveList SupplementaryMoves { get; }

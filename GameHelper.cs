@@ -9,8 +9,6 @@ namespace Spider
     {
         protected IGame game;
 
-        public static int NumberOfPiles { get { return Game.NumberOfPiles; } }
-
         public GameHelper(IGame game)
         {
             this.game = game;
@@ -18,7 +16,7 @@ namespace Spider
 
         #region IGameSettings Members
 
-        public int Suits { get { return game.Suits; } set { game.Suits = value; } }
+        public Variation Variation { get { return game.Variation; } set { game.Variation = value; } }
         public int Seed { get { return game.Seed; } set { game.Seed = value; } }
         public double[] Coefficients { get { return game.Coefficients; } set { game.Coefficients = value; } }
         public bool Diagnostics { get { return game.Diagnostics; } set { game.Diagnostics = value; } }
@@ -28,11 +26,17 @@ namespace Spider
         public bool ComplexMoves { get { return game.ComplexMoves; } set { game.ComplexMoves = value; } }
         public bool RecordComplex { get { return game.RecordComplex; } set { game.RecordComplex = value; } }
 
+        #endregion
+
+        #region IGame Members
+
         public MoveList Moves { get { return game.Moves; } }
 
         public Pile Deck { get { return game.Deck; } }
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
+        public int NumberOfPiles { get { return game.NumberOfPiles; } }
+        public int NumberOfSuits { get { return game.NumberOfSuits; } }
 
         public MoveList UncoveringMoves { get { return game.UncoveringMoves; } }
         public MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }

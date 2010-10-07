@@ -11,12 +11,28 @@ namespace Spider
     public class CardMap : FastList<Card>, IGetCard
     {
         public CardMap()
-            : base(Game.NumberOfPiles, Game.NumberOfPiles)
+            : this(10)
         {
+        }
+
+        public CardMap(int numberOfPiles)
+            : base(numberOfPiles)
+        {
+            Initialize(numberOfPiles);
+        }
+
+        public void Initialize(int numberOfPiles)
+        {
+            Clear();
+            for (int i = 0; i < numberOfPiles; i++)
+            {
+                Add(Card.Empty);
+            }
         }
 
         public void Update(Tableau tableau)
         {
+            Initialize(tableau.NumberOfPiles);
             Update(tableau.UpPiles);
         }
 

@@ -11,7 +11,7 @@ namespace Spider
     public class HoldingStack : FastList<HoldingInfo>
     {
         public HoldingStack()
-            : base(Game.NumberOfPiles)
+            : base(10)
         {
         }
 

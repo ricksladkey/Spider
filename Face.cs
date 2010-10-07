@@ -23,7 +23,7 @@ namespace Spider
         King = 13,
     }
 
-    public static class FaceExensions
+    public static class FaceExtensions
     {
         public static bool IsSourceFor(this Face face, Face other)
         {
