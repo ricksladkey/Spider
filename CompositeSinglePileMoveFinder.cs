@@ -147,7 +147,7 @@ namespace Spider
                         continue;
                     }
                     Card card = workingTableau.GetCard(i);
-                    if (!card.IsEmpty && card.IsTargetFor(rootCard))
+                    if (card.IsTargetFor(rootCard))
                     {
                         if (!offload.IsEmpty && to == offload.To)
                         {
@@ -178,9 +178,6 @@ namespace Spider
                             // Not enough spaces to invert.
                             return;
                         }
-
-                        // Update the state.
-                        offload.Suits += suits - (suitsMatch ? 1 : 0);
                     }
 
                     // Try to move this run.
@@ -241,7 +238,7 @@ namespace Spider
                         }
                     }
                     int numberOfSpacesUsed = SpacesUsed(GetNumberOfSpacesLeft(), suits);
-                    offload = new OffloadInfo(n, to, suits, numberOfSpacesUsed, workingTableau[to]);
+                    offload = new OffloadInfo(to, numberOfSpacesUsed);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
                     offloads++;
@@ -255,7 +252,7 @@ namespace Spider
                 // Check whether the offload matches the new from or to piles.
                 if (!isOffload)
                 {
-                    CheckOffload(rootRow, to);
+                    CheckOffload(to);
                 }
 
                 // Check whether any of the one run piles now match
@@ -299,7 +296,7 @@ namespace Spider
             return n;
         }
 
-        private void CheckOffload(int rootRow, int to)
+        private void CheckOffload(int to)
         {
             if (offload.IsEmpty)
             {
@@ -307,14 +304,22 @@ namespace Spider
                 return;
             }
 
-            int offloadRootRow = roots[offload.Root];
-            Card offloadRootCard = fromPile[offloadRootRow];
-            int offloadSuits = offload.Suits;
+            Pile offloadPile = workingTableau[offload.To];
+            if (offloadPile.Count == 0)
+            {
+                // A discard emptied the offload pile.
+                offload = OffloadInfo.Empty;
+                return;
+            }
+
+            Card offloadRootCard = offloadPile[0];
+            int offloadSuits = offloadPile.CountSuits();
             int offloadMaxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
             MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
 
             // Check whether offload matches from pile.
-            if (rootRow > 0 && offloadRootCard.IsSourceFor(fromPile[rootRow - 1]))
+            Card fromCard = workingTableau.GetCard(from);
+            if (offloadRootCard.IsSourceFor(fromCard))
             {
                 // Check whether we can make the move.
                 bool canMove = true;
@@ -322,7 +327,7 @@ namespace Spider
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough spaces.
-                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, from, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offloadPile, offload.To, 0, offloadPile.Count, from, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough spaces and/or holding piles.
@@ -336,10 +341,10 @@ namespace Spider
                     SaveWorkingState();
 
                     // Offload matches from pile.
-                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, from), offload.Pile, holdingStack.Set, true);
+                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, from), offloadPile, holdingStack.Set, true);
 
                     // Add the intermediate move.
-                    AddMove(order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
+                    AddMove(order + GetOrder(fromCard, offloadRootCard));
 
                     // Restore working state.
                     RestoreWorkingState();
@@ -357,7 +362,7 @@ namespace Spider
                 if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough spaces.
-                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offload.Pile, offload.To, 0, offload.Pile.Count, to, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offloadPile, offload.To, 0, offloadPile.Count, to, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough spaces and/or holding piles.
@@ -371,7 +376,7 @@ namespace Spider
                     order += GetOrder(toCard, offloadRootCard);
 
                     // Found a home for the offload.
-                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, holdingStack.Set, true);
+                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offloadPile, holdingStack.Set, true);
 
                     // Update the state.
                     offload = OffloadInfo.Empty;

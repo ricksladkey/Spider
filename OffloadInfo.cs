@@ -7,23 +7,17 @@ namespace Spider
 {
     public struct OffloadInfo
     {
-        public static OffloadInfo Empty = new OffloadInfo(-1, -1, -1, -1, null);
+        public static OffloadInfo Empty = new OffloadInfo(-1, -1);
 
-        public OffloadInfo(int root, int to, int suits, int numberOfSpacesUsed, Pile pile)
+        public OffloadInfo(int to, int numberOfSpacesUsed)
             : this()
         {
-            Root = root;
             To = to;
-            Suits = suits;
             NumberOfSpacesUsed = numberOfSpacesUsed;
-            Pile = pile;
         }
 
-        public int Root { get; set; }
         public int To { get; set; }
-        public int Suits { get; set; }
         public int NumberOfSpacesUsed { get; set; }
-        public Pile Pile { get; set; }
 
         public bool SinglePile
         {
@@ -37,7 +31,7 @@ namespace Spider
         {
             get
             {
-                return Root == -1;
+                return To == -1;
             }
         }
     }

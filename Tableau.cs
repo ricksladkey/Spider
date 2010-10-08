@@ -152,6 +152,11 @@ namespace Spider
             return upPiles[column].GetRunUpAnySuit(row);
         }
 
+        public int CountSuits(int column)
+        {
+            return upPiles[column].CountSuits(0, -1);
+        }
+
         public int CountSuits(int column, int row)
         {
             return upPiles[column].CountSuits(row, -1);
