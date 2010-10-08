@@ -23,6 +23,11 @@ namespace Spider
         private FastList<int> spaces;
         private Pile scratchPile;
 
+        static Tableau()
+        {
+            InitializeZobristKeys();
+        }
+
         public Tableau()
         {
             Variation = Variation.Spider4;
@@ -216,6 +221,22 @@ namespace Spider
                 (toFree && toUpper && fromLower && newOrder == 2);
             int oneRunDelta = (newFrom ? 1 : 0) - (oldFrom ? 1 : 0) + (newTo ? 1 : 0) - (oldTo ? 1 : 0);
             return oneRunDelta > 0 ? 1 : 0;
+        }
+
+        public void Copy(Tableau other)
+        {
+            ClearAll();
+            discardPiles.Copy(other.discardPiles);
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                upPiles[column].Copy(other.upPiles[column]);
+            }
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                downPiles[column].Copy(other.downPiles[column]);
+            }
+            stockPile.Copy(other.stockPile);
+            Refresh();
         }
 
         public void CopyUpPiles(Tableau other)
@@ -575,6 +596,67 @@ namespace Spider
         public void PrintGame()
         {
             Game.PrintGame(new Game(this));
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            int offset = 0;
+            for (int row = 0; row < discardPiles.Count; row++)
+            {
+                hash ^= GetZobristKey(offset, row, discardPiles[row][12]);
+            }
+            offset++;
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                hash ^= GetZobristKey(column + offset, downPiles[column]);
+            }
+            offset += NumberOfPiles;
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                hash ^= GetZobristKey(column + offset, upPiles[column]);
+            }
+            offset += NumberOfPiles;
+            hash ^= GetZobristKey(offset, stockPile);
+            return hash;
+        }
+
+        private static int[][][] ZobristKeys;
+
+        private static void InitializeZobristKeys()
+        {
+            Random random = new Random(0);
+            int columns = 2 * 10 + 2;
+            int rows = 52 * 2;
+            int cards = 4 * 13 + 1;
+            ZobristKeys = new int[columns][][];
+            for (int column = 0; column < columns; column++)
+            {
+                ZobristKeys[column] = new int[rows][];
+                for (int row = 0; row < rows; row++)
+                {
+                    ZobristKeys[column][row] = new int[cards];
+                    for (int card = 0; card < cards; card++)
+                    {
+                        ZobristKeys[column][row][card] = random.Next(int.MinValue, int.MaxValue);
+                    }
+                }
+            }
+        }
+
+        private static int GetZobristKey(int column, Pile pile)
+        {
+            int hash = 0;
+            for (int row = 0; row < pile.Count; row++)
+            {
+                hash ^= GetZobristKey(column, row, pile[row]);
+            }
+            return hash;
+        }
+
+        private static int GetZobristKey(int column, int row, Card card)
+        {
+            return ZobristKeys[column][row][card.GetHashCode()];
         }
 
         #region IEnumerable<Pile> Members

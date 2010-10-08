@@ -27,12 +27,12 @@ namespace Spider
     {
         public static bool IsSourceFor(this Face face, Face other)
         {
-            return face + 1 == other;
+            return face + 1 == other && face != Face.Empty;
         }
 
         public static bool IsTargetFor(this Face face, Face other)
         {
-            return face - 1 == other;
+            return face - 1 == other && other != Face.Empty;
         }
     }
 }

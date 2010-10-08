@@ -7,10 +7,10 @@ namespace Spider
 {
     public struct Card : IEquatable<Card>
     {
+        public static Card Empty = new Card();
+
         public Face Face { get; set; }
         public Suit Suit { get; set; }
-
-        public static Card Empty { get { return new Card(); } }
 
         public bool IsEmpty { get { return Equals(Empty); } }
 
@@ -49,6 +49,11 @@ namespace Spider
         public override string ToString()
         {
             return ToPrettyString();
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)Face * (int)Suit;
         }
 
         #region IEquatable<Card> Members

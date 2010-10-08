@@ -468,6 +468,13 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
+        [TestMethod]
+        public void DebugTest()
+        {
+            string data = "@2||--8h6s4h-5h9s3h9hQs----9h2s9h2s-Kh4h|3h2hKh-Ts9s8s7s6h5s\r\n4s3s2sKs-8sQhJhTh7h-KhQhJhTh5s-KsQsJsTs3h2h7h-8s6s-KsQsJsTs9\r\ns8s7s6s5s4s3s2sQs-KhQhJhTh9h8h7h6h5h4h3h2hJs-KsQh3s2hAs-6h5h\r\n4s3s8h7hAs|5h9s7s4hAh7s6sAs4s5sAsJsAh8hThAhAhJhTs6h@";
+            CheckMoveSucceeds(data, data);
+        }
+
         private void CheckResults(string initial, string expected, string actual)
         {
             if (expected != actual)

@@ -12,7 +12,6 @@ namespace Spider
         public const int BaseScore = 0;
         public const int UsesSpaceScore = -1000;
         public const int ReversibleScore = 500;
-        public const int DiscardScore = 250;
 
         public double[] Coefficients { get; set; }
         public int Coefficient0 { get; set; }
@@ -38,7 +37,6 @@ namespace Spider
             {
                 double score = BaseScore +
                     ReversibleScore * (Reversible ? 1 : 0) +
-                    DiscardScore * (Discards ? 1 : 0) +
                     CreatesSpaceScore * (CreatesSpace ? 1 : 0) +
                     UsesSpaceScore * (UsesSpace ? 1 : 0) +
                     FaceValue +
@@ -49,7 +47,8 @@ namespace Spider
                     Coefficients[Coefficient0 + 4] * (NoSpaces ? 1 : 0) * DownCount +
                     Coefficients[Coefficient0 + 5] * OneRunDelta +
                     Coefficients[Coefficient0 + 6] * Uses +
-                    Coefficients[Coefficient0 + 7] * Order;
+                    Coefficients[Coefficient0 + 7] * Order +
+                    Coefficients[Coefficient0 + 8] * (Discards ? 1 : 0);
 
                 return score;
             }
