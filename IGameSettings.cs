@@ -15,7 +15,5 @@ namespace Spider
 
         bool TraceMoves { get; set; }
         bool ComplexMoves { get; set; }
-        bool RecordComplex { get; set; }
-
     }
 }

@@ -15,11 +15,6 @@ namespace Spider
 
         public void ProcessMove(Move move)
         {
-            if (RecordComplex)
-            {
-                AddMove(move);
-            }
-
             if (ComplexMoves)
             {
                 MakeMove(move);
@@ -422,24 +417,13 @@ namespace Spider
         private void MakeSingleMove(Move move)
         {
             // Record the move.
-            if (!RecordComplex)
+            if (TraceMoves)
             {
-                AddMove(move);
+                Utils.WriteLine("Move {0}: {1}", Tableau.Moves.Count, move);
             }
 
             // Make the move.
             Tableau.Move(move);
         }
-
-        public void AddMove(Move move)
-        {
-            move.Score = 0;
-            if (TraceMoves)
-            {
-                Utils.WriteLine("Move {0}: {1}", Moves.Count, move);
-            }
-            Moves.Add(move);
-        }
-
     }
 }

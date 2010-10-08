@@ -10,8 +10,11 @@ namespace Spider
         Unknown = 0,
         Basic = 1,
         Swap = 2,
-        Unload = 3,
-        Reload = 4,
-        CompositeSinglePile = 5,
+        Deal = 3,
+        Discard = 4,
+        TurnOverCard = 5,
+        Unload = 6,
+        Reload = 7,
+        CompositeSinglePile = 8,
     }
 }

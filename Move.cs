@@ -20,6 +20,21 @@ namespace Spider
         public int Next { get; set; }
         public double Score { get; set; }
 
+        public Move(MoveType type)
+            : this(type, -1, -1, -1, -1, -1, -1)
+        {
+        }
+
+        public Move(int from)
+            : this(MoveType.Basic, from, -1, -1, -1, -1, -1)
+        {
+        }
+
+        public Move(MoveType type, int from)
+            : this(type, from, -1, -1, -1, -1, -1)
+        {
+        }
+
         public Move(int from, int to)
             : this(MoveType.Basic, from, -1, to, -1, -1, -1)
         {

@@ -160,6 +160,7 @@ namespace Spider
                 Tableau.UpPiles[column].Copy(upPiles[column]);
             }
             Tableau.StockPile.Copy(stockPile);
+            Tableau.Refresh();
         }
 
         private static Pile[] GetPilesFromAsciiString(string s)
@@ -202,6 +203,7 @@ namespace Spider
                 Tableau.UpPiles[column].Copy((tableau.UpPiles[column]));
             }
             Tableau.StockPile.Copy((tableau.StockPile));
+            Tableau.Refresh();
         }
 
         public string ToPrettyString()

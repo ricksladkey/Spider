@@ -13,6 +13,7 @@ namespace Spider
         public Variation Variation { get; set; }
         public int NumberOfPiles { get; private set; }
         public int NumberOfSpaces { get; private set; }
+        public MoveList Moves { get; private set; }
 
         private Pile[] downPiles;
         private Pile[] upPiles;
@@ -31,6 +32,7 @@ namespace Spider
         private void Initialize()
         {
             NumberOfPiles = Variation.NumberOfPiles;
+            Moves = new MoveList();
             stockPile = new Pile();
             downPiles = new Pile[NumberOfPiles];
             upPiles = new Pile[NumberOfPiles];
@@ -105,6 +107,7 @@ namespace Spider
 
         public void ClearAll()
         {
+            Moves.Clear();
             if (NumberOfPiles != Variation.NumberOfPiles)
             {
                 Initialize();
@@ -332,12 +335,29 @@ namespace Spider
                 fromRow += fromPile.Count;
             }
             int fromCount = fromPile.Count - fromRow;
+            int toRow = toPile.Count;
 
             Debug.Assert(fromRow >= 0 && fromRow < fromPile.Count);
             Debug.Assert(toPile.Count == 0 || fromPile[fromRow].IsSourceFor(toPile[toPile.Count - 1]));
 
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
+            Moves.Add(new Move(MoveType.Basic, from, fromRow, to, toRow));
+
+            OnPileChanged(from);
+            OnPileChanged(to);
+        }
+
+        public void UndoMove(int from, int fromRow, int to)
+        {
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
+
+            int fromCount = fromPile.Count - fromRow;
+
+            toPile.AddRange(fromPile, fromRow, fromCount);
+            fromPile.RemoveRange(fromRow, fromCount);
+
             OnPileChanged(from);
             OnPileChanged(to);
         }
@@ -354,6 +374,26 @@ namespace Spider
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
             fromPile.AddRange(scratchPile, 0, toCount);
+
+            Moves.Add(new Move(MoveType.Swap, from, fromRow, to, toRow));
+
+            OnPileChanged(from);
+            OnPileChanged(to);
+        }
+
+        public void UndoSwap(int from, int fromRow, int to, int toRow)
+        {
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
+            int fromCount = fromPile.Count - fromRow;
+            int toCount = toPile.Count - toRow;
+            scratchPile.Clear();
+            scratchPile.AddRange(toPile, toRow, toCount);
+            toPile.RemoveRange(toRow, toCount);
+            toPile.AddRange(fromPile, fromRow, fromCount);
+            fromPile.RemoveRange(fromRow, fromCount);
+            fromPile.AddRange(scratchPile, 0, toCount);
+
             OnPileChanged(from);
             OnPileChanged(to);
         }
@@ -378,6 +418,7 @@ namespace Spider
             {
                 throw new Exception("no stock left to deal");
             }
+            Moves.Add(new Move(MoveType.Deal));
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 if (stockPile.Count == 0)
@@ -388,17 +429,32 @@ namespace Spider
             }
         }
 
-        public void Add(int column, Card card)
+        private void UndoDeal()
+        {
+            for (int column = NumberOfPiles - 1; column >= 0; column--)
+            {
+                stockPile.Add(Remove(column));
+            }
+        }
+
+        private void Add(int column, Card card)
         {
             upPiles[column].Add(card);
             OnPileChanged(column);
+        }
+
+        private Card Remove(int column)
+        {
+            Card card = upPiles[column].Next();
+            OnPileChanged(column);
+            return card;
         }
 
         private void OnPileChanged(int column)
         {
             CheckDiscard(column);
             CheckTurnOverCard(column);
-            CheckEmpty(column);
+            CheckSpace(column);
         }
 
         private void CheckDiscard(int column)
@@ -414,35 +470,106 @@ namespace Spider
             }
 
             int runLength = pile.GetRunUp(pile.Count);
-            if (runLength == 13)
+            if (runLength != 13)
             {
-                int row = pile.Count - runLength;
-                Pile sequence = new Pile();
-                sequence.AddRange(pile, row, 13);
-                pile.RemoveRange(row, 13);
-                discardPiles.Add(sequence);
+                return;
+            }
+            Discard(column);
+        }
+
+        private void Discard(int column)
+        {
+            Pile pile = upPiles[column];
+            int row = pile.Count - 13;
+            Pile sequence = new Pile();
+            sequence.AddRange(pile, row, 13);
+            pile.RemoveRange(row, 13);
+            discardPiles.Add(sequence);
+            Moves.Add(new Move(MoveType.Discard, column));
+        }
+
+        private void UndoDiscard(int column)
+        {
+            Pile discardPile = discardPiles.Next();
+            upPiles[column].AddRange(discardPile);
+            CheckSpace(column);
+        }
+
+        private void CheckTurnOverCard(int column)
+        {
+            if (upPiles[column].Count == 0 && downPiles[column].Count != 0)
+            {
+                TurnOverCard(column);
             }
         }
 
-        public void CheckTurnOverCard(int column)
+        private void TurnOverCard(int column)
         {
             Pile upPile = upPiles[column];
             Pile downPile = downPiles[column];
-            if (upPile.Count == 0 && downPile.Count != 0)
+            upPile.Add(downPile.Next());
+            Moves.Add(new Move(MoveType.TurnOverCard, column));
+        }
+
+        private void UndoTurnOverCard(int column)
+        {
+            downPiles[column].Add(upPiles[column].Next());
+            CheckSpace(column);
+        }
+
+        private void CheckSpace(int column)
+        {
+            bool isSpace = upPiles[column].Count == 0;
+            if (isSpace != spaceFlags[column])
             {
-                upPile.Add(downPile.Next());
+                NumberOfSpaces += (isSpace ? 1 : 0) - (spaceFlags[column] ? 1 : 0);
+                spaceFlags[column] = isSpace;
+                spaces.Clear();
             }
         }
 
-        public void CheckEmpty(int column)
+        public int TimeStamp
         {
-            bool isEmpty = upPiles[column].Count == 0;
-            if (isEmpty != spaceFlags[column])
+            get
             {
-                NumberOfSpaces += (isEmpty ? 1 : 0) - (spaceFlags[column] ? 1 : 0);
-                spaceFlags[column] = isEmpty;
-                spaces.Clear();
+                return Moves.Count;
             }
+        }
+
+        public void Revert(int timeStamp)
+        {
+            while (TimeStamp > timeStamp)
+            {
+                Undo();
+            }
+        }
+
+        public void Undo()
+        {
+            Move move = Moves[Moves.Count - 1];
+            switch (move.Type)
+            {
+                case MoveType.Basic:
+                    UndoMove(move.To, move.ToRow, move.From);
+                    break;
+
+                case MoveType.Swap:
+                    UndoSwap(move.From, move.FromRow, move.To, move.ToRow);
+                    break;
+
+                case MoveType.Deal:
+                    UndoDeal();
+                    break;
+
+                case MoveType.Discard:
+                    UndoDiscard(move.From);
+                    break;
+
+                case MoveType.TurnOverCard:
+                    UndoTurnOverCard(move.From);
+                    break;
+            }
+            Moves.Next();
         }
 
         public void PrintGame()

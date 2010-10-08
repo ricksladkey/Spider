@@ -38,13 +38,11 @@ namespace Spider
         public bool TraceDeals { get; set; }
         public bool TraceMoves { get; set; }
         public bool ComplexMoves { get; set; }
-        public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
 
         public bool Won { get; private set; }
-        public MoveList Moves { get; private set; }
 
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
@@ -92,11 +90,9 @@ namespace Spider
             TraceDeals = false;
             TraceMoves = false;
             ComplexMoves = false;
-            RecordComplex = false;
             Diagnostics = false;
             Instance = -1;
 
-            Moves = new MoveList();
             Shuffled = new Pile();
             Tableau = new Tableau();
 
@@ -156,7 +152,7 @@ namespace Spider
                         PrintGames();
                         Console.ReadKey();
                     }
-                    if (Moves.Count >= MaximumMoves)
+                    if (Tableau.Moves.Count >= MaximumMoves)
                     {
                         if (TraceStartFinish)
                         {
@@ -213,7 +209,6 @@ namespace Spider
             RunLengths = new int[NumberOfPiles];
             RunLengthsAnySuit = new int[NumberOfPiles];
             Won = false;
-            Moves.Clear();
             Shuffled.Clear();
             Tableau.ClearAll();
 
@@ -961,7 +956,7 @@ namespace Spider
             {
                 PrintGame();
                 PrintViableCandidates();
-                Utils.WriteLine("Moves.Count = {0}", Moves.Count);
+                Utils.WriteLine("Moves.Count = {0}", Tableau.Moves.Count);
             }
 
             Move move = Candidates[0];
@@ -1017,7 +1012,7 @@ namespace Spider
 
         public void PrintMoves()
         {
-            PrintMoves(Moves);
+            PrintMoves(Tableau.Moves);
         }
 
         public void PrintMoves(MoveList moves)

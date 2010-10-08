@@ -56,7 +56,6 @@ namespace Spider
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
             ComplexMoves = game.ComplexMoves;
-            RecordComplex = game.RecordComplex;
             ShowResults = false;
 
             Games = 100000;
@@ -431,7 +430,6 @@ namespace Spider
             game.TraceDeals = TraceDeals;
             game.TraceMoves = TraceMoves;
             game.ComplexMoves = ComplexMoves;
-            game.RecordComplex = RecordComplex;
             game.Diagnostics = Diagnostics;
             game.Interactive = Interactive;
 
@@ -448,14 +446,14 @@ namespace Spider
                 Interlocked.Increment(ref discards);
             }
             Interlocked.Increment(ref played);
-            Interlocked.Add(ref moves, game.Moves.Count);
+            Interlocked.Add(ref moves, game.Tableau.Moves.Count);
             if (game.Won)
             {
-                Interlocked.Add(ref movesWon, game.Moves.Count);
+                Interlocked.Add(ref movesWon, game.Tableau.Moves.Count);
             }
             else
             {
-                Interlocked.Add(ref movesLost, game.Moves.Count);
+                Interlocked.Add(ref movesLost, game.Tableau.Moves.Count);
             }
             Results[game.Seed - Seed] = game.Won;
             Instances[game.Seed - Seed] = game.Instance;

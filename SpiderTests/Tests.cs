@@ -53,6 +53,69 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        public void UndoTest1()
+        {
+            // Undo an ordinary move.
+            string data1 = "@2|||9s8h-9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||9s-9h8h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckUndo(data1, data2, "Move");
+        }
+
+        [TestMethod]
+        public void UndoTest2()
+        {
+            // Undo an ordinary move that turns over a card.
+            string data1 = "@2||As|8h-9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||As-9h8h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckUndo(data1, data2, "Move");
+        }
+
+        [TestMethod]
+        public void UndoTest3()
+        {
+            // Undo an ordinary move that causes a discard.
+            string data1 = "@2|||8h7h6h5h4h3h2hAh-KhQhJhTh9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|Ah||--Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckUndo(data1, data2, "Move");
+        }
+
+        [TestMethod]
+        public void UndoTest4()
+        {
+            // Undo an ordinary move that causes a discard and turns over a card.
+            string data1 = "@2||-7s|8h7h6h5h4h3h2hAh-KhQhJhTh9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|Ah||-7s-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckUndo(data1, data2, "Move");
+        }
+
+        [TestMethod]
+        public void UndoTest5()
+        {
+            // Undo a deal.
+            string data1 = "@2|||8h-9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-Ks|As2s3s4s5s6s7s8s9sTs@";
+            string data2 = "@2|||8hTs-9h9s-Ks8s-Ks7s-Ks6s-Ks5s-Ks4s-Ks3s-Ks2s-KsAs|@";
+            CheckUndo(data1, data2, "Deal");
+        }
+
+        [TestMethod]
+        public void UndoTest6()
+        {
+            // Undo a deal that causes a discard.
+            string data1 = "@2|||8h-9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-KhQhJhTh9h8h7h6h5h4h3h2h|Ah2s3s4s5s6s7s8s9sTs@";
+            string data2 = "@2|Ah||8hTs-9h9s-Ks8s-Ks7s-Ks6s-Ks5s-Ks4s-Ks3s-Ks2s|@";
+            CheckUndo(data1, data2, "Deal");
+        }
+
+        [TestMethod]
+        public void UndoTest7()
+        {
+            // Undo a deal that causes a discard and turns over a card.
+            string data1 = "@2||---------7s|8h-9h-Ks-Ks-Ks-Ks-Ks-Ks-Ks-KhQhJhTh9h8h7h6h5h4h3h2h|Ah2s3s4s5s6s7s8s9sTs@";
+            string data2 = "@2|Ah||8hTs-9h9s-Ks8s-Ks7s-Ks6s-Ks5s-Ks4s-Ks3s-Ks2s-7s|@";
+            CheckUndo(data1, data2, "Deal");
+        }
+
+        [TestMethod]
         public void SwapTest1()
         {
             // A 1/1 swap move, 1 space.
@@ -460,6 +523,31 @@ namespace Spider.Tests
 
             // Check that the move is not made with one fewer space.
             CheckMoveFails(FillSpace(initial));
+        }
+
+        private void CheckUndo(string initial, string expected, string action)
+        {
+            // Check that the only available move is made.
+            game = new Game(initial);
+            game.Diagnostics = true;
+            int timeStamp = game.Tableau.TimeStamp;
+            if (action == "Move")
+            {
+                Assert.IsTrue(game.MakeMove());
+            }
+            else if (action == "Deal")
+            {
+                game.Tableau.Deal();
+            }
+            else
+            {
+                throw new Exception("unknown action: " + action);
+            }
+            string actual = TrimAll(game.ToAsciiString());
+            CheckResults(initial, expected, actual);
+            game.Tableau.Revert(timeStamp);
+            string undone = TrimAll(game.ToAsciiString());
+            CheckResults(initial, initial, undone);
         }
 
         private string TrimAll(string s)

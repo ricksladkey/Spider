@@ -7,8 +7,6 @@ namespace Spider
 {
     public interface IGame : IGameSettings
     {
-        MoveList Moves { get; }
-
         Pile Shuffled { get; }
         Tableau Tableau { get; }
         int NumberOfPiles { get; }

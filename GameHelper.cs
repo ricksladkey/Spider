@@ -24,13 +24,10 @@ namespace Spider
 
         public bool TraceMoves { get { return game.TraceMoves; } set { game.TraceMoves = value; } }
         public bool ComplexMoves { get { return game.ComplexMoves; } set { game.ComplexMoves = value; } }
-        public bool RecordComplex { get { return game.RecordComplex; } set { game.RecordComplex = value; } }
 
         #endregion
 
         #region IGame Members
-
-        public MoveList Moves { get { return game.Moves; } }
 
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
