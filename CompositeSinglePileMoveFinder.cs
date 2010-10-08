@@ -13,7 +13,6 @@ namespace Spider
         private Tableau workingTableau;
         private HoldingStack holdingStack;
 
-        private int numberOfSpacesLeft;
         private int from;
         private Pile fromPile;
         private OffloadInfo offload;
@@ -109,7 +108,6 @@ namespace Spider
         {
             // Prepare data structures.
             order = 0;
-            numberOfSpacesLeft = Tableau.NumberOfSpaces;
             int runs = roots.Count - 1;
             offload = OffloadInfo.Empty;
             SupplementaryMoves.Clear();
@@ -243,7 +241,6 @@ namespace Spider
                         }
                     }
                     int numberOfSpacesUsed = SpacesUsed(GetNumberOfSpacesLeft(), suits);
-                    numberOfSpacesLeft -= numberOfSpacesUsed;
                     offload = new OffloadInfo(n, to, suits, numberOfSpacesUsed, workingTableau[to]);
                     type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
@@ -255,13 +252,6 @@ namespace Spider
                 bool undoHolding = !isOffload;
                 AddSupplementaryMove(new Move(type, from, rootRow, to), fromPile, holdingSet, undoHolding);
 
-                if (rootRow == 0 && Tableau.GetDownCount(from) == 0)
-                {
-                    // Got to the bottom of the pile
-                    // and created a space.
-                    numberOfSpacesLeft++;
-                }
-
                 // Check whether the offload matches the new from or to piles.
                 if (!isOffload)
                 {
@@ -272,7 +262,7 @@ namespace Spider
                 // the new from or to piles.
                 for (int i = 0; i < OneRunPiles.Count; i++)
                 {
-                    if (CheckOneRun(rootRow, to, OneRunPiles[i]))
+                    if (CheckOneRun(to, OneRunPiles[i]))
                     {
                         // Found an emptying move.
                         return;
@@ -306,12 +296,6 @@ namespace Spider
             {
                 n -= offload.NumberOfSpacesUsed - 1;
             }
-#if false
-            if (n != numberOfSpacesLeft)
-            {
-                Debugger.Break();
-            }
-#endif
             return n;
         }
 
@@ -390,43 +374,40 @@ namespace Spider
                     AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offload.Pile, holdingStack.Set, true);
 
                     // Update the state.
-                    numberOfSpacesLeft += offload.NumberOfSpacesUsed;
                     offload = OffloadInfo.Empty;
                 }
             }
         }
 
-        private bool CheckOneRun(int rootRow, int to, int oneRun)
+        private bool CheckOneRun(int to, int oneRun)
         {
-            Pile oneRunPile = workingTableau[oneRun];
-
             // Check whether the one run pile matches from pile.
-            if (rootRow > 0 && oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(fromPile[rootRow - 1]))
+            if (TryToAddOneRunMove(oneRun, from))
             {
-                if (TryToAddOneRunMove(rootRow, oneRun, from, fromPile[rootRow - 1]))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Check whether the one run pile matches to pile.
-            Card toCard = workingTableau.GetCard(to);
-            if (oneRunPile.Count != 0 && oneRunPile[0].IsSourceFor(toCard))
+            if (TryToAddOneRunMove(oneRun, to))
             {
-                if (TryToAddOneRunMove(rootRow, oneRun, to, toCard))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // Couldn't find an emptying move.
             return false;
         }
 
-        private bool TryToAddOneRunMove(int rootRow, int oneRun, int target, Card targetCard)
+        private bool TryToAddOneRunMove(int oneRun, int target)
         {
             Pile oneRunPile = workingTableau[oneRun];
             Card oneRunRootCard = oneRunPile[0];
+
+            // Check whether the one run pile matches the target pile.
+            Card targetCard = workingTableau.GetCard(target);
+            if (oneRunPile.Count == 0 || !oneRunPile[0].IsSourceFor(targetCard))
+            {
+                return false;
+            }
 
             // Check whether we can make the move.
             int oneRunSuits = oneRunPile.CountSuits();
