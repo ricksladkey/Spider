@@ -19,7 +19,6 @@ namespace Spider
         private OffloadInfo offload;
         private int best;
         private int order;
-        private bool turnsOverCard;
 
         private int tableauTimeStamp;
         private int supplementaryMovesCount;
@@ -113,7 +112,6 @@ namespace Spider
             numberOfSpacesLeft = Tableau.NumberOfSpaces;
             int runs = roots.Count - 1;
             offload = OffloadInfo.Empty;
-            turnsOverCard = false;
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
@@ -215,7 +213,7 @@ namespace Spider
                     {
                         if (runs - 1 >= 2)
                         {
-                            AddMove(MoveFlags.Empty, order);
+                            AddMove(order);
                         }
                         return;
                     }
@@ -223,7 +221,7 @@ namespace Spider
                     // Check for partial offload.
                     if (offloads > 0)
                     {
-                        AddMove(MoveFlags.Empty, order);
+                        AddMove(order);
                     }
 
                     // Try to offload this run.
@@ -292,27 +290,13 @@ namespace Spider
                 }
                 else
                 {
-                    // Reload the offload onto the now space.
+                    // Reload the offload onto the now empty space.
                     SupplementaryMoves.Add(new Move(MoveType.Reload, offload.To, 0, from, 0));
                 }
             }
 
-            // Determine move type.
-            int downCount = Tableau.GetDownCount(from);
-            MoveFlags flags = MoveFlags.Empty;
-            if (downCount != 0 || turnsOverCard)
-            {
-                flags |= MoveFlags.TurnsOverCard;
-            }
-            if (offload.IsEmpty && downCount == 0)
-            {
-                flags |= MoveFlags.CreatesSpace;
-            }
-            if (!offload.IsEmpty && downCount != 0)
-            {
-                flags |= MoveFlags.UsesSpace;
-            }
-            AddMove(flags, order);
+            // Add the move.
+            AddMove(order);
         }
 
         private int GetNumberOfSpacesLeft()
@@ -371,7 +355,7 @@ namespace Spider
                     AddSupplementaryMove(new Move(offloadType, offload.To, 0, from), offload.Pile, holdingStack.Set, true);
 
                     // Add the intermediate move.
-                    AddMove(MoveFlags.Empty, order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
+                    AddMove(order + GetOrder(fromPile[rootRow - 1], offloadRootCard));
 
                     // Restore working state.
                     RestoreWorkingState();
@@ -458,58 +442,24 @@ namespace Spider
                 }
             }
 
-            // Save working state.
-            SaveWorkingState();
-
-            // Found a home for the one run pile.
-            AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, holdingStack.Set, true);
-
-            // If we've already moved the whole from pile
-            // then we've inherited some flags.
-            MoveFlags baseFlags = MoveFlags.Empty;
-            if (rootRow == 0)
-            {
-                baseFlags = Tableau.GetDownCount(from) == 0 ? MoveFlags.CreatesSpace : MoveFlags.TurnsOverCard;
-            }
-
             // Handle the messy cases.
-            if (offload.IsEmpty)
+            if (offload.IsEmpty || offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
             {
-                if (Tableau.GetDownCount(oneRun) == 0)
-                {
-                    // Add the emptying move.
-                    AddMove(baseFlags | MoveFlags.CreatesSpace, order + GetOrder(targetCard, oneRunRootCard));
-                    return true;
-                }
+                // Save working state.
+                SaveWorkingState();
 
-                // Add the intermediate move.
-                AddMove(baseFlags | MoveFlags.TurnsOverCard, order + GetOrder(targetCard, oneRunRootCard));
-                if (baseFlags.CreatesSpace())
+                // Found a home for the one run pile.
+                AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, holdingStack.Set, true);
+
+                if (AddMove(order + GetOrder(targetCard, oneRunRootCard)))
                 {
                     return true;
                 }
 
                 // Restore working state.
                 RestoreWorkingState();
-                return false;
             }
 
-            if (offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
-            {
-                // Add the intermediate space preserving move.
-                AddMove(baseFlags, order + GetOrder(targetCard, oneRunRootCard));
-                if (baseFlags.CreatesSpace())
-                {
-                    return true;
-                }
-
-                // Restore working state.
-                RestoreWorkingState();
-                return false;
-            }
-
-            // Restore working state.
-            RestoreWorkingState();
             return false;
         }
 
@@ -558,8 +508,32 @@ namespace Spider
             }
         }
 
-        private void AddMove(MoveFlags flags, int totalOrder)
+        private bool AddMove(int totalOrder)
         {
+            // Infer move flags from state of the working tableau.
+            MoveFlags flags = MoveFlags.Empty;
+            if (workingTableau.DiscardPiles.Count != 0)
+            {
+                flags |= MoveFlags.Discards;
+            }
+            if (workingTableau.NumberOfSpaces > Tableau.NumberOfSpaces)
+            {
+                flags |= MoveFlags.CreatesSpace;
+            }
+            if (workingTableau.NumberOfSpaces < Tableau.NumberOfSpaces)
+            {
+                flags |= MoveFlags.UsesSpace;
+            }
+            for (int column = 0; column < workingTableau.NumberOfPiles; column++)
+            {
+                Pile pile = workingTableau[column];
+                if (pile.Count == 1 && pile[0].IsEmpty)
+                {
+                    flags |= MoveFlags.TurnsOverCard;
+                    break;
+                }
+            }
+
 #if false
             // Check which move is better.
             if (best != -1)
@@ -571,7 +545,7 @@ namespace Spider
                 {
                     if (previousChangeInSpaces > currentChangeInSpaces)
                     {
-                        return;
+                        return false;
                     }
                     int previousTurnsOverCard = previous.Flags.TurnsOverCard() ? 1 : 0;
                     int currentTurnsOverCard = flags.TurnsOverCard() ? 1 : 0;
@@ -579,13 +553,13 @@ namespace Spider
                     {
                         if (previousTurnsOverCard > currentTurnsOverCard)
                         {
-                            return;
+                            return false;
                         }
                         int previousOrder = previous.ToRow;
                         int currentOrder = totalOrder;
                         if (previousOrder >= currentOrder)
                         {
-                            return;
+                            return false;
                         }
                     }
                 }
@@ -597,8 +571,9 @@ namespace Spider
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
-            MoveFlags discardFlag = workingTableau.DiscardPiles.Count != 0 ? MoveFlags.Discards : MoveFlags.Empty;
-            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags | discardFlag, from, 0, 0, totalOrder, -1, AddSupplementary()));
+            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
+
+            return flags.CreatesSpace();
         }
     }
 }

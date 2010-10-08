@@ -1,5 +1,3 @@
-- compute space changes accurately from the working tableau
-- assert that spaces left is calculated correctly
 - assert that offload suits is calculated correctly
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
