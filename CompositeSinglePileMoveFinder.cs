@@ -122,8 +122,27 @@ namespace Spider
                 // Update the map for the uncovering move but don't
                 // include its order contribution so we don't make
                 // the uncovering move unless it is really necessary.
+                Stack<Move> moveStack = new Stack<Move>();
+                for (int next = uncoveringMove.HoldingNext; next != -1; next = HoldingList[next].Next)
+                {
+                    HoldingInfo holding = HoldingList[next];
+                    Move holdingMove = new Move(uncoveringMove.From, holding.FromRow, holding.To);
+                    SupplementaryMoves.Add(holdingMove);
+                    workingTableau.Move(holdingMove);
+                    moveStack.Push(new Move(holding.To, -holding.Length, uncoveringMove.To));
+                }
                 SupplementaryMoves.Add(uncoveringMove);
                 workingTableau.Move(uncoveringMove);
+                while (moveStack.Count > 0)
+                {
+                    Move holdingMove = moveStack.Pop();
+                    if (!workingTableau.MoveIsValid(holdingMove))
+                    {
+                        break;
+                    }
+                    SupplementaryMoves.Add(holdingMove);
+                    workingTableau.Move(holdingMove);
+                }
             }
 
             // Check all the roots.

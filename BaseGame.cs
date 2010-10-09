@@ -43,8 +43,9 @@ namespace Spider
             int used = 0;
             while (suits > 0)
             {
-                used++;
                 suits -= ExtraSuits(numberOfSpaces - 1) + 1;
+                used++;
+                numberOfSpaces--;
             }
             return used;
 #endif

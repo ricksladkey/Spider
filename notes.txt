@@ -1,4 +1,8 @@
-- assert that offload suits is calculated correctly
+1 1
+2 2
+3
+4
+
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
 

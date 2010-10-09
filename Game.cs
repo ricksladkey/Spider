@@ -9,8 +9,8 @@ namespace Spider
     public class Game : BaseGame, IGame
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 8.42581707, 42.35984891, -0.1201269187, -4.841970863, -0.1252077493, 4.908558385, 8.502830004, 1, 110.0314895,
-            /* 9 */ 2.241481832, 0.003208907113, -0.1594844085, -0.9196463991, 5.422359166, 1,
+            /* 0 */ 4.97385808, 63.53977337, -0.1063684816, -4.649572734, -0.1955832209, 2.565712243, 4.819874539, 0.5443310539, 86.27048442,
+            /* 9 */ 4.465708423, 0.00241597961, -0.1356068814, -0.9577011316, 2.50966, 0.8164965809,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
@@ -428,19 +428,28 @@ namespace Spider
                     continue;
                 }
                 int fromSuits = fromPile.CountSuits(fromRow);
-                if (fromSuits - 1 > maxExtraSuits)
-                {
-                    continue;
-                }
                 Card fromCard = fromPile[fromRow];
                 PileList faceList = FaceLists[(int)fromCard.Face + 1];
                 for (int i = 0; i < faceList.Count; i++)
                 {
+                    HoldingStack.Clear();
                     int to = faceList[i];
+                    if (fromSuits - 1 > maxExtraSuits)
+                    {
+#if true
+                        break;
+#else
+                        int holdingSuits = FindHolding(Tableau, HoldingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                        if (fromSuits - 1 > maxExtraSuits + holdingSuits)
+                        {
+                            break;
+                        }
+#endif
+                    }
                     Pile toPile = Tableau[to];
                     Card toCard = toPile[toPile.Count - 1];
                     int order = GetOrder(toCard, fromCard);
-                    UncoveringMoves.Add(new Move(from, fromRow, to, order));
+                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(HoldingStack.Set)));
                 }
             }
         }
