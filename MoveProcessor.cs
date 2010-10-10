@@ -13,7 +13,7 @@ namespace Spider
         {
         }
 
-        public void ProcessMove(Move move)
+        public new void ProcessMove(Move move)
         {
             if (ComplexMoves)
             {

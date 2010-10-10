@@ -507,9 +507,13 @@ namespace Spider.Tests
         [TestMethod]
         public void SearchTest1()
         {
-            string data = "@2|||Ts-9s-8s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
-            game = new Game(data);
+            string data1 = "@2|||Ts-9s-8s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Ts9s8s7s----Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string expected = data2;
+            game = new Game(data1);
             game.SearchMoves();
+            string actual = game.ToAsciiString();
+            Assert.AreEqual(expected, actual);
         }
 
 #if false

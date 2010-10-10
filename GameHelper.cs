@@ -31,7 +31,6 @@ namespace Spider
 
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
-        public Tableau WorkingTableau { get { return game.WorkingTableau; } }
         public Tableau FindTableau { get { return game.FindTableau; } }
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
         public int NumberOfSuits { get { return game.NumberOfSuits; } }
@@ -42,9 +41,19 @@ namespace Spider
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
 
+        public void FindMoves(Tableau tableau)
+        {
+            game.FindMoves(tableau);
+        }
+
         public void ProcessCandidate(Move move)
         {
             game.ProcessCandidate(move);
+        }
+
+        public void ProcessMove(Move move)
+        {
+            game.ProcessMove(move);
         }
 
         public int AddSupplementary()

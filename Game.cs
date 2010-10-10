@@ -46,7 +46,6 @@ namespace Spider
 
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
-        public Tableau WorkingTableau { get; private set; }
         public Tableau FindTableau { get; private set; }
 
         public MoveList Candidates { get; private set; }
@@ -64,6 +63,7 @@ namespace Spider
 
         private TableauInputOutput TableauInputOutput { get; set; }
         private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
+        private SearchMoveFinder SearchMoveFinder { get; set; }
         private MoveProcessor MoveProcessor { get; set; }
 
         public List<ComplexMove> ComplexCandidates
@@ -96,7 +96,6 @@ namespace Spider
 
             Shuffled = new Pile();
             Tableau = new Tableau();
-            WorkingTableau = new Tableau();
             FindTableau = Tableau;
 
             Candidates = new MoveList();
@@ -114,6 +113,7 @@ namespace Spider
 
             TableauInputOutput = new Spider.TableauInputOutput(this);
             CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(this);
+            SearchMoveFinder = new Spider.SearchMoveFinder(this);
             MoveProcessor = new MoveProcessor(this);
         }
 
@@ -206,7 +206,6 @@ namespace Spider
         private void Initialize()
         {
             Tableau.Variation = Variation;
-            WorkingTableau.Variation = Variation;
             NumberOfPiles = Variation.NumberOfPiles;
             NumberOfSuits = Variation.NumberOfSuits;
             RunLengths = new int[NumberOfPiles];
@@ -214,7 +213,6 @@ namespace Spider
             Won = false;
             Shuffled.Clear();
             Tableau.ClearAll();
-            WorkingTableau.ClearAll();
 
             int suits = Variation.NumberOfSuits;
             if (suits == 1)
@@ -273,71 +271,6 @@ namespace Spider
 
             FindMoves(Tableau);
             return ChooseMove();
-        }
-
-        public void SearchMoves()
-        {
-            WorkingTableau.ClearAll();
-            WorkingTableau.CopyUpPiles(Tableau);
-            WorkingTableau.BlockDownPiles(Tableau);
-            SearchMoves(3);
-        }
-
-        private void SearchMoves(int depth)
-        {
-            if (depth == 0)
-            {
-                PrintSearchMoves();
-                return;
-            }
-
-            FindMoves(WorkingTableau);
-            MoveList candidates = new MoveList(Candidates);
-            MoveList supplementaryList = new MoveList(SupplementaryList);
-            Stack<Move> moveStack = new Stack<Move>();
-
-            if (candidates.Count == 0)
-            {
-                PrintSearchMoves();
-                return;
-            }
-
-            for (int i = 0; i < candidates.Count; i++)
-            {
-                int timeStamp = WorkingTableau.TimeStamp;
-
-                Move move = candidates[i];
-                moveStack.Clear();
-                for (int next = move.HoldingNext; next != -1; next = supplementaryList[next].Next)
-                {
-                    Move holdingMove = supplementaryList[next];
-                    WorkingTableau.Move(holdingMove);
-                    moveStack.Push(new Move(holdingMove.To, -holdingMove.ToRow, move.To));
-                }
-                WorkingTableau.Move(move);
-                while (moveStack.Count > 0)
-                {
-                    Move holdingMove = moveStack.Pop();
-                    if (!WorkingTableau.MoveIsValid(holdingMove))
-                    {
-                        break;
-                    }
-                    WorkingTableau.Move(holdingMove);
-                }
-
-                SearchMoves(depth - 1);
-
-                WorkingTableau.Revert(timeStamp);
-            }
-        }
-
-        private void PrintSearchMoves()
-        {
-            Console.WriteLine("leaf:");
-            for (int i = 0; i < WorkingTableau.Moves.Count; i++)
-            {
-                Console.WriteLine("move[{0}] = {1}", i, WorkingTableau.Moves[i]);
-            }
         }
 
         public void FindMoves(Tableau tableau)
@@ -553,6 +486,11 @@ namespace Spider
 
         private void RespondToDeal()
         {
+        }
+
+        public void SearchMoves()
+        {
+            SearchMoveFinder.SearchMoves();
         }
 
         public int AddSupplementary()
@@ -1067,9 +1005,14 @@ namespace Spider
             }
 #endif
 
-            MoveProcessor.ProcessMove(move);
+            ProcessMove(move);
 
             return true;
+        }
+
+        public void ProcessMove(Move move)
+        {
+            MoveProcessor.ProcessMove(move);
         }
 
         public void PrintGame()

@@ -9,7 +9,6 @@ namespace Spider
     {
         Pile Shuffled { get; }
         Tableau Tableau { get; }
-        Tableau WorkingTableau { get; }
         Tableau FindTableau { get; }
         int NumberOfPiles { get; }
         int NumberOfSuits { get; }
@@ -20,7 +19,9 @@ namespace Spider
         MoveList Candidates { get; }
         PileList OneRunPiles { get; }
 
+        void FindMoves(Tableau tableau);
         void ProcessCandidate(Move move);
+        void ProcessMove(Move move);
         int AddSupplementary();
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();
