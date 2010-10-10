@@ -579,7 +579,7 @@ namespace Spider
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
-            Candidates.Add(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
+            ProcessCandidate(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
 
             return flags.CreatesSpace();
         }

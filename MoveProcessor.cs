@@ -84,18 +84,28 @@ namespace Spider
             {
                 Utils.WriteLine("SWUS: {0}/{1} -> {2}/{3}", from, fromRow, to, toRow);
             }
-            int numberOfSpaces = Tableau.NumberOfSpaces;
             int fromSuits = Tableau.CountSuits(from, fromRow);
             int toSuits = Tableau.CountSuits(to, toRow);
             if (fromSuits == 0 && toSuits == 0)
             {
                 return;
             }
+            if (fromSuits == 0)
+            {
+                MakeMoveUsingSpaces(to, toRow, from);
+                return;
+            }
+            if (toSuits == 0)
+            {
+                MakeMoveUsingSpaces(from, fromRow, to);
+                return;
+            }
+            int numberOfSpaces = Tableau.NumberOfSpaces;
+            PileList spaces = new PileList(Tableau.Spaces);
             if (fromSuits + toSuits - 1 > ExtraSuits(numberOfSpaces))
             {
                 throw new InvalidMoveException("insufficient spaces");
             }
-            PileList spaces = new PileList(Tableau.Spaces);
             Stack<Move> moveStack = new Stack<Move>();
             for (int n = numberOfSpaces; n > 0 && fromSuits + toSuits > 1; n--)
             {
@@ -129,30 +139,30 @@ namespace Spider
             }
         }
 
-        private void UnloadToSpaces(int from, int lastFromRow, int to, Stack<Move> moveStack)
+        private void UnloadToSpaces(int from, int fromRow, int to, Stack<Move> moveStack)
         {
             if (Diagnostics)
             {
-                Utils.WriteLine("ULTS: {0}/{1} -> {2}", from, lastFromRow, to);
+                Utils.WriteLine("ULTS: {0}/{1} -> {2}", from, fromRow, to);
             }
             int numberOfSpaces = Tableau.NumberOfSpaces;
-            int suits = Tableau.CountSuits(from, lastFromRow);
+            int suits = Tableau.CountSuits(from, fromRow);
             if (suits > ExtraSuits(numberOfSpaces))
             {
                 throw new InvalidMoveException("insufficient spaces");
             }
             PileList spaces = new PileList(Tableau.Spaces);
-            int totalSuits = Tableau.CountSuits(from, lastFromRow);
+            int totalSuits = Tableau.CountSuits(from, fromRow);
             int remainingSuits = totalSuits;
-            int fromRow = Tableau[from].Count;
+            int currrentFromRow = Tableau[from].Count;
             for (int n = 0; n < numberOfSpaces; n++)
             {
                 int m = Math.Min(numberOfSpaces, n + remainingSuits);
                 for (int i = m - 1; i >= n; i--)
                 {
-                    int runLength = Tableau.GetRunUp(from, fromRow);
-                    fromRow -= runLength;
-                    fromRow = Math.Max(fromRow, lastFromRow);
+                    int runLength = Tableau.GetRunUp(from, currrentFromRow);
+                    currrentFromRow -= runLength;
+                    currrentFromRow = Math.Max(currrentFromRow, fromRow);
                     MakeSimpleMove(from, -runLength, spaces[i]);
                     moveStack.Push(new Move(spaces[i], -runLength, to));
                     remainingSuits--;
@@ -170,7 +180,7 @@ namespace Spider
             }
         }
 
-        private int MoveOffUsingSpaces(int from, int lastFromRow, int to, int remainingSuits, int n, PileList spaces, Stack<Move> moveStack)
+        private int MoveOffUsingSpaces(int from, int fromRow, int to, int remainingSuits, int n, PileList spaces, Stack<Move> moveStack)
         {
             int suits = Math.Min(remainingSuits, n);
             if (Diagnostics)
@@ -181,12 +191,12 @@ namespace Spider
             {
                 // Move as much as possible but not too much.
                 Pile fromPile = Tableau[from];
-                int fromRow = fromPile.Count - Tableau.GetRunUp(from, fromPile.Count);
-                if (fromRow < lastFromRow)
+                int currentFromRow = fromPile.Count - Tableau.GetRunUp(from, fromPile.Count);
+                if (currentFromRow < fromRow)
                 {
-                    fromRow = lastFromRow;
+                    currentFromRow = fromRow;
                 }
-                int runLength = fromPile.Count - fromRow;
+                int runLength = fromPile.Count - currentFromRow;
                 MakeSimpleMove(from, -runLength, spaces[i]);
                 moveStack.Push(new Move(spaces[i], -runLength, to));
             }
@@ -318,34 +328,34 @@ namespace Spider
             }
         }
 
-        private void MakeMoveUsingSpaces(int from, int lastFromRow, int to)
+        private void MakeMoveUsingSpaces(int from, int fromRow, int to)
         {
-            string error = SafeMakeMoveUsingSpaces(from, lastFromRow, to);
+            string error = SafeMakeMoveUsingSpaces(from, fromRow, to);
             if (error != null)
             {
                 throw new InvalidMoveException(error);
             }
         }
 
-        private string SafeMakeMoveUsingSpaces(int from, int lastFromRow, int to)
+        private string SafeMakeMoveUsingSpaces(int from, int fromRow, int to)
         {
-            if (lastFromRow < 0)
+            if (fromRow < 0)
             {
-                lastFromRow += Tableau[from].Count;
+                fromRow += Tableau[from].Count;
             }
             if (Diagnostics)
             {
-                Utils.WriteLine("MMUS: {0}/{1} -> {2}", from, lastFromRow, to);
+                Utils.WriteLine("MMUS: {0}/{1} -> {2}", from, fromRow, to);
             }
             int toRow = Tableau[to].Count;
-            int extraSuits = Tableau.CountSuits(from, lastFromRow) - 1;
+            int extraSuits = Tableau.CountSuits(from, fromRow) - 1;
             if (extraSuits < 0)
             {
                 return "not a single run";
             }
             if (extraSuits == 0)
             {
-                MakeSimpleMove(from, lastFromRow, to);
+                MakeSimpleMove(from, fromRow, to);
                 return null;
             }
             int numberOfSpaces = Tableau.NumberOfSpaces;
@@ -361,14 +371,14 @@ namespace Spider
                 return "insufficient spaces";
             }
             int suits = 0;
-            int fromRow = Tableau[from].Count;
+            int currentFromRow = Tableau[from].Count;
             Stack<Move> moveStack = new Stack<Move>();
             for (int n = numberOfSpaces; n > 0; n--)
             {
                 for (int i = 0; i < n; i++)
                 {
-                    int runLength = Tableau.GetRunUp(from, fromRow);
-                    fromRow -= runLength;
+                    int runLength = Tableau.GetRunUp(from, currentFromRow);
+                    currentFromRow -= runLength;
                     MakeSimpleMove(from, -runLength, spaces[i]);
                     moveStack.Push(new Move(spaces[i], -runLength, to));
                     suits++;
@@ -388,7 +398,7 @@ namespace Spider
                     moveStack.Push(new Move(spaces[n - 1], -runLength, spaces[i]));
                 }
             }
-            MakeSimpleMove(from, lastFromRow, to);
+            MakeSimpleMove(from, fromRow, to);
             while (moveStack.Count != 0)
             {
                 Move move = moveStack.Pop();

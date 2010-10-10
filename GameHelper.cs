@@ -40,6 +40,11 @@ namespace Spider
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
 
+        public void ProcessCandidate(Move move)
+        {
+            game.ProcessCandidate(move);
+        }
+
         public int AddSupplementary()
         {
             return game.AddSupplementary();

@@ -271,6 +271,11 @@ namespace Spider
             return ChooseMove();
         }
 
+        public void SearchMoves()
+        {
+            FindMoves();
+        }
+
         public void FindMoves()
         {
             Candidates.Clear();
@@ -330,7 +335,7 @@ namespace Spider
 
                                 // We've found a legal move.
                                 Pile toPile = Tableau[to];
-                                Candidates.Add(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
+                                ProcessCandidate(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
 
                                 // Update the holding pile move.
                                 int holdingSuits = extraSuits;
@@ -393,7 +398,7 @@ namespace Spider
 
                             // We've found a legal move.
                             Pile toPile = Tableau[to];
-                            Candidates.Add(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
+                            ProcessCandidate(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
                             break;
                         }
 
@@ -410,6 +415,17 @@ namespace Spider
                 // Check for composite single pile moves.
                 CompositeSinglePileMoveFinder.Check(from);
             }
+        }
+
+        public void ProcessCandidate(Move move)
+        {
+            double score = CalculateScore(move);
+            if (score == RejectScore)
+            {
+                return;
+            }
+            move.Score = score;
+            Candidates.Add(move);
         }
 
         private void FindUncoveringMoves(int maxExtraSuits)
@@ -624,7 +640,7 @@ namespace Spider
                             continue;
                         }
 
-                        Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set, reverseHoldingStack.Set)));
+                        ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set, reverseHoldingStack.Set)));
                         continue;
                     }
                 }
@@ -632,7 +648,7 @@ namespace Spider
                 // We've found a legal swap.
                 Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
                 Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
-                Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set)));
+                ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set)));
 #else
                 int toSuits = toPile.CountSuits(toRow);
                 bool foundSwap = false;
@@ -652,7 +668,7 @@ namespace Spider
                     // We've found a legal swap.
                     Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
                     Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
-                    Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet)));
+                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet)));
                     foundSwap = true;
                     break;
                 }
@@ -675,7 +691,7 @@ namespace Spider
                         int reverseHoldingSuits = FindHolding(map, reverseHoldingStack, true, toPile, to, toRow, toPile.Count, from, maxExtraSuits);
                         if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + reverseHoldingSuits)
                         {
-                            Candidates.Add(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet, reverseHoldingStack.Set)));
+                            ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet, reverseHoldingStack.Set)));
                         }
                     }
                 }
@@ -948,14 +964,6 @@ namespace Spider
             if (Candidates.Count == 0)
             {
                 return false;
-            }
-
-            // Calculate scores.
-            for (int i = 0; i < Candidates.Count; i++)
-            {
-                Move candidate = Candidates[i];
-                candidate.Score = CalculateScore(candidate);
-                Candidates[i] = candidate;
             }
 
             if (Diagnostics)
