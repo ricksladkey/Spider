@@ -51,7 +51,6 @@ namespace Spider
         public MoveList SupplementaryMoves { get; private set; }
         public MoveList SupplementaryList { get; private set; }
         public HoldingStack HoldingStack { get; private set; }
-        public List<HoldingInfo> HoldingList { get; private set; }
         public int[] RunLengths { get; private set; }
         public int[] RunLengthsAnySuit { get; private set; }
         public PileList OneRunPiles { get; private set; }
@@ -72,7 +71,7 @@ namespace Spider
                 List<ComplexMove> result = new List<ComplexMove>();
                 for (int i = 0; i < Candidates.Count; i++)
                 {
-                    result.Add(new ComplexMove(i, Candidates, SupplementaryList, HoldingList));
+                    result.Add(new ComplexMove(i, Candidates, SupplementaryList));
                 }
                 return result;
             }
@@ -100,7 +99,6 @@ namespace Spider
             SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
             HoldingStack = new HoldingStack();
-            HoldingList = new List<HoldingInfo>();
             OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
@@ -277,7 +275,6 @@ namespace Spider
         {
             Candidates.Clear();
             SupplementaryList.Clear();
-            HoldingList.Clear();
 
             int numberOfSpaces = Tableau.NumberOfSpaces;
             int maxExtraSuits = ExtraSuits(numberOfSpaces);
@@ -437,13 +434,13 @@ namespace Spider
                     if (fromSuits - 1 > maxExtraSuits)
                     {
 #if true
-                        break;
-#else
                         int holdingSuits = FindHolding(Tableau, HoldingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
                         if (fromSuits - 1 > maxExtraSuits + holdingSuits)
                         {
                             break;
                         }
+#else
+                        break;
 #endif
                     }
                     Pile toPile = Tableau[to];
@@ -498,12 +495,12 @@ namespace Spider
             {
                 return -1;
             }
-            int first = HoldingList.Count;
+            int first = SupplementaryList.Count;
             for (int i = 0; i < holdingSet.Count; i++)
             {
                 HoldingInfo holding = holdingSet[i];
-                holding.Next = i < holdingSet.Count - 1 ? HoldingList.Count + 1 : -1;
-                HoldingList.Add(holding);
+                int holdingNext = i < holdingSet.Count - 1 ? SupplementaryList.Count + 1 : -1;
+                SupplementaryList.Add(new Move(holding.From, holding.FromRow, holding.To, holding.Length, -1, holdingNext));
             }
             return first;
         }
@@ -525,9 +522,9 @@ namespace Spider
             int first1 = AddHolding(holdingSet1);
             int first2 = AddHolding(holdingSet2);
             int last1 = first1 + holdingSet1.Count - 1;
-            HoldingInfo holding = HoldingList[last1];
-            holding.Next = first2;
-            HoldingList[last1] = holding;
+            Move holdingMove = SupplementaryList[last1];
+            holdingMove.Next = first2;
+            SupplementaryList[last1] = holdingMove;
             return first1;
         }
 
@@ -984,9 +981,14 @@ namespace Spider
             }
 
 #if false
-            if ((move.Flags & MoveFlags.Flagged) != 0)
+            if (move.Type == MoveType.CompositeSinglePile)
             {
-                Debugger.Break();
+                Move firstMove = SupplementaryList[move.Next];
+                if (firstMove.From != move.From && firstMove.Flags.Holding())
+                {
+                    Debugger.Break();
+                    Console.WriteLine("xxx");
+                }
             }
 #endif
 
@@ -1059,9 +1061,9 @@ namespace Spider
                 Move nextMove = SupplementaryList[next];
                 Utils.WriteLine("    {0}", nextMove);
             }
-            for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
+            for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = SupplementaryList[holdingNext].Next)
             {
-                Utils.WriteLine("    holding {0}", HoldingList[holdingNext]);
+                Utils.WriteLine("    holding {0}", SupplementaryList[holdingNext]);
             }
         }
 

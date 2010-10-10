@@ -9,9 +9,9 @@ namespace Spider
     {
         public Move ScoreMove { get; set; }
         public MoveList SupplementaryMoves { get; set; }
-        public List<HoldingInfo> HoldingList { get; set; }
+        public MoveList HoldingList { get; set; }
 
-        public ComplexMove(int index, MoveList moves, MoveList supplementaryList, List<HoldingInfo> holdingList)
+        public ComplexMove(int index, MoveList moves, MoveList supplementaryList)
         {
             Move scoreMove = moves[index];
             ScoreMove = scoreMove;
@@ -20,10 +20,10 @@ namespace Spider
             {
                 SupplementaryMoves.Add(supplementaryList[next]);
             }
-            HoldingList = new List<HoldingInfo>();
-            for (int next = scoreMove.HoldingNext; next != -1; next = holdingList[next].Next)
+            HoldingList = new MoveList();
+            for (int next = scoreMove.HoldingNext; next != -1; next = supplementaryList[next].Next)
             {
-                HoldingList.Add(holdingList[next]);
+                HoldingList.Add(supplementaryList[next]);
             }
         }
     }

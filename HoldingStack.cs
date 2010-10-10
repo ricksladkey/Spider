@@ -15,18 +15,6 @@ namespace Spider
         {
         }
 
-        public void Push(HoldingInfo item)
-        {
-            Add(item);
-        }
-
-        public HoldingInfo Pop()
-        {
-            HoldingInfo item = array[Count - 1];
-            RemoveAt(Count - 1);
-            return item;
-        }
-
         public int StartingRow { get; set; }
 
         public int FromRow

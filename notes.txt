@@ -1,8 +1,3 @@
-1 1
-2 2
-3
-4
-
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
 
@@ -10,13 +5,11 @@
 - consider length of to pile down count when scoring
 
 - review space calculations when counting uses
-- could use holding piles for uncovering moves
 - could collect composite uncovering moves
 - rename test jig
 - retest complex
 - merge the multiple different places that space algorithms are implemented
 - upgrade to full power of two extra suits algorithm
-- convert holding list to use supplementary list instead
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
 - for offload consider trying to find homes for homeless runs by uncovering targets

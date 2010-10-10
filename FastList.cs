@@ -8,7 +8,7 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class FastList<T> : IList<T>, IReadOnlyList<T>
+    public class FastList<T> : IList<T>, IStack<T>, IReadOnlyList<T>
     {
         protected int capacity;
         protected int count;
@@ -99,12 +99,6 @@ namespace Spider
             this.count -= count;
         }
 
-        public T Next()
-        {
-            Debug.Assert(count > 0);
-            return array[--count];
-        }
-
         #region IList<T> Members
 
         public int IndexOf(T item)
@@ -155,6 +149,27 @@ namespace Spider
                 Debug.Assert(index >= 0 && index < count);
                 array[index] = value;
             }
+        }
+
+        #endregion
+
+        #region IStack<T> Members
+
+        public void Push(T item)
+        {
+            Add(item);
+        }
+
+        public T Peek()
+        {
+            Debug.Assert(count > 0);
+            return array[count - 1];
+        }
+
+        public T Pop()
+        {
+            Debug.Assert(count > 0);
+            return array[--count];
         }
 
         #endregion

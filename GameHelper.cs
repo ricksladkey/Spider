@@ -39,7 +39,6 @@ namespace Spider
         public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
-        public List<HoldingInfo> HoldingList { get { return game.HoldingList; } }
 
         public int AddSupplementary()
         {

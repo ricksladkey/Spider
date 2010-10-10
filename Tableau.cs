@@ -432,7 +432,7 @@ namespace Spider
                 for (int i = 0; i < layoutPart.Count; i++)
                 {
                     int column = layoutPart.Column + i;
-                    downPiles[column].Add(stockPile.Next());
+                    downPiles[column].Push(stockPile.Pop());
                 }
             }
             Deal();
@@ -451,7 +451,7 @@ namespace Spider
                 {
                     break;
                 }
-                Add(column, stockPile.Next());
+                Push(column, stockPile.Pop());
             }
         }
 
@@ -459,19 +459,19 @@ namespace Spider
         {
             for (int column = NumberOfPiles - 1; column >= 0; column--)
             {
-                stockPile.Add(Remove(column));
+                stockPile.Push(Pop(column));
             }
         }
 
-        private void Add(int column, Card card)
+        private void Push(int column, Card card)
         {
-            upPiles[column].Add(card);
+            upPiles[column].Push(card);
             OnPileChanged(column);
         }
 
-        private Card Remove(int column)
+        private Card Pop(int column)
         {
-            Card card = upPiles[column].Next();
+            Card card = upPiles[column].Pop();
             OnPileChanged(column);
             return card;
         }
@@ -516,7 +516,7 @@ namespace Spider
 
         private void UndoDiscard(int column)
         {
-            Pile discardPile = discardPiles.Next();
+            Pile discardPile = discardPiles.Pop();
             upPiles[column].AddRange(discardPile);
             CheckSpace(column);
         }
@@ -533,13 +533,13 @@ namespace Spider
         {
             Pile upPile = upPiles[column];
             Pile downPile = downPiles[column];
-            upPile.Add(downPile.Next());
+            upPile.Push(downPile.Pop());
             Moves.Add(new Move(MoveType.TurnOverCard, column));
         }
 
         private void UndoTurnOverCard(int column)
         {
-            downPiles[column].Add(upPiles[column].Next());
+            downPiles[column].Push(upPiles[column].Pop());
             CheckSpace(column);
         }
 
@@ -595,7 +595,7 @@ namespace Spider
                     UndoTurnOverCard(move.From);
                     break;
             }
-            Moves.Next();
+            Moves.Pop();
         }
 
         public void PrintGame()

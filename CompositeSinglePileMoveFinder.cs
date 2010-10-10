@@ -123,13 +123,12 @@ namespace Spider
                 // include its order contribution so we don't make
                 // the uncovering move unless it is really necessary.
                 Stack<Move> moveStack = new Stack<Move>();
-                for (int next = uncoveringMove.HoldingNext; next != -1; next = HoldingList[next].Next)
+                for (int next = uncoveringMove.HoldingNext; next != -1; next = SupplementaryList[next].Next)
                 {
-                    HoldingInfo holding = HoldingList[next];
-                    Move holdingMove = new Move(uncoveringMove.From, holding.FromRow, holding.To);
-                    SupplementaryMoves.Add(holdingMove);
+                    Move holdingMove = SupplementaryList[next];
+                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, uncoveringMove.From, holdingMove.FromRow, holdingMove.To));
                     workingTableau.Move(holdingMove);
-                    moveStack.Push(new Move(holding.To, -holding.Length, uncoveringMove.To));
+                    moveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, uncoveringMove.To));
                 }
                 SupplementaryMoves.Add(uncoveringMove);
                 workingTableau.Move(uncoveringMove);
@@ -424,11 +423,15 @@ namespace Spider
         private bool TryToAddOneRunMove(int oneRun, int target)
         {
             Pile oneRunPile = workingTableau[oneRun];
+            if (oneRunPile.Count == 0)
+            {
+                return false;
+            }
             Card oneRunRootCard = oneRunPile[0];
 
             // Check whether the one run pile matches the target pile.
             Card targetCard = workingTableau.GetCard(target);
-            if (oneRunPile.Count == 0 || !oneRunPile[0].IsSourceFor(targetCard))
+            if (!oneRunRootCard.IsSourceFor(targetCard))
             {
                 return false;
             }

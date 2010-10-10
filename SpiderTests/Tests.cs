@@ -469,11 +469,49 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        public void CompositeSinglePileTest25()
+        {
+            // A 2/1/1 composite single pile move, 2 spaces, using an uncovering move.
+            string data1 = "@2|||Ts9h7h8s-Js5s4h3s2h---Ks6h-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-JsTs9h8s7h---Ks6h5s4h3s2h-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void CompositeSinglePileTest26()
+        {
+            // A 2/1/1 composite single pile move, 2 spaces, using an uncovering move with a holding pile.
+            string data1 = "@2|||Ts9h7h8s-Js5s4h3s2hAs---Ks6h-Ks3h-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||-JsTs9h8s7h---Ks6h5s4h3s2hAs-Ks3h-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void CompositeSinglePileTest27()
+        {
+            // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move.
+            string data1 = "@2||Qh|Ts9h7h8s-Js5s4h3s2h---Ks6h-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Qh-JsTs9h8s7h---Ks6h5s4h3s2h-Ks-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void CompositeSinglePileTest28()
+        {
+            // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move with a holding pile.
+            string data1 = "@2||Qh|Ts9h7h8s-Js5s4h3s2hAs---Ks6h-Ks3s-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Qh-JsTs9h8s7h---Ks6h5s4h3s2hAs-Ks3s-Ks-Ks-Ks-Ks|@";
+            CheckMoveSucceeds(data1, data2);
+        }
+
+#if false
+        [TestMethod]
         public void DebugTest()
         {
             string data = "@2||--8h6s4h-5h9s3h9hQs----9h2s9h2s-Kh4h|3h2hKh-Ts9s8s7s6h5s\r\n4s3s2sKs-8sQhJhTh7h-KhQhJhTh5s-KsQsJsTs3h2h7h-8s6s-KsQsJsTs9\r\ns8s7s6s5s4s3s2sQs-KhQhJhTh9h8h7h6h5h4h3h2hJs-KsQh3s2hAs-6h5h\r\n4s3s8h7hAs|5h9s7s4hAh7s6sAs4s5sAsJsAh8hThAhAhJhTs6h@";
             CheckMoveSucceeds(data, data);
         }
+#endif
 
         private void CheckResults(string initial, string expected, string actual)
         {
@@ -602,9 +640,9 @@ namespace Spider.Tests
                 {
                     Utils.WriteLine("    supplementary: {0}", subMove);
                 }
-                foreach (HoldingInfo holding in move.HoldingList)
+                foreach (Move holdingMove in move.HoldingList)
                 {
-                    Utils.WriteLine("    holding: {0}", holding);
+                    Utils.WriteLine("    holding: {0}", holdingMove);
                 }
                 count++;
             }

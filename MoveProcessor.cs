@@ -34,12 +34,12 @@ namespace Spider
 
             // First move to the holding piles.
             Stack<Move> moveStack = new Stack<Move>();
-            for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = HoldingList[holdingNext].Next)
+            for (int holdingNext = move.HoldingNext; holdingNext != -1; holdingNext = SupplementaryList[holdingNext].Next)
             {
-                HoldingInfo holding = HoldingList[holdingNext];
-                int undoFromRow = Tableau[holding.To].Count;
-                MakeMoveUsingSpaces(holding.From, holding.FromRow, holding.To);
-                moveStack.Push(new Move(holding.To, undoFromRow, holding.From == move.From ? move.To : move.From));
+                Move holdingMove = SupplementaryList[holdingNext];
+                int undoFromRow = Tableau[holdingMove.To].Count;
+                MakeMoveUsingSpaces(holdingMove.From, holdingMove.FromRow, holdingMove.To);
+                moveStack.Push(new Move(holdingMove.To, undoFromRow, holdingMove.From == move.From ? move.To : move.From));
             }
             if (move.Type == MoveType.CompositeSinglePile)
             {

@@ -119,6 +119,7 @@
     <Compile Include="IGetCard.cs" />
     <Compile Include="InvalidMoveException.cs" />
     <Compile Include="IReadOnlyList.cs" />
+    <Compile Include="IStack.cs" />
     <Compile Include="LayoutPart.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
