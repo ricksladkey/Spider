@@ -504,6 +504,14 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
+        [TestMethod]
+        public void SearchTest1()
+        {
+            string data = "@2|||Ts-9s-8s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            game = new Game(data);
+            game.SearchMoves();
+        }
+
 #if false
         [TestMethod]
         public void DebugTest()

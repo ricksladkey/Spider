@@ -31,6 +31,8 @@ namespace Spider
 
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
+        public Tableau WorkingTableau { get { return game.WorkingTableau; } }
+        public Tableau FindTableau { get { return game.FindTableau; } }
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
         public int NumberOfSuits { get { return game.NumberOfSuits; } }
 

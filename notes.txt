@@ -1,3 +1,7 @@
+- move search to SearchMoveFinder class
+- rename workingTableau to WorkingTableau
+- unify the three places where complex moves with holding piles are performed
+
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
 

@@ -11,8 +11,12 @@ namespace Spider
     public class MoveList : FastList<Move>
     {
         public MoveList()
-            : base(Game.MaximumMoves * 2)
         {
+        }
+
+        public MoveList(MoveList other)
+        {
+            Copy(other);
         }
     }
 }

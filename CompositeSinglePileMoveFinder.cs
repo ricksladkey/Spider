@@ -34,7 +34,7 @@ namespace Spider
         public void Check(int column)
         {
             from = column;
-            fromPile = Tableau[from];
+            fromPile = FindTableau[from];
             if (fromPile.Count == 0)
             {
                 // No cards.
@@ -83,7 +83,7 @@ namespace Spider
                 used.Add(move.From);
 
                 // The uncovered card has to match a root to be useful.
-                Card uncoveredCard = Tableau[move.From][move.FromRow - 1];
+                Card uncoveredCard = FindTableau[move.From][move.FromRow - 1];
                 bool matchesRoot = false;
                 for (int j = 1; j < roots.Count; j++)
                 {
@@ -114,8 +114,8 @@ namespace Spider
 
             // Initialize the pile map.
             workingTableau.ClearAll();
-            workingTableau.CopyUpPiles(Tableau);
-            workingTableau.BlockDownPiles(Tableau);
+            workingTableau.CopyUpPiles(FindTableau);
+            workingTableau.BlockDownPiles(FindTableau);
 
             if (!uncoveringMove.IsEmpty)
             {
@@ -288,7 +288,7 @@ namespace Spider
             // Check for unload that needs to be reloaded.
             if (!offload.IsEmpty && !offload.SinglePile)
             {
-                if (Tableau.GetDownCount(from) != 0)
+                if (FindTableau.GetDownCount(from) != 0)
                 {
                     // Can't reload.
                     return;
@@ -451,7 +451,7 @@ namespace Spider
             }
 
             // Handle the messy cases.
-            if (offload.IsEmpty || offload.SinglePile && Tableau.GetDownCount(oneRun) == 0)
+            if (offload.IsEmpty || offload.SinglePile && FindTableau.GetDownCount(oneRun) == 0)
             {
                 // Save working state.
                 SaveWorkingState();
@@ -524,11 +524,11 @@ namespace Spider
             {
                 flags |= MoveFlags.Discards;
             }
-            if (workingTableau.NumberOfSpaces > Tableau.NumberOfSpaces)
+            if (workingTableau.NumberOfSpaces > FindTableau.NumberOfSpaces)
             {
                 flags |= MoveFlags.CreatesSpace;
             }
-            if (workingTableau.NumberOfSpaces < Tableau.NumberOfSpaces)
+            if (workingTableau.NumberOfSpaces < FindTableau.NumberOfSpaces)
             {
                 flags |= MoveFlags.UsesSpace;
             }

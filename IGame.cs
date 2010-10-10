@@ -9,6 +9,8 @@ namespace Spider
     {
         Pile Shuffled { get; }
         Tableau Tableau { get; }
+        Tableau WorkingTableau { get; }
+        Tableau FindTableau { get; }
         int NumberOfPiles { get; }
         int NumberOfSuits { get; }
 
