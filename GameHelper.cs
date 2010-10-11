@@ -25,6 +25,9 @@ namespace Spider
         public bool UseSearch { get { return game.UseSearch; } set { game.UseSearch = value; } }
 
         public bool TraceMoves { get { return game.TraceMoves; } set { game.TraceMoves = value; } }
+        public bool TraceStartFinish { get { return game.TraceStartFinish; } set { game.TraceStartFinish = value; } }
+        public bool TraceDeals { get { return game.TraceDeals; } set { game.TraceDeals = value; } }
+        public bool TraceSearch { get { return game.TraceSearch; } set { game.TraceSearch = value; } }
         public bool ComplexMoves { get { return game.ComplexMoves; } set { game.ComplexMoves = value; } }
 
         #endregion

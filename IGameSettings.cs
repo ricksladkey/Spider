@@ -16,6 +16,9 @@ namespace Spider
         bool UseSearch { get; set; }
 
         bool TraceMoves { get; set; }
+        bool TraceStartFinish { get; set; }
+        bool TraceDeals { get; set; }
+        bool TraceSearch { get; set; }
         bool ComplexMoves { get; set; }
     }
 }

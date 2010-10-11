@@ -63,6 +63,36 @@ namespace Spider
                     i++;
                     continue;
                 }
+                if (arg == "--trace_start_finish")
+                {
+                    player.TraceStartFinish = true;
+                    i++;
+                    continue;
+                }
+                if (arg == "--trace_moves")
+                {
+                    player.TraceMoves = true;
+                    i++;
+                    continue;
+                }
+                if (arg == "--trace_deals")
+                {
+                    player.TraceDeals = true;
+                    i++;
+                    continue;
+                }
+                if (arg == "--trace_search")
+                {
+                    player.TraceSearch = true;
+                    i++;
+                    continue;
+                }
+                if (arg == "--profile")
+                {
+                    player.Profile = true;
+                    i++;
+                    continue;
+                }
                 if (arg == "--search")
                 {
                     player.UseSearch = true;
@@ -90,12 +120,6 @@ namespace Spider
                 if (arg == "--show_results")
                 {
                     player.ShowResults = true;
-                    i++;
-                    continue;
-                }
-                if (arg == "--record_complex")
-                {
-                    player.RecordComplex = true;
                     i++;
                     continue;
                 }

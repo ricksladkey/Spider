@@ -11,25 +11,32 @@ namespace Spider
 {
     public class Player : IGameSettings
     {
-        public double[] InitialCoefficients { get; set; }
-        public int Coefficient { get; set; }
+        #region IGameSettings Members
+
+        public Variation Variation { get; set; }
+        public int Seed { get; set; }
         public double[] Coefficients { get; set; }
-        public bool TraceStartFinish { get; set; }
-        public bool TraceDeals { get; set; }
-        public bool TraceMoves { get; set; }
-        public bool ComplexMoves { get; set; }
-        public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
         public bool UseSearch { get; set; }
 
+        public bool TraceMoves { get; set; }
+        public bool TraceStartFinish { get; set; }
+        public bool TraceDeals { get; set; }
+        public bool TraceSearch { get; set; }
+        public bool ComplexMoves { get; set; }
+
+        #endregion
+
+        public double[] InitialCoefficients { get; set; }
+        public int Coefficient { get; set; }
+
         public bool ShowResults { get; set; }
+        public bool Profile { get; set; }
 
         public int Threads { get; set; }
         public int Games { get; set; }
-        public Variation Variation { get; set; }
-        public int Seed { get; set; }
 
         public int Played { get { return played; } }
         public int Won { get { return won; } }
@@ -57,6 +64,7 @@ namespace Spider
             TraceStartFinish = game.TraceStartFinish;
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
+            TraceSearch = game.TraceSearch;
             ComplexMoves = game.ComplexMoves;
             UseSearch = game.UseSearch;
             ShowResults = false;
@@ -65,6 +73,56 @@ namespace Spider
             Variation = Variation.Spider2;
             Seed = 0;
             Threads = -1;
+        }
+
+        private void PlayOneGame(Game game)
+        {
+            game.TraceStartFinish = TraceStartFinish;
+            game.TraceDeals = TraceDeals;
+            game.TraceMoves = TraceMoves;
+            game.TraceSearch = TraceSearch;
+            game.ComplexMoves = ComplexMoves;
+            game.UseSearch = UseSearch;
+            game.Diagnostics = Diagnostics;
+            game.Interactive = Interactive;
+
+            game.Coefficients = Coefficients;
+            game.Variation = Variation;
+            game.Seed = Interlocked.Increment(ref currentSeed) - 1;
+
+            if (Profile)
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                game.Play();
+                double elapsed = stopwatch.Elapsed.TotalSeconds;
+                Console.WriteLine("seed = {0}, elapsed = {1:G4}", game.Seed, 1000 * elapsed);
+            }
+            else
+            {
+                game.Play();
+            }
+
+            if (game.Won)
+            {
+                Interlocked.Increment(ref won);
+            }
+            if (game.Tableau.DiscardPiles.Count > 0)
+            {
+                Interlocked.Increment(ref discards);
+            }
+            Interlocked.Increment(ref played);
+            Interlocked.Add(ref moves, game.Tableau.Moves.Count);
+            if (game.Won)
+            {
+                Interlocked.Add(ref movesWon, game.Tableau.Moves.Count);
+            }
+            else
+            {
+                Interlocked.Add(ref movesLost, game.Tableau.Moves.Count);
+            }
+            Results[game.Seed - Seed] = game.Won;
+            Instances[game.Seed - Seed] = game.Instance;
         }
 
         private void SetCoefficients()
@@ -425,42 +483,6 @@ namespace Spider
                     semaphore.WaitOne();
                 }
             }
-        }
-
-        private void PlayOneGame(Game game)
-        {
-            game.TraceStartFinish = TraceStartFinish;
-            game.TraceDeals = TraceDeals;
-            game.TraceMoves = TraceMoves;
-            game.ComplexMoves = ComplexMoves;
-            game.UseSearch = UseSearch;
-            game.Diagnostics = Diagnostics;
-            game.Interactive = Interactive;
-
-            game.Coefficients = Coefficients;
-            game.Variation = Variation;
-            game.Seed = Interlocked.Increment(ref currentSeed) - 1;
-            game.Play();
-            if (game.Won)
-            {
-                Interlocked.Increment(ref won);
-            }
-            if (game.Tableau.DiscardPiles.Count > 0)
-            {
-                Interlocked.Increment(ref discards);
-            }
-            Interlocked.Increment(ref played);
-            Interlocked.Add(ref moves, game.Tableau.Moves.Count);
-            if (game.Won)
-            {
-                Interlocked.Add(ref movesWon, game.Tableau.Moves.Count);
-            }
-            else
-            {
-                Interlocked.Add(ref movesLost, game.Tableau.Moves.Count);
-            }
-            Results[game.Seed - Seed] = game.Won;
-            Instances[game.Seed - Seed] = game.Instance;
         }
 
         private void ThreadPlayOneGame(object state)

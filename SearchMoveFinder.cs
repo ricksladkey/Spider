@@ -36,9 +36,12 @@ namespace Spider
 
             SearchMoves(6);
 
-            if (Diagnostics)
+            if (TraceSearch)
             {
                 Utils.WriteLine("Nodes searched: {0}", NodesSearched);
+            }
+            if (Diagnostics)
+            {
                 Utils.WriteLine("best: score = {0}", BestScore);
                 for (int i = 0; i < BestMoves.Count; i++)
                 {

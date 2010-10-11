@@ -34,9 +34,10 @@ namespace Spider
         public Variation Variation { get; set; }
         public int Seed { get; set; }
         public double[] Coefficients { get; set; }
+        public bool TraceMoves { get; set; }
         public bool TraceStartFinish { get; set; }
         public bool TraceDeals { get; set; }
-        public bool TraceMoves { get; set; }
+        public bool TraceSearch { get; set; }
         public bool ComplexMoves { get; set; }
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
