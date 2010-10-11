@@ -14,10 +14,14 @@ namespace Spider
             WorkingTableau = new Tableau();
             TranspositionTable = new HashSet<int>();
             Moves = new MoveList();
+            MaxDepth = 20;
+            MaxNodes = 10000;
         }
 
         public Tableau WorkingTableau { get; set; }
         public HashSet<int> TranspositionTable { get; set; }
+        public int MaxDepth { get; set; }
+        public int MaxNodes { get; set; }
         public int NodesSearched { get; set; }
         public MoveList Moves { get; set; }
         public double Score { get; set; }
@@ -29,12 +33,33 @@ namespace Spider
             WorkingTableau.CopyUpPiles(Tableau);
             WorkingTableau.BlockDownPiles(Tableau);
 
-            TranspositionTable.Clear();
             Moves.Clear();
             Score = 0;
-            NodesSearched = 0;
 
-            SearchMoves(6);
+            TranspositionTable.Clear();
+            NodesSearched = 0;
+            SearchMoves(MaxDepth);
+            if (NodesSearched >= MaxNodes)
+            {
+                int maxNodesSearched = 0;
+                TranspositionTable.Clear();
+                NodesSearched = 0;
+                for (int depth = 1; depth < MaxDepth; depth++)
+                {
+                    TranspositionTable.Clear();
+                    NodesSearched = 0;
+                    SearchMoves(depth);
+                    if (NodesSearched == maxNodesSearched)
+                    {
+                        break;
+                    }
+                    maxNodesSearched = NodesSearched;
+                    if (maxNodesSearched >= MaxNodes)
+                    {
+                        break;
+                    }
+                }
+            }
 
             if (TraceSearch)
             {
@@ -111,12 +136,21 @@ namespace Spider
                     }
                 }
 
-                if (ProcessNode())
+                bool continueSearch = ProcessNode();
+                if (NodesSearched >= MaxNodes)
+                {
+                    WorkingTableau.Revert(timeStamp);
+                    return;
+                }
+                if (continueSearch)
                 {
                     SearchMoves(depth - 1);
                 }
-
                 WorkingTableau.Revert(timeStamp);
+                if (NodesSearched >= MaxNodes)
+                {
+                    return;
+                }
             }
         }
 
@@ -154,9 +188,11 @@ namespace Spider
 
         public double CalculateSearchScore()
         {
-            double TurnedOverCardScore = 10;
-            double SpaceScore = 25;
-            double DiscardedScore = 100;
+            double TurnedOverCardScore = 5;
+            double SpaceScore = 1000;
+            double FacesMatchScore = 1;
+            double SuitsMatchScore = 2;
+            double DiscardedScore = SuitsMatchScore * 12;
             double score = 0;
             for (int column = 0; column < NumberOfPiles; column++)
             {
@@ -173,7 +209,15 @@ namespace Spider
                 {
                     for (int row = 1; row < pile.Count; row++)
                     {
-                        score += GetOrder(pile[row - 1], pile[row]);
+                        int order = GetOrder(pile[row - 1], pile[row]);
+                        if (order == 1)
+                        {
+                            score += FacesMatchScore;
+                        }
+                        else if (order == 2)
+                        {
+                            score += SuitsMatchScore;
+                        }
                     }
                 }
             }
