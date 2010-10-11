@@ -487,7 +487,6 @@ namespace Spider.Tests
         }
 
         [TestMethod]
-        [DebugTestMethod]
         public void CompositeSinglePileTest27()
         {
             // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move.
@@ -521,6 +520,17 @@ namespace Spider.Tests
             CheckSearchSucceeds(data1, data2);
         }
 
+#if true
+        [TestMethod]
+        [DebugTestMethod]
+        public void DebugTest()
+        {
+            // Basic: 3/16 -> 7/0 h-1, n-1: s0.
+            string data = "@2|As|Ks-6h6sJh4hAh-7sTs8h-2s8s9h7h-5hKsKh-4sAs2s---8h6hQs-9\r\nh2h|9s8s7s6s5s9s8s7s-AsQsJsTs9s8h7h6h5h4h3h-7hQhJsTs-3s3hKhQ\r\nhJhTh9h8h7h6h5h4h3h2hAs5h4h3sKhQhJhTh9h-6s5s4s3sKhQhJh2hAh-T\r\nh-KsQsJs5s4s-Th-Ah2s-3h2hAh|@";
+            CheckSearchSucceeds(data, data);
+        }
+#endif
+
         private void CheckSearchSucceeds(string data1, string data2)
         {
             string initial = data1;
@@ -533,21 +543,13 @@ namespace Spider.Tests
             if (expected != actual)
             {
                 PrintGame(new Game(initial));
+                PrintSearch();
                 Game.PrintGamesSideBySide(new Game(expected), game);
                 Utils.WriteLine("expected: {0}", expected);
                 Utils.WriteLine("actual:   {0}", actual);
             }
             Assert.AreEqual(expected, actual);
         }
-
-#if false
-        [TestMethod]
-        public void DebugTest()
-        {
-            string data = "@2||--8h6s4h-5h9s3h9hQs----9h2s9h2s-Kh4h|3h2hKh-Ts9s8s7s6h5s\r\n4s3s2sKs-8sQhJhTh7h-KhQhJhTh5s-KsQsJsTs3h2h7h-8s6s-KsQsJsTs9\r\ns8s7s6s5s4s3s2sQs-KhQhJhTh9h8h7h6h5h4h3h2hJs-KsQh3s2hAs-6h5h\r\n4s3s8h7hAs|5h9s7s4hAh7s6sAs4s5sAsJsAh8hThAhAhJhTs6h@";
-            CheckMoveSucceeds(data, data);
-        }
-#endif
 
         private void CheckResults(string initial, string expected, string actual)
         {
@@ -683,5 +685,25 @@ namespace Spider.Tests
                 count++;
             }
         }
+
+        private void PrintSearch()
+        {
+            MoveList moves = game.SearchMoveFinder.Moves;
+            int n = 0;
+            for (int i = 0; i < moves.Count; i++)
+            {
+                Move move = moves[i];
+                if (move.Type == MoveType.Basic || move.Type == MoveType.Swap)
+                {
+                    Utils.WriteLine("move[{0}] = {1}", n, move);
+                    n++;
+                }
+                else
+                {
+                    Utils.WriteLine("    {0}", move);
+                }
+            }
+        }
+
     }
 }

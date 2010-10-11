@@ -25,27 +25,32 @@ namespace Spider
 
         public string ToAsciiString()
         {
+            return ToAsciiString(Tableau);
+        }
+
+        public static string ToAsciiString(Tableau tableau)
+        {
             Pile discardRow = new Pile();
-            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
+            for (int i = 0; i < tableau.DiscardPiles.Count; i++)
             {
-                Pile discardPile = Tableau.DiscardPiles[i];
+                Pile discardPile = tableau.DiscardPiles[i];
                 discardRow.Add(discardPile[discardPile.Count - 1]);
             }
 
             string s = "";
 
             s += Fence;
-            s += Tableau.Variation.ToAsciiString() + PrimarySeparator;
+            s += tableau.Variation.ToAsciiString() + PrimarySeparator;
             s += ToAsciiString(discardRow) + PrimarySeparator;
-            s += ToAsciiString(Tableau.DownPiles) + PrimarySeparator;
-            s += ToAsciiString(Tableau.UpPiles) + PrimarySeparator;
-            s += ToAsciiString(Tableau.StockPile);
+            s += ToAsciiString(tableau.DownPiles) + PrimarySeparator;
+            s += ToAsciiString(tableau.UpPiles) + PrimarySeparator;
+            s += ToAsciiString(tableau.StockPile);
             s += Fence;
 
             return WrapString(s, 60);
         }
 
-        private string WrapString(string s, int columns)
+        private static string WrapString(string s, int columns)
         {
             string t = "";
             while (s.Length > columns)
@@ -208,31 +213,36 @@ namespace Spider
 
         public string ToPrettyString()
         {
+            return ToPrettyString(Tableau);
+        }
+
+        public static string ToPrettyString(Tableau tableau)
+        {
             string s = Environment.NewLine;
             s += "   Spider";
             s += Environment.NewLine;
             s += "--------------------------------";
             s += Environment.NewLine;
             Pile discardRow = new Pile();
-            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
+            for (int i = 0; i < tableau.DiscardPiles.Count; i++)
             {
-                Pile discardPile = Tableau.DiscardPiles[i];
+                Pile discardPile = tableau.DiscardPiles[i];
                 discardRow.Add(discardPile[discardPile.Count - 1]);
             }
             s += ToPrettyString(-1, discardRow);
             s += Environment.NewLine;
-            s += ToPrettyString(Tableau.DownPiles);
+            s += ToPrettyString(tableau.DownPiles);
             s += Environment.NewLine;
-            s += "    " + ColumnHeadings(Tableau.NumberOfPiles);
+            s += "    " + ColumnHeadings(tableau.NumberOfPiles);
             s += Environment.NewLine;
-            s += ToPrettyString(Tableau.UpPiles);
+            s += ToPrettyString(tableau.UpPiles);
             s += Environment.NewLine;
             int rowIndex = 0;
             Pile row = new Pile();
-            for (int index = Tableau.StockPile.Count - 1; index >= 0; index--)
+            for (int index = tableau.StockPile.Count - 1; index >= 0; index--)
             {
-                row.Add(Tableau.StockPile[index]);
-                if (row.Count == Tableau.NumberOfPiles)
+                row.Add(tableau.StockPile[index]);
+                if (row.Count == tableau.NumberOfPiles)
                 {
                     s += ToPrettyString(rowIndex++, row);
                     row.Clear();
@@ -305,10 +315,10 @@ namespace Spider
             return s + Environment.NewLine;
         }
 
-        public static void PrintGamesSideBySide(Game game1, Game game2)
+        public static void PrintGamesSideBySide(Tableau tableau1, Tableau tableau2)
         {
-            string[] v1 = game1.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            string[] v2 = game2.ToString().Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            string[] v1 = ToPrettyString(tableau1).Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            string[] v2 = ToPrettyString(tableau2).Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
             int max = 0;
             for (int i = 0; i < v1.Length; i++)
             {

@@ -95,8 +95,8 @@ namespace Spider
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 game.Play();
-                double elapsed = stopwatch.Elapsed.TotalSeconds;
-                Console.WriteLine("seed = {0}, elapsed = {1:G4}", game.Seed, 1000 * elapsed);
+                long elapsed = stopwatch.ElapsedMilliseconds;
+                Console.WriteLine("seed = {0,6}, elapsed = {1,6}", game.Seed, elapsed);
             }
             else
             {

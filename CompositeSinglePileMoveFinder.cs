@@ -476,12 +476,13 @@ namespace Spider
             // Add moves to the holding piles.
             foreach (HoldingInfo holding in holdingSet.Forwards)
             {
-                workingTableau.Move(holding.From, holding.FromRow, holding.To);
-                SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To));
+                Move holdingMove = new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To);
+                workingTableau.Move(holdingMove);
+                SupplementaryMoves.Add(holdingMove);
             }
 
             // Add the primary move.
-            workingTableau.Move(move.From, move.FromRow, move.To);
+            workingTableau.Move(new Move(move.From, move.FromRow, move.To));
             SupplementaryMoves.Add(move);
 
             if (undoHolding)
@@ -489,11 +490,12 @@ namespace Spider
                 // Undo moves from the holding piles.
                 foreach (HoldingInfo holding in holdingSet.Backwards)
                 {
-                    if (!workingTableau.TryToMove(holding.To, -holding.Length, move.To))
+                    Move holdingMove = new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To);
+                    if (!workingTableau.TryToMove(holdingMove))
                     {
                         break;
                     }
-                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To));
+                    SupplementaryMoves.Add(holdingMove);
                 }
             }
         }

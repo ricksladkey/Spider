@@ -59,14 +59,14 @@ namespace Spider
         public PileList OneRunPiles { get; private set; }
         public PileList[] FaceLists { get; private set; }
         public MoveList UncoveringMoves { get; private set; }
-        public Game LastGame { get; private set; }
+        public Tableau LastGame { get; private set; }
         public int NumberOfPiles { get; private set; }
         public int NumberOfSuits { get; private set; }
 
-        private TableauInputOutput TableauInputOutput { get; set; }
-        private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
-        private SearchMoveFinder SearchMoveFinder { get; set; }
-        private MoveProcessor MoveProcessor { get; set; }
+        public TableauInputOutput TableauInputOutput { get; set; }
+        public CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
+        public SearchMoveFinder SearchMoveFinder { get; set; }
+        public MoveProcessor MoveProcessor { get; set; }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -139,10 +139,10 @@ namespace Spider
 
         public void Play()
         {
-            LastGame = Debugger.IsAttached ? new Game() : null;
             try
             {
                 Initialize();
+                PrepareToPlay();
                 Start();
                 if (TraceStartFinish)
                 {
@@ -235,6 +235,11 @@ namespace Spider
             }
         }
 
+        private void PrepareToPlay()
+        {
+            LastGame = Debugger.IsAttached ? new Tableau(Tableau) : null;
+        }
+
         public void Start()
         {
             if (Seed == -1)
@@ -259,7 +264,7 @@ namespace Spider
         {
             if (LastGame != null)
             {
-                LastGame.FromGame(this);
+                LastGame.Copy(Tableau);
             }
         }
 
@@ -1041,7 +1046,7 @@ namespace Spider
                 PrintGame();
                 return;
             }
-            PrintGamesSideBySide(LastGame, this);
+            PrintGamesSideBySide(LastGame, Tableau);
         }
 
         public void PrintMoves()
@@ -1099,18 +1104,21 @@ namespace Spider
         {
             Initialize();
             TableauInputOutput.FromAsciiString(s);
+            PrepareToPlay();
         }
 
         public void FromGame(Game other)
         {
             Initialize();
             TableauInputOutput.FromTableau(other.Tableau);
+            PrepareToPlay();
         }
 
         public void FromTableau(Tableau tableau)
         {
             Initialize();
             TableauInputOutput.FromTableau(tableau);
+            PrepareToPlay();
         }
 
         public string ToPrettyString()
@@ -1119,6 +1127,11 @@ namespace Spider
         }
 
         public static void PrintGamesSideBySide(Game game1, Game game2)
+        {
+            TableauInputOutput.PrintGamesSideBySide(game1.Tableau, game2.Tableau);
+        }
+
+        public static void PrintGamesSideBySide(Tableau game1, Tableau game2)
         {
             TableauInputOutput.PrintGamesSideBySide(game1, game2);
         }

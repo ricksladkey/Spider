@@ -6,21 +6,21 @@ using System.Text;
 
 namespace Spider
 {
-    class SearchMoveFinder : GameHelper
+    public class SearchMoveFinder : GameHelper
     {
         public SearchMoveFinder(Game game)
             : base(game)
         {
             WorkingTableau = new Tableau();
             TranspositionTable = new HashSet<int>();
-            BestMoves = new MoveList();
+            Moves = new MoveList();
         }
 
-        private Tableau WorkingTableau { get; set; }
-        private HashSet<int> TranspositionTable { get; set; }
-        private MoveList BestMoves { get; set; }
-        private double BestScore { get; set; }
-        private int NodesSearched { get; set; }
+        public Tableau WorkingTableau { get; set; }
+        public HashSet<int> TranspositionTable { get; set; }
+        public int NodesSearched { get; set; }
+        public MoveList Moves { get; set; }
+        public double Score { get; set; }
 
         public void SearchMoves()
         {
@@ -30,8 +30,8 @@ namespace Spider
             WorkingTableau.BlockDownPiles(Tableau);
 
             TranspositionTable.Clear();
-            BestMoves.Clear();
-            BestScore = 0;
+            Moves.Clear();
+            Score = 0;
             NodesSearched = 0;
 
             SearchMoves(6);
@@ -42,19 +42,23 @@ namespace Spider
             }
             if (Diagnostics)
             {
-                Utils.WriteLine("best: score = {0}", BestScore);
-                for (int i = 0; i < BestMoves.Count; i++)
+                Utils.WriteLine("search: score = {0}", Score);
+                for (int i = 0; i < Moves.Count; i++)
                 {
-                    Utils.WriteLine("best: move[{0}] = {1}", i, BestMoves[i]);
+                    Utils.WriteLine("search: move[{0}] = {1}", i, Moves[i]);
                 }
             }
 
-            for (int i = 0; i < BestMoves.Count; i++)
+            for (int i = 0; i < Moves.Count; i++)
             {
-                Move move = BestMoves[i];
+                Move move = Moves[i];
                 if (move.Type == MoveType.Basic || move.Type == MoveType.Swap)
                 {
                     ProcessMove(move);
+                }
+                else if (move.Type == MoveType.TurnOverCard)
+                {
+                    break;
                 }
             }
         }
@@ -76,16 +80,24 @@ namespace Spider
                 int timeStamp = WorkingTableau.TimeStamp;
 
                 Move move = candidates[i];
+#if false
+                if (depth == 4 && move.Type == MoveType.Swap && move.From == 4 && move.FromRow == 7 && move.To == 7 && move.ToRow == 0)
+                {
+                    Console.WriteLine("working tableau moves:");
+                    PrintMoves(WorkingTableau.Moves);
+                    Debugger.Break();
+                }
+#endif
                 bool toEmpty = move.Type == MoveType.Basic && WorkingTableau[move.To].Count == 0;
                 moveStack.Clear();
                 for (int next = move.HoldingNext; next != -1; next = supplementaryList[next].Next)
                 {
                     Move holdingMove = supplementaryList[next];
-                    WorkingTableau.Move(holdingMove);
+                    WorkingTableau.Move(new Move(MoveType.Basic, MoveFlags.Holding, holdingMove.From, holdingMove.FromRow, holdingMove.To));
                     int undoTo = holdingMove.From == move.From ? move.To : move.From;
-                    moveStack.Push(new Move(holdingMove.To, -holdingMove.ToRow, undoTo));
+                    moveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, undoTo));
                 }
-                WorkingTableau.Move(move);
+                WorkingTableau.Move(new Move(move.Type, move.From, move.FromRow, move.To, move.ToRow));
                 if (!toEmpty)
                 {
                     while (moveStack.Count > 0)
@@ -120,11 +132,22 @@ namespace Spider
             NodesSearched++;
             double score = CalculateSearchScore();
 
-            if (score > BestScore)
+            if (score > Score)
             {
-                BestScore = score;
-                BestMoves.Copy(WorkingTableau.Moves);
+                Score = score;
+                Moves.Copy(WorkingTableau.Moves);
             }
+
+#if false
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                Pile pile = WorkingTableau[column];
+                if (pile.Count == 1 && pile[0].IsUnknown)
+                {
+                    return false;
+                }
+            }
+#endif
 
             return true;
         }

@@ -306,11 +306,11 @@ namespace Spider
 
         public bool MoveIsValid(Move move)
         {
-            return MoveIsValid(move.From, move.FromRow, move.To);
-        }
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
+            int toRow = move.ToRow;
 
-        public bool MoveIsValid(int from, int fromRow, int to)
-        {
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
             if (fromRow < 0)
@@ -330,7 +330,17 @@ namespace Spider
             {
                 return false;
             }
-            if (suits - 1 > ExtraSuits(NumberOfSpaces))
+            int numberOfSpaces = NumberOfSpaces;
+            if (toPile.Count == 0)
+            {
+                if (numberOfSpaces == 0)
+                {
+                    return false;
+                }
+                numberOfSpaces--;
+            }
+            int maxExtraSuits = ExtraSuits(numberOfSpaces);
+            if (suits - 1 > maxExtraSuits)
             {
                 return false;
             }
@@ -345,15 +355,42 @@ namespace Spider
             return true;
         }
 
+        public bool TryToMove(Move move)
+        {
+            if (!MoveIsValid(move))
+            {
+                return false;
+            }
+            Move(move);
+            return true;
+        }
+
+#if true
+        public void Move(int from, int fromRow, int to)
+        {
+            Move(new Move(MoveType.Basic, from, fromRow, to));
+        }
+
+        public void Move(int from, int fromRow, int to, int toRow)
+        {
+            Move(new Move(MoveType.Swap, from, fromRow, to, toRow));
+        }
+
+        public bool MoveIsValid(int from, int fromRow, int to)
+        {
+            return MoveIsValid(new Move(from, fromRow, to));
+        }
+#endif
+
         public void Move(Move move)
         {
             if (move.Type == MoveType.Basic)
             {
-                Move(move.From, move.FromRow, move.To);
+                DoMove(move);
             }
             else if (move.Type == MoveType.Swap)
             {
-                Swap(move.From, move.FromRow, move.To, move.ToRow);
+                DoSwap(move);
             }
             else
             {
@@ -361,18 +398,12 @@ namespace Spider
             }
         }
 
-        public bool TryToMove(int from, int fromRow, int to)
+        private void DoMove(Move move)
         {
-            if (!MoveIsValid(from, fromRow, to))
-            {
-                return false;
-            }
-            Move(from, fromRow, to);
-            return true;
-        }
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
 
-        public void Move(int from, int fromRow, int to)
-        {
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
 
@@ -388,7 +419,10 @@ namespace Spider
 
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
-            Moves.Add(new Move(MoveType.Basic, from, fromRow, to, toRow));
+
+            move.FromRow = fromRow;
+            move.ToRow = toRow;
+            Moves.Add(move);
 
             OnPileChanged(from);
             OnPileChanged(to);
@@ -408,8 +442,13 @@ namespace Spider
             OnPileChanged(to);
         }
 
-        public void Swap(int from, int fromRow, int to, int toRow)
+        public void DoSwap(Move move)
         {
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
+            int toRow = move.ToRow;
+
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
             int fromCount = fromPile.Count - fromRow;
@@ -422,7 +461,7 @@ namespace Spider
             fromPile.RemoveRange(fromRow, fromCount);
             fromPile.AddRange(scratchPile, 0, toCount);
 
-            Moves.Add(new Move(MoveType.Swap, from, fromRow, to, toRow));
+            Moves.Add(move);
 
             OnPileChanged(from);
             OnPileChanged(to);
