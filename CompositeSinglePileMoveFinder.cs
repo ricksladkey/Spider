@@ -535,7 +535,7 @@ namespace Spider
             for (int column = 0; column < workingTableau.NumberOfPiles; column++)
             {
                 Pile pile = workingTableau[column];
-                if (pile.Count == 1 && pile[0].IsEmpty)
+                if (pile.Count == 1 && pile[0].IsUnknown)
                 {
                     flags |= MoveFlags.TurnsOverCard;
                     break;

@@ -487,6 +487,7 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        [DebugTestMethod]
         public void CompositeSinglePileTest27()
         {
             // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move.
@@ -509,10 +510,33 @@ namespace Spider.Tests
         {
             string data1 = "@2|||Ts-9s-8s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
             string data2 = "@2|||Ts9s8s7s----Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckSearchSucceeds(data1, data2);
+        }
+
+        [TestMethod]
+        public void SearchTest2()
+        {
+            string data1 = "@2|||Ts-9s9s-8s9s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
+            string data2 = "@2|||Ts9s8s7s-9s9s---Ks-Ks-Ks-Ks-Ks-Ks|@";
+            CheckSearchSucceeds(data1, data2);
+        }
+
+        private void CheckSearchSucceeds(string data1, string data2)
+        {
+            string initial = data1;
+            game = new Game(initial);
+            game.UseSearch = true;
+            game.Diagnostics = true;
+            Assert.IsTrue(game.MakeMove());
             string expected = data2;
-            game = new Game(data1);
-            game.SearchMoves();
             string actual = game.ToAsciiString();
+            if (expected != actual)
+            {
+                PrintGame(new Game(initial));
+                Game.PrintGamesSideBySide(new Game(expected), game);
+                Utils.WriteLine("expected: {0}", expected);
+                Utils.WriteLine("actual:   {0}", actual);
+            }
             Assert.AreEqual(expected, actual);
         }
 

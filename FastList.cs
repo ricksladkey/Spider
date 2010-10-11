@@ -67,7 +67,7 @@ namespace Spider
         {
             if (capacity < this.count + count)
             {
-                IncreaseCapacity();
+                IncreaseCapacity(count);
             }
             for (int i = 0; i < count; i++)
             {
@@ -80,7 +80,7 @@ namespace Spider
         {
             if (capacity < this.count + count)
             {
-                IncreaseCapacity();
+                IncreaseCapacity(count);
             }
             for (int i = 0; i < count; i++)
             {
@@ -117,7 +117,7 @@ namespace Spider
         {
             if (capacity < count + 1)
             {
-                IncreaseCapacity();
+                IncreaseCapacity(1);
             }
             for (int i = index; i < count; i++)
             {
@@ -180,7 +180,7 @@ namespace Spider
         {
             if (capacity < count + 1)
             {
-                IncreaseCapacity();
+                IncreaseCapacity(1);
             }
             array[count++] = item;
         }
@@ -255,9 +255,9 @@ namespace Spider
 
         #endregion
 
-        private void IncreaseCapacity()
+        private void IncreaseCapacity(int additionalCapacity)
         {
-            int newCapacity = capacity * 2;
+            int newCapacity = (count + additionalCapacity) * 2;
             T[] newArray = new T[newCapacity];
             array.CopyTo(newArray, 0);
 

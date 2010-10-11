@@ -8,8 +8,25 @@ namespace Spider
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class Tableau : IEnumerable<Pile>, IGetCard
+    public class Tableau : BaseGame, IEnumerable<Pile>, IGetCard
     {
+        static Tableau()
+        {
+            InitializeZobristKeys();
+        }
+
+        public Tableau()
+        {
+            Variation = Variation.Spider4;
+            Initialize();
+        }
+
+        public Tableau(Tableau other)
+            : this()
+        {
+            Copy(other);
+        }
+
         public Variation Variation { get; set; }
         public int NumberOfPiles { get; private set; }
         public int NumberOfSpaces { get; private set; }
@@ -22,17 +39,6 @@ namespace Spider
         private FastList<Pile> discardPiles;
         private FastList<int> spaces;
         private Pile scratchPile;
-
-        static Tableau()
-        {
-            InitializeZobristKeys();
-        }
-
-        public Tableau()
-        {
-            Variation = Variation.Spider4;
-            Initialize();
-        }
 
         private void Initialize()
         {
@@ -259,20 +265,21 @@ namespace Spider
             {
                 if (other.downPiles[column].Count != 0)
                 {
-                    downPiles[column].Add(Card.Empty);
+                    downPiles[column].Add(Card.Unknown);
                 }
             }
         }
 
         public void Refresh()
         {
-            NumberOfSpaces = 0;
+            int currentNumberOfSpaces = 0;
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 bool isEmpty = upPiles[column].Count == 0;
                 spaceFlags[column] = isEmpty;
-                NumberOfSpaces += isEmpty ? 1 : 0;
+                currentNumberOfSpaces += isEmpty ? 1 : 0;
             }
+            NumberOfSpaces = currentNumberOfSpaces;
         }
 
         public void Adjust()
@@ -311,6 +318,19 @@ namespace Spider
                 fromRow += fromPile.Count;
             }
             if (fromRow < 0 || fromRow >= fromPile.Count)
+            {
+                return false;
+            }
+            if (fromPile[fromRow].IsUnknown)
+            {
+                return false;
+            }
+            int suits = fromPile.CountSuits(fromRow);
+            if (suits == -1)
+            {
+                return false;
+            }
+            if (suits - 1 > ExtraSuits(NumberOfSpaces))
             {
                 return false;
             }
@@ -394,6 +414,7 @@ namespace Spider
             Pile toPile = upPiles[to];
             int fromCount = fromPile.Count - fromRow;
             int toCount = toPile.Count - toRow;
+
             scratchPile.Clear();
             scratchPile.AddRange(toPile, toRow, toCount);
             toPile.RemoveRange(toRow, toCount);
@@ -633,7 +654,7 @@ namespace Spider
             Random random = new Random(0);
             int columns = 2 * 10 + 2;
             int rows = 52 * 2;
-            int cards = 4 * 13 + 1;
+            int cards = 52 + 2;
             ZobristKeys = new int[columns][][];
             for (int column = 0; column < columns; column++)
             {

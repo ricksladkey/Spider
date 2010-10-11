@@ -21,6 +21,7 @@ namespace Spider
         Jack = 11,
         Queen = 12,
         King = 13,
+        Unknown = 15,
     }
 
     public static class FaceExtensions

@@ -48,8 +48,8 @@ namespace UnitTests
                 {
                     continue;
                 }
-                object[] attributeArray = methodInfo.GetCustomAttributes(typeof(TestMethodAttribute), false);
-                foreach (TestMethodAttribute attribute in attributeArray)
+                object[] attributeArray = methodInfo.GetCustomAttributes(typeof(DebugTestMethodAttribute), false);
+                foreach (DebugTestMethodAttribute attribute in attributeArray)
                 {
                     list.Add(methodInfo);
                     break;

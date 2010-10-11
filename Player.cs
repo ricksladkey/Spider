@@ -21,6 +21,8 @@ namespace Spider
         public bool RecordComplex { get; set; }
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
+        public int Instance { get; set; }
+        public bool UseSearch { get; set; }
 
         public bool ShowResults { get; set; }
 
@@ -56,6 +58,7 @@ namespace Spider
             TraceDeals = game.TraceDeals;
             TraceMoves = game.TraceMoves;
             ComplexMoves = game.ComplexMoves;
+            UseSearch = game.UseSearch;
             ShowResults = false;
 
             Games = 100000;
@@ -430,6 +433,7 @@ namespace Spider
             game.TraceDeals = TraceDeals;
             game.TraceMoves = TraceMoves;
             game.ComplexMoves = ComplexMoves;
+            game.UseSearch = UseSearch;
             game.Diagnostics = Diagnostics;
             game.Interactive = Interactive;
 

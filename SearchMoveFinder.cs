@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -11,12 +12,15 @@ namespace Spider
             : base(game)
         {
             WorkingTableau = new Tableau();
+            TranspositionTable = new HashSet<int>();
             BestMoves = new MoveList();
         }
 
         private Tableau WorkingTableau { get; set; }
+        private HashSet<int> TranspositionTable { get; set; }
         private MoveList BestMoves { get; set; }
         private double BestScore { get; set; }
+        private int NodesSearched { get; set; }
 
         public void SearchMoves()
         {
@@ -25,10 +29,22 @@ namespace Spider
             WorkingTableau.CopyUpPiles(Tableau);
             WorkingTableau.BlockDownPiles(Tableau);
 
+            TranspositionTable.Clear();
             BestMoves.Clear();
             BestScore = 0;
+            NodesSearched = 0;
 
-            SearchMoves(3);
+            SearchMoves(6);
+
+            if (Diagnostics)
+            {
+                Utils.WriteLine("Nodes searched: {0}", NodesSearched);
+                Utils.WriteLine("best: score = {0}", BestScore);
+                for (int i = 0; i < BestMoves.Count; i++)
+                {
+                    Utils.WriteLine("best: move[{0}] = {1}", i, BestMoves[i]);
+                }
+            }
 
             for (int i = 0; i < BestMoves.Count; i++)
             {
@@ -44,7 +60,6 @@ namespace Spider
         {
             if (depth == 0)
             {
-                ProcessSearchLeaf();
                 return;
             }
 
@@ -53,69 +68,78 @@ namespace Spider
             MoveList supplementaryList = new MoveList(SupplementaryList);
             Stack<Move> moveStack = new Stack<Move>();
 
-            if (candidates.Count == 0)
-            {
-                ProcessSearchLeaf();
-                return;
-            }
-
             for (int i = 0; i < candidates.Count; i++)
             {
                 int timeStamp = WorkingTableau.TimeStamp;
 
                 Move move = candidates[i];
+                bool toEmpty = move.Type == MoveType.Basic && WorkingTableau[move.To].Count == 0;
                 moveStack.Clear();
                 for (int next = move.HoldingNext; next != -1; next = supplementaryList[next].Next)
                 {
                     Move holdingMove = supplementaryList[next];
                     WorkingTableau.Move(holdingMove);
-                    moveStack.Push(new Move(holdingMove.To, -holdingMove.ToRow, move.To));
+                    int undoTo = holdingMove.From == move.From ? move.To : move.From;
+                    moveStack.Push(new Move(holdingMove.To, -holdingMove.ToRow, undoTo));
                 }
                 WorkingTableau.Move(move);
-                while (moveStack.Count > 0)
+                if (!toEmpty)
                 {
-                    Move holdingMove = moveStack.Pop();
-                    if (!WorkingTableau.MoveIsValid(holdingMove))
+                    while (moveStack.Count > 0)
                     {
-                        break;
+                        Move holdingMove = moveStack.Pop();
+                        if (!WorkingTableau.MoveIsValid(holdingMove))
+                        {
+                            break;
+                        }
+                        WorkingTableau.Move(holdingMove);
                     }
-                    WorkingTableau.Move(holdingMove);
                 }
 
-                SearchMoves(depth - 1);
+                if (ProcessNode())
+                {
+                    SearchMoves(depth - 1);
+                }
 
                 WorkingTableau.Revert(timeStamp);
             }
         }
 
-        private void ProcessSearchLeaf()
+        private bool ProcessNode()
         {
-            if (Diagnostics)
+            int hashCode = WorkingTableau.GetHashCode();
+            if (TranspositionTable.Contains(hashCode))
             {
-                Console.WriteLine("leaf:");
-                for (int i = 0; i < WorkingTableau.Moves.Count; i++)
-                {
-                    Console.WriteLine("move[{0}] = {1}", i, WorkingTableau.Moves[i]);
-                }
+                return false;
             }
+            TranspositionTable.Add(hashCode);
 
+            NodesSearched++;
             double score = CalculateSearchScore();
+
             if (score > BestScore)
             {
                 BestScore = score;
                 BestMoves.Copy(WorkingTableau.Moves);
             }
+
+            return true;
         }
 
         public double CalculateSearchScore()
         {
             double TurnedOverCardScore = 10;
+            double SpaceScore = 25;
             double DiscardedScore = 100;
             double score = 0;
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 Pile pile = WorkingTableau[column];
-                if (pile.Count == 1 && pile[0].IsEmpty)
+                if (pile.Count == 0)
+                {
+                    score += SpaceScore;
+                }
+                else if (pile.Count == 1 && pile[0].IsUnknown)
                 {
                     score += TurnedOverCardScore;
                 }

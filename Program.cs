@@ -63,6 +63,12 @@ namespace Spider
                     i++;
                     continue;
                 }
+                if (arg == "--search")
+                {
+                    player.UseSearch = true;
+                    i++;
+                    continue;
+                }
                 if (arg == "--complex_moves")
                 {
                     player.ComplexMoves = true;

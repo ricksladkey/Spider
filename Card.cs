@@ -8,11 +8,13 @@ namespace Spider
     public struct Card : IEquatable<Card>
     {
         public static Card Empty = new Card();
+        public static Card Unknown = new Card(Face.Unknown, Suit.Unknown);
 
         public Face Face { get; set; }
         public Suit Suit { get; set; }
 
-        public bool IsEmpty { get { return Equals(Empty); } }
+        public bool IsEmpty { get { return Face == Face.Empty; } }
+        public bool IsUnknown { get { return Face == Face.Unknown; } }
 
         public Card(Face face, Suit suit)
             : this()
@@ -53,7 +55,15 @@ namespace Spider
 
         public override int GetHashCode()
         {
-            return (int)Face * (int)Suit;
+            if (IsEmpty)
+            {
+                return 0;
+            }
+            if (IsUnknown)
+            {
+                return 53;
+            }
+            return (int)Face + 13 * ((int)Suit - 1);
         }
 
         #region IEquatable<Card> Members

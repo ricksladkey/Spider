@@ -12,5 +12,6 @@ namespace Spider
         Hearts = 2,
         Clubs = 3,
         Diamonds = 4,
+        Unknown = 5,
     }
 }

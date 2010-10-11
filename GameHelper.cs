@@ -21,6 +21,8 @@ namespace Spider
         public double[] Coefficients { get { return game.Coefficients; } set { game.Coefficients = value; } }
         public bool Diagnostics { get { return game.Diagnostics; } set { game.Diagnostics = value; } }
         public bool Interactive { get { return game.Interactive; } set { game.Interactive = value; } }
+        public int Instance { get { return game.Instance; } set { game.Instance = value; } }
+        public bool UseSearch { get { return game.UseSearch; } set { game.UseSearch = value; } }
 
         public bool TraceMoves { get { return game.TraceMoves; } set { game.TraceMoves = value; } }
         public bool ComplexMoves { get { return game.ComplexMoves; } set { game.ComplexMoves = value; } }

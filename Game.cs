@@ -9,8 +9,8 @@ namespace Spider
     public class Game : BaseGame, IGame
     {
         public static double[] FourSuitCoefficients = new double[] {
-            /* 0 */ 4.97385808, 63.53977337, -0.1063684816, -4.649572734, -0.1955832209, 2.565712243, 4.819874539, 0.5443310539, 86.27048442,
-            /* 9 */ 4.465708423, 0.00241597961, -0.1356068814, -0.9577011316, 2.50966, 0.8164965809,
+            /* 0 */ 4.97385808, 63.53977337, -0.07690241043, -3.361553585, -0.2933748314, 1.781253839, 4.819874539, 0.4819874538, 86.27048442,
+            /* 9 */ 4.465708423, 0.001610653073, -0.1302184743, -0.9577011316, 2.95155848, 0.7840526817,
         };
 
         public static double[] TwoSuitCoefficients = new double[] {
@@ -41,6 +41,7 @@ namespace Spider
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
+        public bool UseSearch { get; set; }
 
         public bool Won { get; private set; }
 
@@ -269,8 +270,17 @@ namespace Spider
                 return true;
             }
 
-            FindMoves(Tableau);
-            return ChooseMove();
+            int timeStamp = Tableau.TimeStamp;
+            if (UseSearch)
+            {
+                SearchMoves();
+            }
+            else
+            {
+                FindMoves(Tableau);
+                ChooseMove();
+            }
+            return Tableau.TimeStamp != timeStamp;
         }
 
         public void FindMoves(Tableau tableau)
@@ -297,6 +307,10 @@ namespace Spider
                 for (int fromRow = fromPile.Count - 1; fromRow >= 0; fromRow--)
                 {
                     Card fromCard = fromPile[fromRow];
+                    if (fromCard.IsUnknown)
+                    {
+                        break;
+                    }
                     if (fromRow < fromPile.Count - 1)
                     {
                         Card previousCard = fromPile[fromRow + 1];
@@ -412,8 +426,11 @@ namespace Spider
                     CheckSwaps(from, fromRow, extraSuits, maxExtraSuits);
                 }
 
-                // Check for composite single pile moves.
-                CompositeSinglePileMoveFinder.Check(from);
+                if (!UseSearch)
+                {
+                    // Check for composite single pile moves.
+                    CompositeSinglePileMoveFinder.Check(from);
+                }
             }
         }
 
@@ -488,7 +505,7 @@ namespace Spider
         {
         }
 
-        public void SearchMoves()
+        private void SearchMoves()
         {
             SearchMoveFinder.SearchMoves();
         }
@@ -755,16 +772,17 @@ namespace Spider
 
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                // Prepare spaces and face lists.
+                // Prepare face lists.
                 Pile pile = FindTableau[i];
-                if (pile.Count != 0)
+                int pileCount = pile.Count;
+                if (pileCount != 0 && !pile[pileCount - 1].IsUnknown)
                 {
-                    FaceLists[(int)pile[pile.Count - 1].Face].Add(i);
+                    FaceLists[(int)pile[pileCount - 1].Face].Add(i);
                 }
 
                 // Cache run lengths.
-                RunLengths[i] = pile.GetRunUp(pile.Count);
-                RunLengthsAnySuit[i] = pile.GetRunUpAnySuit(pile.Count);
+                RunLengths[i] = pile.GetRunUp(pileCount);
+                RunLengthsAnySuit[i] = pile.GetRunUpAnySuit(pileCount);
             }
         }
 
@@ -963,12 +981,12 @@ namespace Spider
             return uses;
         }
 
-        private bool ChooseMove()
+        private void ChooseMove()
         {
             // We may be strictly out of moves.
             if (Candidates.Count == 0)
             {
-                return false;
+                return;
             }
 
             if (Diagnostics)
@@ -990,24 +1008,10 @@ namespace Spider
             // The best move may not be worth making.
             if (move.Score == RejectScore)
             {
-                return false;
+                return;
             }
-
-#if false
-            if (move.Type == MoveType.CompositeSinglePile)
-            {
-                Move firstMove = SupplementaryList[move.Next];
-                if (firstMove.From != move.From && firstMove.Flags.Holding())
-                {
-                    Debugger.Break();
-                    Console.WriteLine("xxx");
-                }
-            }
-#endif
 
             ProcessMove(move);
-
-            return true;
         }
 
         public void ProcessMove(Move move)
