@@ -10,6 +10,7 @@ namespace Spider
     {
         static void Main(string[] args)
         {
+            Console.OutputEncoding = new UTF8Encoding(true);
             bool minimize = false;
             bool evaluate = false;
             bool compare = false;

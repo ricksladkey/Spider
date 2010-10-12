@@ -1,3 +1,7 @@
+- eliminate fine-grained scoring when searching
+- rewrite search into breadth-first search
+- organize source files into folders
+
 - rename workingTableau to WorkingTableau
 - unify the three places where complex moves with holding piles are performed
 

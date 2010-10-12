@@ -8,11 +8,29 @@ namespace Spider
 {
     public class SearchMoveFinder : GameHelper
     {
+        private class Node
+        {
+            public Node()
+            {
+            }
+
+            public Node(MoveList moves, MoveList supplementaryList)
+            {
+                Moves = moves;
+                SupplementaryList = supplementaryList;
+            }
+
+            public MoveList Moves { get; set; }
+            public MoveList SupplementaryList { get; set; }
+            public FastList<Node> Nodes { get; set; }
+        }
+
         public SearchMoveFinder(Game game)
             : base(game)
         {
             WorkingTableau = new Tableau();
             TranspositionTable = new HashSet<int>();
+            MoveStack = new MoveList();
             Moves = new MoveList();
             MaxDepth = 20;
             MaxNodes = 10000;
@@ -20,6 +38,7 @@ namespace Spider
 
         public Tableau WorkingTableau { get; set; }
         public HashSet<int> TranspositionTable { get; set; }
+        MoveList MoveStack { get; set; }
         public int MaxDepth { get; set; }
         public int MaxNodes { get; set; }
         public int NodesSearched { get; set; }
@@ -33,22 +52,16 @@ namespace Spider
             WorkingTableau.CopyUpPiles(Tableau);
             WorkingTableau.BlockDownPiles(Tableau);
 
-            Moves.Clear();
-            Score = 0;
-
-            TranspositionTable.Clear();
-            NodesSearched = 0;
-            SearchMoves(MaxDepth);
+#if false
+            StartSearch();
+            DepthFirstSearch(MaxDepth);
             if (NodesSearched >= MaxNodes)
             {
                 int maxNodesSearched = 0;
-                TranspositionTable.Clear();
-                NodesSearched = 0;
                 for (int depth = 1; depth < MaxDepth; depth++)
                 {
-                    TranspositionTable.Clear();
-                    NodesSearched = 0;
-                    SearchMoves(depth);
+                    StartSearch();
+                    DepthFirstSearch(depth);
                     if (NodesSearched == maxNodesSearched)
                     {
                         break;
@@ -60,9 +73,28 @@ namespace Spider
                     }
                 }
             }
+#else
+            StartSearch();
+            Node root = new Node();
+            while (true)
+            {
+                int lastNodesSearched = NodesSearched;
+                BreadthFirstSearch(root);
+                if (lastNodesSearched == NodesSearched || lastNodesSearched >= MaxNodes)
+                {
+                    break;
+                }
+            }
+#endif
 
             if (TraceSearch)
             {
+                PrintGame();
+                Utils.WriteLine("search: score = {0}", Score);
+                for (int i = 0; i < Moves.Count; i++)
+                {
+                    Utils.WriteLine("search: move[{0}] = {1}", i, Moves[i]);
+                }
                 Utils.WriteLine("Nodes searched: {0}", NodesSearched);
             }
             if (Diagnostics)
@@ -88,7 +120,16 @@ namespace Spider
             }
         }
 
-        private void SearchMoves(int depth)
+        private void StartSearch()
+        {
+            TranspositionTable.Clear();
+            ProcessNode();
+            NodesSearched = 0;
+            Moves.Clear();
+            Score = 0;
+        }
+
+        private void DepthFirstSearch(int depth)
         {
             if (depth == 0)
             {
@@ -96,45 +137,13 @@ namespace Spider
             }
 
             FindMoves(WorkingTableau);
-            MoveList candidates = new MoveList(Candidates);
-            MoveList supplementaryList = new MoveList(SupplementaryList);
-            Stack<Move> moveStack = new Stack<Move>();
+            Node node = new Node(new MoveList(Candidates), new MoveList(SupplementaryList));
 
-            for (int i = 0; i < candidates.Count; i++)
+            for (int i = 0; i < node.Moves.Count; i++)
             {
                 int timeStamp = WorkingTableau.TimeStamp;
 
-                Move move = candidates[i];
-#if false
-                if (depth == 4 && move.Type == MoveType.Swap && move.From == 4 && move.FromRow == 7 && move.To == 7 && move.ToRow == 0)
-                {
-                    Console.WriteLine("working tableau moves:");
-                    PrintMoves(WorkingTableau.Moves);
-                    Debugger.Break();
-                }
-#endif
-                bool toEmpty = move.Type == MoveType.Basic && WorkingTableau[move.To].Count == 0;
-                moveStack.Clear();
-                for (int next = move.HoldingNext; next != -1; next = supplementaryList[next].Next)
-                {
-                    Move holdingMove = supplementaryList[next];
-                    WorkingTableau.Move(new Move(MoveType.Basic, MoveFlags.Holding, holdingMove.From, holdingMove.FromRow, holdingMove.To));
-                    int undoTo = holdingMove.From == move.From ? move.To : move.From;
-                    moveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, undoTo));
-                }
-                WorkingTableau.Move(new Move(move.Type, move.From, move.FromRow, move.To, move.ToRow));
-                if (!toEmpty)
-                {
-                    while (moveStack.Count > 0)
-                    {
-                        Move holdingMove = moveStack.Pop();
-                        if (!WorkingTableau.MoveIsValid(holdingMove))
-                        {
-                            break;
-                        }
-                        WorkingTableau.Move(holdingMove);
-                    }
-                }
+                MakeMove(node, i);
 
                 bool continueSearch = ProcessNode();
                 if (NodesSearched >= MaxNodes)
@@ -144,12 +153,84 @@ namespace Spider
                 }
                 if (continueSearch)
                 {
-                    SearchMoves(depth - 1);
+                    DepthFirstSearch(depth - 1);
                 }
                 WorkingTableau.Revert(timeStamp);
                 if (NodesSearched >= MaxNodes)
                 {
                     return;
+                }
+            }
+        }
+
+        private void BreadthFirstSearch(Node parent)
+        {
+            if (parent.Moves == null)
+            {
+                FindMoves(WorkingTableau);
+                parent.Moves = new MoveList(Candidates);
+                parent.SupplementaryList = new MoveList(SupplementaryList);
+                parent.Nodes = new FastList<Node>();
+                for (int i = 0; i < parent.Moves.Count; i++)
+                {
+                    Node child = null;
+                    int timeStamp = WorkingTableau.TimeStamp;
+                    MakeMove(parent, i);
+                    if (ProcessNode())
+                    {
+                        child = new Node();
+                    }
+                    WorkingTableau.Revert(timeStamp);
+                    if (NodesSearched >= MaxNodes)
+                    {
+                        return;
+                    }
+                    parent.Nodes.Add(child);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < parent.Moves.Count; i++)
+                {
+                    Node child = parent.Nodes[i];
+                    if (child != null)
+                    {
+                        int timeStamp = WorkingTableau.TimeStamp;
+                        MakeMove(parent, i);
+                        BreadthFirstSearch(child);
+                        WorkingTableau.Revert(timeStamp);
+                        if (NodesSearched >= MaxNodes)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        private void MakeMove(Node node, int i)
+        {
+            Move move = node.Moves[i];
+            bool toEmpty = move.Type == MoveType.Basic && WorkingTableau[move.To].Count == 0;
+            MoveStack.Clear();
+            for (int next = move.HoldingNext; next != -1; next = node.SupplementaryList[next].Next)
+            {
+                Move holdingMove = node.SupplementaryList[next];
+                WorkingTableau.Move(new Move(MoveType.Basic, MoveFlags.Holding, holdingMove.From, holdingMove.FromRow, holdingMove.To));
+                int undoTo = holdingMove.From == move.From ? move.To : move.From;
+                MoveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, undoTo));
+            }
+            WorkingTableau.Move(new Move(move.Type, move.From, move.FromRow, move.To, move.ToRow));
+            if (!toEmpty)
+            {
+                while (MoveStack.Count > 0)
+                {
+                    Move holdingMove = MoveStack.Pop();
+                    if (!WorkingTableau.MoveIsValid(holdingMove))
+                    {
+                        break;
+                    }
+                    WorkingTableau.Move(holdingMove);
                 }
             }
         }
