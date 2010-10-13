@@ -143,6 +143,7 @@
     <Compile Include="SimplexConstant.cs" />
     <Compile Include="FastList.cs" />
     <Compile Include="Suit.cs" />
+    <Compile Include="SwapMoveFinder.cs" />
     <Compile Include="Tableau.cs" />
     <Compile Include="TableauInputOutput.cs" />
     <Compile Include="Utils.cs" />

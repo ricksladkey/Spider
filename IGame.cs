@@ -18,10 +18,15 @@ namespace Spider
         MoveList SupplementaryList { get; }
         MoveList Candidates { get; }
         PileList OneRunPiles { get; }
+        HoldingStack HoldingStack { get; }
+        int[] RunLengths { get; }
+        int[] RunLengthsAnySuit { get; }
 
         void FindMoves(Tableau tableau);
         void ProcessCandidate(Move move);
         void ProcessMove(Move move);
+        int AddHolding(HoldingSet holdingSet);
+        int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2);
         int AddSupplementary();
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();

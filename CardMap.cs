@@ -10,55 +10,54 @@ namespace Spider
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class CardMap : FastList<Card>, IGetCard
     {
-        public CardMap()
-            : this(10)
+        public int NumberOfPiles
         {
-        }
-
-        public CardMap(int numberOfPiles)
-            : base(numberOfPiles)
-        {
-            Initialize(numberOfPiles);
-        }
-
-        public void Initialize(int numberOfPiles)
-        {
-            Clear();
-            for (int i = 0; i < numberOfPiles; i++)
+            get
             {
-                Add(Card.Empty);
+                return count;
             }
+            set
+            {
+                if (value != count)
+                {
+                    Clear();
+                    for (int i = 0; i < value; i++)
+                    {
+                        Add(Card.Empty);
+                    }
+                }
+            }
+        }
+
+        public CardMap()
+            : base(10)
+        {
         }
 
         public void Update(Tableau tableau)
         {
-            Initialize(tableau.NumberOfPiles);
             Update(tableau.UpPiles);
         }
 
         public void Update(IList<Pile> pileMap)
         {
-            for (int column = 0; column < Count; column++)
+            NumberOfPiles = pileMap.Count;
+            for (int column = 0; column < count; column++)
             {
                 Pile pile = pileMap[column];
-                Update(column, pile, pile.Count);
+                Update(column, pile);
             }
         }
 
         public void Update(int column, Pile pile)
         {
-            Update(column, pile, pile.Count);
-        }
-
-        public void Update(int column, Pile pile, int count)
-        {
-            if (count == 0)
+            if (pile.Count == 0)
             {
                 array[column] = Card.Empty;
             }
             else
             {
-                array[column] = pile[count - 1];
+                array[column] = pile[pile.Count - 1];
             }
         }
 

@@ -19,7 +19,7 @@ namespace Spider
         private int best;
         private int order;
 
-        private int tableauTimeStamp;
+        private int tableauCheckPoint;
         private int supplementaryMovesCount;
 
         public CompositeSinglePileMoveFinder(Game game)
@@ -502,14 +502,14 @@ namespace Spider
 
         private void SaveWorkingState()
         {
-            tableauTimeStamp = workingTableau.TimeStamp;
+            tableauCheckPoint = workingTableau.CheckPoint;
             supplementaryMovesCount = SupplementaryMoves.Count;
         }
 
         private void RestoreWorkingState()
         {
             // Restore state of the working tableau prior to intermediate move.
-            workingTableau.Revert(tableauTimeStamp);
+            workingTableau.Revert(tableauCheckPoint);
 
             // Restore state of supplementary moves prior to intermediate move.
             while (SupplementaryMoves.Count > supplementaryMovesCount)
@@ -537,7 +537,7 @@ namespace Spider
             for (int column = 0; column < workingTableau.NumberOfPiles; column++)
             {
                 Pile pile = workingTableau[column];
-                if (pile.Count == 1 && pile[0].IsUnknown)
+                if (pile.Count == 1 && pile[0].IsEmpty)
                 {
                     flags |= MoveFlags.TurnsOverCard;
                     break;

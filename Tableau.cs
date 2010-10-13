@@ -265,7 +265,7 @@ namespace Spider
             {
                 if (other.downPiles[column].Count != 0)
                 {
-                    downPiles[column].Add(Card.Unknown);
+                    downPiles[column].Add(Card.Empty);
                 }
             }
         }
@@ -321,7 +321,7 @@ namespace Spider
             {
                 return false;
             }
-            if (fromPile[fromRow].IsUnknown)
+            if (fromPile[fromRow].IsEmpty)
             {
                 return false;
             }
@@ -614,7 +614,7 @@ namespace Spider
             }
         }
 
-        public int TimeStamp
+        public int CheckPoint
         {
             get
             {
@@ -622,9 +622,9 @@ namespace Spider
             }
         }
 
-        public void Revert(int timeStamp)
+        public void Revert(int checkPoint)
         {
-            while (TimeStamp > timeStamp)
+            while (CheckPoint > checkPoint)
             {
                 Undo();
             }
@@ -663,13 +663,13 @@ namespace Spider
             Game.PrintGame(new Game(this));
         }
 
-        public override int GetHashCode()
+        public int GetHashKey()
         {
             int hash = 0;
             int offset = 0;
             for (int row = 0; row < discardPiles.Count; row++)
             {
-                hash ^= GetZobristKey(offset, row, discardPiles[row][12]);
+                hash ^= ZobristKeys[offset][row][discardPiles[row][12].GetHashKey()];
             }
             offset++;
             for (int column = 0; column < NumberOfPiles; column++)
@@ -686,6 +686,26 @@ namespace Spider
             return hash;
         }
 
+        public int GetUpPilesHashKey()
+        {
+            int hashKey = 0;
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                hashKey ^= GetZobristKey(column, upPiles[column]);
+            }
+            return hashKey;
+        }
+
+        private static int GetZobristKey(int column, Pile pile)
+        {
+            int hashKey = 0;
+            for (int row = 0; row < pile.Count; row++)
+            {
+                hashKey ^= ZobristKeys[column][row][pile[row].GetHashKey()];
+            }
+            return hashKey;
+        }
+
         private static int[][][] ZobristKeys;
 
         private static void InitializeZobristKeys()
@@ -693,7 +713,7 @@ namespace Spider
             Random random = new Random(0);
             int columns = 2 * 10 + 2;
             int rows = 52 * 2;
-            int cards = 52 + 2;
+            int cards = 13 + 14 * 4 + 1;
             ZobristKeys = new int[columns][][];
             for (int column = 0; column < columns; column++)
             {
@@ -707,21 +727,6 @@ namespace Spider
                     }
                 }
             }
-        }
-
-        private static int GetZobristKey(int column, Pile pile)
-        {
-            int hash = 0;
-            for (int row = 0; row < pile.Count; row++)
-            {
-                hash ^= GetZobristKey(column, row, pile[row]);
-            }
-            return hash;
-        }
-
-        private static int GetZobristKey(int column, int row, Card card)
-        {
-            return ZobristKeys[column][row][card.GetHashCode()];
         }
 
         #region IEnumerable<Pile> Members

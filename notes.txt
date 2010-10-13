@@ -1,3 +1,31 @@
+========================================================================================================
+r123 results:
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 100 --search
+games played: 100, games won: 65%, games with discards: 82%
+average moves: 261.93 (won: 335.05, lost: 126.14)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search
+games played: 1000, games won: 67.9%, games with discards: 85.8%
+average moves: 267.94 (won: 331.91, lost: 132.61)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 100000 --search
+games played: 100000, games won: 67.063%, games with discards: 86.638%
+average moves: 267.88 (won: 331.38, lost: 138.58)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 100 --search --variation 4
+games played: 100, games won: 28%, games with discards: 37%
+average moves: 282.57 (won: 522.11, lost: 189.42)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search --variation 4
+games played: 1000, games won: 27.9%, games with discards: 39%
+average moves: 276.9 (won: 514.52, lost: 184.95)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000
+games played: 1000, games won: 58.2%, games with discards: 76.8%
+average moves: 261.77 (won: 350.38, lost: 138.39)
+========================================================================================================
+
 - eliminate fine-grained scoring when searching
 - rewrite search into breadth-first search
 - organize source files into folders

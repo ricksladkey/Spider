@@ -613,7 +613,7 @@ namespace Spider.Tests
             // Check that the only available move is made.
             game = new Game(initial);
             game.Diagnostics = true;
-            int timeStamp = game.Tableau.TimeStamp;
+            int checkPoint = game.Tableau.CheckPoint;
             if (action == "Move")
             {
                 Assert.IsTrue(game.MakeMove());
@@ -628,7 +628,7 @@ namespace Spider.Tests
             }
             string actual = TrimAll(game.ToAsciiString());
             CheckResults(initial, expected, actual);
-            game.Tableau.Revert(timeStamp);
+            game.Tableau.Revert(checkPoint);
             string undone = TrimAll(game.ToAsciiString());
             CheckResults(initial, initial, undone);
         }

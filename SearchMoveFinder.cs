@@ -115,6 +115,7 @@ namespace Spider
                 }
                 else if (move.Type == MoveType.TurnOverCard)
                 {
+                    // New information.
                     break;
                 }
             }
@@ -141,21 +142,21 @@ namespace Spider
 
             for (int i = 0; i < node.Moves.Count; i++)
             {
-                int timeStamp = WorkingTableau.TimeStamp;
+                int checkPoint = WorkingTableau.CheckPoint;
 
                 MakeMove(node, i);
 
                 bool continueSearch = ProcessNode();
                 if (NodesSearched >= MaxNodes)
                 {
-                    WorkingTableau.Revert(timeStamp);
+                    WorkingTableau.Revert(checkPoint);
                     return;
                 }
                 if (continueSearch)
                 {
                     DepthFirstSearch(depth - 1);
                 }
-                WorkingTableau.Revert(timeStamp);
+                WorkingTableau.Revert(checkPoint);
                 if (NodesSearched >= MaxNodes)
                 {
                     return;
@@ -174,13 +175,13 @@ namespace Spider
                 for (int i = 0; i < parent.Moves.Count; i++)
                 {
                     Node child = null;
-                    int timeStamp = WorkingTableau.TimeStamp;
+                    int checkPoint = WorkingTableau.CheckPoint;
                     MakeMove(parent, i);
                     if (ProcessNode())
                     {
                         child = new Node();
                     }
-                    WorkingTableau.Revert(timeStamp);
+                    WorkingTableau.Revert(checkPoint);
                     if (NodesSearched >= MaxNodes)
                     {
                         return;
@@ -195,10 +196,10 @@ namespace Spider
                     Node child = parent.Nodes[i];
                     if (child != null)
                     {
-                        int timeStamp = WorkingTableau.TimeStamp;
+                        int checkPoint = WorkingTableau.CheckPoint;
                         MakeMove(parent, i);
                         BreadthFirstSearch(child);
-                        WorkingTableau.Revert(timeStamp);
+                        WorkingTableau.Revert(checkPoint);
                         if (NodesSearched >= MaxNodes)
                         {
                             return;
@@ -237,12 +238,12 @@ namespace Spider
 
         private bool ProcessNode()
         {
-            int hashCode = WorkingTableau.GetHashCode();
-            if (TranspositionTable.Contains(hashCode))
+            int hashKey = WorkingTableau.GetUpPilesHashKey();
+            if (TranspositionTable.Contains(hashKey))
             {
                 return false;
             }
-            TranspositionTable.Add(hashCode);
+            TranspositionTable.Add(hashKey);
 
             NodesSearched++;
             double score = CalculateSearchScore();
@@ -257,7 +258,7 @@ namespace Spider
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 Pile pile = WorkingTableau[column];
-                if (pile.Count == 1 && pile[0].IsUnknown)
+                if (pile.Count == 1 && pile[0].IsEmpty)
                 {
                     return false;
                 }
@@ -282,7 +283,7 @@ namespace Spider
                 {
                     score += SpaceScore;
                 }
-                else if (pile.Count == 1 && pile[0].IsUnknown)
+                else if (pile.Count == 1 && pile[0].IsEmpty)
                 {
                     score += TurnedOverCardScore;
                 }

@@ -45,6 +45,9 @@ namespace Spider
         public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
+        public HoldingStack HoldingStack { get { return game.HoldingStack; } }
+        public int[] RunLengths { get { return game.RunLengths; } }
+        public int[] RunLengthsAnySuit { get { return game.RunLengthsAnySuit; } }
 
         public void FindMoves(Tableau tableau)
         {
@@ -59,6 +62,16 @@ namespace Spider
         public void ProcessMove(Move move)
         {
             game.ProcessMove(move);
+        }
+
+        public int AddHolding(HoldingSet holdingSet)
+        {
+            return game.AddHolding(holdingSet);
+        }
+
+        public int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2)
+        {
+            return game.AddHolding(holdingSet1, holdingSet2);
         }
 
         public int AddSupplementary()

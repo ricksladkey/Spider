@@ -10,11 +10,10 @@ namespace Spider
         public static Card Empty = new Card();
         public static Card Unknown = new Card(Face.Unknown, Suit.Unknown);
 
-        public Face Face { get; set; }
-        public Suit Suit { get; set; }
+        public Face Face;
+        public Suit Suit;
 
         public bool IsEmpty { get { return Face == Face.Empty; } }
-        public bool IsUnknown { get { return Face == Face.Unknown; } }
 
         public Card(Face face, Suit suit)
             : this()
@@ -38,6 +37,11 @@ namespace Spider
             return Face.IsTargetFor(other.Face);
         }
 
+        public int GetHashKey()
+        {
+            return (int)Face + 14 * (int)Suit;
+        }
+
         public string ToPrettyString()
         {
             return Utils.GetString(Face) + Utils.GetPrettyString(Suit);
@@ -51,19 +55,6 @@ namespace Spider
         public override string ToString()
         {
             return ToPrettyString();
-        }
-
-        public override int GetHashCode()
-        {
-            if (IsEmpty)
-            {
-                return 0;
-            }
-            if (IsUnknown)
-            {
-                return 53;
-            }
-            return (int)Face + 13 * ((int)Suit - 1);
         }
 
         #region IEquatable<Card> Members
