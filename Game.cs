@@ -53,7 +53,7 @@ namespace Spider
         public MoveList Candidates { get; private set; }
         public MoveList SupplementaryMoves { get; private set; }
         public MoveList SupplementaryList { get; private set; }
-        public HoldingStack HoldingStack { get; private set; }
+        public HoldingStack[] HoldingStacks { get; private set; }
         public int[] RunLengths { get; private set; }
         public int[] RunLengthsAnySuit { get; private set; }
         public PileList OneRunPiles { get; private set; }
@@ -104,7 +104,6 @@ namespace Spider
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
-            HoldingStack = new HoldingStack();
             OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
@@ -212,6 +211,11 @@ namespace Spider
             Tableau.Variation = Variation;
             NumberOfPiles = Variation.NumberOfPiles;
             NumberOfSuits = Variation.NumberOfSuits;
+            HoldingStacks = new HoldingStack[NumberOfPiles];
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                HoldingStacks[column] = new HoldingStack();
+            }
             RunLengths = new int[NumberOfPiles];
             RunLengthsAnySuit = new int[NumberOfPiles];
             Won = false;
@@ -303,14 +307,19 @@ namespace Spider
             int maxExtraSuitsToSpace = ExtraSuits(numberOfSpaces - 1);
 
             Analyze();
-            FindUncoveringMoves(maxExtraSuits);
-            FindOneRunPiles();
+
+            if (!UseSearch)
+            {
+                FindUncoveringMoves(maxExtraSuits);
+                FindOneRunPiles();
+            }
 
             for (int from = 0; from < NumberOfPiles; from++)
             {
+                HoldingStack holdingStack = HoldingStacks[from];
                 Pile fromPile = FindTableau[from];
-                HoldingStack.Clear();
-                HoldingStack.StartingRow = fromPile.Count;
+                holdingStack.Clear();
+                holdingStack.StartingRow = fromPile.Count;
                 int extraSuits = 0;
                 for (int fromRow = fromPile.Count - 1; fromRow >= 0; fromRow--)
                 {
@@ -330,7 +339,7 @@ namespace Spider
                         {
                             // This is a cross-suit run.
                             extraSuits++;
-                            if (extraSuits > maxExtraSuits + HoldingStack.Suits)
+                            if (extraSuits > maxExtraSuits + holdingStack.Suits)
                             {
                                 break;
                             }
@@ -343,7 +352,7 @@ namespace Spider
                         PileList piles = FaceLists[(int)fromCard.Face + 1];
                         for (int i = 0; i < piles.Count; i++)
                         {
-                            foreach (HoldingSet holdingSet in HoldingStack.Sets)
+                            foreach (HoldingSet holdingSet in holdingStack.Sets)
                             {
                                 if (extraSuits > maxExtraSuits + holdingSet.Suits)
                                 {
@@ -365,10 +374,10 @@ namespace Spider
                                 {
                                     holdingSuits++;
                                 }
-                                if (holdingSuits > HoldingStack.Suits)
+                                if (holdingSuits > holdingStack.Suits)
                                 {
-                                    int length = HoldingStack.FromRow - fromRow;
-                                    HoldingStack.Push(new HoldingInfo(from, fromRow, to, holdingSuits, length));
+                                    int length = holdingStack.FromRow - fromRow;
+                                    holdingStack.Push(new HoldingInfo(from, fromRow, to, holdingSuits, length));
                                 }
 
                                 break;
@@ -405,7 +414,7 @@ namespace Spider
                             }
                         }
 
-                        foreach (HoldingSet holdingSet in HoldingStack.Sets)
+                        foreach (HoldingSet holdingSet in holdingStack.Sets)
                         {
                             if (holdingSet.FromRow == fromRow)
                             {
@@ -429,15 +438,38 @@ namespace Spider
                         // except for undealt cards.
                         break;
                     }
-
-                    // Check for swaps.
-                    SwapMoveFinder.Check(from, fromRow, extraSuits, maxExtraSuits);
                 }
 
                 if (!UseSearch)
                 {
                     // Check for composite single pile moves.
                     CompositeSinglePileMoveFinder.Check(from);
+                }
+            }
+
+            // Check for swaps.
+            for (int from = 0; from < NumberOfPiles; from++)
+            {
+                Pile fromPile = FindTableau[from];
+                int splitRow = fromPile.Count - RunLengthsAnySuit[from];
+                int extraSuits = 0;
+                HoldingStack holdingStack = HoldingStacks[from];
+                for (int fromRow = fromPile.Count - 1; fromRow >= splitRow; fromRow--)
+                {
+                    if (fromRow < fromPile.Count - 1)
+                    {
+                        if (fromPile[fromRow].Suit != fromPile[fromRow + 1].Suit)
+                        {
+                            // This is a cross-suit run.
+                            extraSuits++;
+                            if (extraSuits > maxExtraSuits + holdingStack.Suits)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    SwapMoveFinder.Check(from, fromRow, extraSuits, maxExtraSuits);
                 }
             }
         }
@@ -457,6 +489,7 @@ namespace Spider
         {
             // Find all uncovering moves.
             UncoveringMoves.Clear();
+            HoldingStack holdingStack = new HoldingStack();
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
@@ -470,24 +503,20 @@ namespace Spider
                 PileList faceList = FaceLists[(int)fromCard.Face + 1];
                 for (int i = 0; i < faceList.Count; i++)
                 {
-                    HoldingStack.Clear();
+                    holdingStack.Clear();
                     int to = faceList[i];
                     if (fromSuits - 1 > maxExtraSuits)
                     {
-#if true
-                        int holdingSuits = FindHolding(FindTableau, HoldingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                        int holdingSuits = FindHolding(FindTableau, holdingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
                         if (fromSuits - 1 > maxExtraSuits + holdingSuits)
                         {
                             break;
                         }
-#else
-                        break;
-#endif
                     }
                     Pile toPile = FindTableau[to];
                     Card toCard = toPile[toPile.Count - 1];
                     int order = GetOrder(toCard, fromCard);
-                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(HoldingStack.Set)));
+                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(holdingStack.Set)));
                 }
             }
         }

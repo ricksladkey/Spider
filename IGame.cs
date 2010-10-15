@@ -18,7 +18,7 @@ namespace Spider
         MoveList SupplementaryList { get; }
         MoveList Candidates { get; }
         PileList OneRunPiles { get; }
-        HoldingStack HoldingStack { get; }
+        HoldingStack[] HoldingStacks { get; }
         int[] RunLengths { get; }
         int[] RunLengthsAnySuit { get; }
 

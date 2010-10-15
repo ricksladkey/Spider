@@ -304,6 +304,22 @@ namespace Spider
             return move;
         }
 
+        public bool IsValid(Move move)
+        {
+            if (move.Type == MoveType.Basic)
+            {
+                return MoveIsValid(move);
+            }
+            else if (move.Type == MoveType.Swap)
+            {
+                return SwapIsValid(move);
+            }
+            else
+            {
+                throw new InvalidMoveException("unsupported move type");
+            }
+        }
+
         public bool MoveIsValid(Move move)
         {
             int from = move.From;
@@ -325,8 +341,12 @@ namespace Spider
             {
                 return false;
             }
-            int suits = fromPile.CountSuits(fromRow);
-            if (suits == -1)
+            if (toRow != -1 && toRow != toPile.Count)
+            {
+                return false;
+            }
+            int fromSuits = fromPile.CountSuits(fromRow);
+            if (fromSuits == -1)
             {
                 return false;
             }
@@ -340,7 +360,7 @@ namespace Spider
                 numberOfSpaces--;
             }
             int maxExtraSuits = ExtraSuits(numberOfSpaces);
-            if (suits - 1 > maxExtraSuits)
+            if (fromSuits - 1 > maxExtraSuits)
             {
                 return false;
             }
@@ -355,9 +375,71 @@ namespace Spider
             return true;
         }
 
+        public bool SwapIsValid(Move move)
+        {
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
+            int toRow = move.ToRow;
+
+            Pile fromPile = upPiles[from];
+            Pile toPile = upPiles[to];
+            if (fromRow < 0)
+            {
+                fromRow += fromPile.Count;
+            }
+            if (fromRow < 0 || fromRow >= fromPile.Count)
+            {
+                return false;
+            }
+            if (fromPile[fromRow].IsEmpty)
+            {
+                return false;
+            }
+            int fromSuits = fromPile.CountSuits(fromRow);
+            if (fromSuits == -1)
+            {
+                return false;
+            }
+            if (toRow < 0)
+            {
+                toRow += toPile.Count;
+            }
+            if (toRow < 0 || toRow >= toPile.Count)
+            {
+                return false;
+            }
+            if (toPile[toRow].IsEmpty)
+            {
+                return false;
+            }
+            int toSuits = toPile.CountSuits(toRow);
+            if (toSuits == -1)
+            {
+                return false;
+            }
+            int numberOfSpaces = NumberOfSpaces;
+            int maxExtraSuits = ExtraSuits(numberOfSpaces);
+#if false
+            if (fromSuits + toSuits - 1 > maxExtraSuits)
+            {
+                return false;
+            }
+#endif
+            if (toRow != 0 && !fromPile[fromRow].IsSourceFor(toPile[toRow - 1]))
+            {
+                return false;
+            }
+            if (fromRow != 0 && !toPile[toRow].IsSourceFor(fromPile[fromRow - 1]))
+            {
+                return false;
+            }
+            return true;
+        }
+
         public bool TryToMove(Move move)
         {
-            if (!MoveIsValid(move))
+            if (!IsValid(move))
             {
                 return false;
             }
@@ -378,7 +460,7 @@ namespace Spider
 
         public bool MoveIsValid(int from, int fromRow, int to)
         {
-            return MoveIsValid(new Move(from, fromRow, to));
+            return IsValid(new Move(from, fromRow, to));
         }
 #endif
 

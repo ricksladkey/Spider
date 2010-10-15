@@ -316,7 +316,7 @@ namespace Spider
 
         private bool SimpleMoveIsValid(Move move)
         {
-            return Tableau.MoveIsValid(move);
+            return Tableau.IsValid(move);
         }
 
         private void MakeMovesUsingSpaces(int first)

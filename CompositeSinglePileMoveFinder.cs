@@ -135,7 +135,7 @@ namespace Spider
                 while (moveStack.Count > 0)
                 {
                     Move holdingMove = moveStack.Pop();
-                    if (!workingTableau.MoveIsValid(holdingMove))
+                    if (!workingTableau.IsValid(holdingMove))
                     {
                         break;
                     }

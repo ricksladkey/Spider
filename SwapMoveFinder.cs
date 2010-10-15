@@ -38,6 +38,7 @@ namespace Spider
                 fromCardParent = fromPile[fromRow - 1];
                 inSequence = fromCardParent.IsTargetFor(fromCard);
             }
+            HoldingStack fromHoldingStack = HoldingStacks[from];
             for (int to = 0; to < NumberOfPiles; to++)
             {
                 Pile toPile = FindTableau[to];
@@ -86,50 +87,52 @@ namespace Spider
                     continue;
                 }
 
-#if false
                 int toSuits = toPile.CountSuits(toRow);
-                HoldingStack forwardHoldingStack = new HoldingStack();
-                if (extraSuits + toSuits > maxExtraSuits)
+                if (extraSuits + toSuits <= maxExtraSuits)
                 {
-                    // Check whether forward holding piles will help.
-                    int forwardHoldingSuits = FindHolding(FindTableau, forwardHoldingStack, true, from, fromRow, fromPile.Count, to, maxExtraSuits);
-                    if (extraSuits + toSuits > maxExtraSuits + forwardHoldingSuits)
-                    {
-                        // Prepare an accurate map.
-                        CardMap.Update(FindTableau);
-                        foreach (HoldingInfo holding in forwardHoldingStack.Set)
-                        {
-                            CardMap[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
-                        }
-
-                        // Check whether reverse holding piles will help.
-                        HoldingStack reverseHoldingStack = new HoldingStack();
-                        int reverseHoldingSuits = FindHolding(CardMap, reverseHoldingStack, true, to, toRow, toPile.Count, from, maxExtraSuits);
-                        if (extraSuits + toSuits > maxExtraSuits + forwardHoldingSuits + reverseHoldingSuits)
-                        {
-                            continue;
-                        }
-
-                        ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set, reverseHoldingStack.Set)));
-                        continue;
-                    }
+                    // Swap with no holding piles.
+                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow));
+                    continue;
                 }
 
-                // We've found a legal swap.
-                Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
-                Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
-                ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(forwardHoldingStack.Set)));
-#else
-                int toSuits = toPile.CountSuits(toRow);
-                bool foundSwap = false;
-                foreach (HoldingSet holdingSet in HoldingStack.Sets)
+                HoldingStack toHoldingStack = HoldingStacks[to];
+                if (extraSuits + toSuits > maxExtraSuits + fromHoldingStack.Suits + toHoldingStack.Suits)
                 {
-                    if (holdingSet.Contains(to))
+                    // Not enough spaces.
+                    continue;
+                }
+
+                FastList<int> used = new FastList<int>();
+                used.Add(from);
+                used.Add(to);
+                int fromHoldingCount = 0;
+                int toHoldingCount = 0;
+                int fromHoldingSuits = 0;
+                int toHoldingSuits = 0;
+                while (true)
+                {
+                    if (fromHoldingCount < fromHoldingStack.Count &&
+                        fromHoldingStack[fromHoldingCount].FromRow >= fromRow &&
+                        !used.Contains(fromHoldingStack[fromHoldingCount].To))
                     {
-                        // The pile is already in use.
-                        continue;
+                        used.Add(fromHoldingStack[fromHoldingCount].To);
+                        fromHoldingSuits = fromHoldingStack[fromHoldingCount].Suits;
+                        fromHoldingCount++;
                     }
-                    if (extraSuits + toSuits > maxExtraSuits + holdingSet.Suits)
+                    else if (toHoldingCount < toHoldingStack.Count &&
+                        toHoldingStack[toHoldingCount].FromRow >= toRow &&
+                        !used.Contains(toHoldingStack[toHoldingCount].To))
+                    {
+                        used.Add(toHoldingStack[toHoldingCount].To);
+                        toHoldingSuits = toHoldingStack[toHoldingCount].Suits;
+                        toHoldingCount++;
+                    }
+                    else
+                    {
+                        // Out of options.
+                        break;
+                    }
+                    if (extraSuits + toSuits > maxExtraSuits + fromHoldingSuits + toHoldingSuits)
                     {
                         // Not enough spaces.
                         continue;
@@ -138,40 +141,11 @@ namespace Spider
                     // We've found a legal swap.
                     Debug.Assert(toRow == 0 || toPile[toRow - 1].IsTargetFor(fromCard));
                     Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
-                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet)));
-                    foundSwap = true;
+                    HoldingSet fromHoldingSet = new HoldingSet(fromHoldingStack, fromHoldingCount);
+                    HoldingSet toHoldingSet = new HoldingSet(toHoldingStack, toHoldingCount);
+                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(fromHoldingSet, toHoldingSet)));
                     break;
                 }
-
-#if false
-                if (UseSearch)
-                {
-                    return;
-                }
-#endif
-
-                if (!foundSwap)
-                {
-                    // Check whether reverse holding piles will help.
-                    HoldingSet holdingSet = HoldingStack.Set;
-                    if (!holdingSet.Contains(to))
-                    {
-                        // Prepare an accurate map.
-                        CardMap.Update(FindTableau);
-                        foreach (HoldingInfo holding in holdingSet)
-                        {
-                            CardMap[holding.To] = fromPile[holding.FromRow + holding.Length - 1];
-                        }
-
-                        HoldingStack reverseHoldingStack = new HoldingStack();
-                        int reverseHoldingSuits = FindHolding(CardMap, reverseHoldingStack, true, toPile, to, toRow, toPile.Count, from, maxExtraSuits);
-                        if (extraSuits + toSuits <= maxExtraSuits + holdingSet.Suits + reverseHoldingSuits)
-                        {
-                            ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(holdingSet, reverseHoldingStack.Set)));
-                        }
-                    }
-                }
-#endif
             }
         }
     }

@@ -233,6 +233,7 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        [DebugTestMethod]
         public void SwapTest14()
         {
             // A 1/1 in-order swap move, 0 spaces, 2 holding piles.
