@@ -352,8 +352,9 @@ namespace Spider
                         PileList piles = FaceLists[(int)fromCard.Face + 1];
                         for (int i = 0; i < piles.Count; i++)
                         {
-                            foreach (HoldingSet holdingSet in holdingStack.Sets)
+                            for (int count = 0; count <= holdingStack.Count; count++)
                             {
+                                HoldingSet holdingSet = new HoldingSet(holdingStack, count);
                                 if (extraSuits > maxExtraSuits + holdingSet.Suits)
                                 {
                                     continue;
@@ -414,8 +415,9 @@ namespace Spider
                             }
                         }
 
-                        foreach (HoldingSet holdingSet in holdingStack.Sets)
+                        for (int count = 0; count <= holdingStack.Count; count++)
                         {
+                            HoldingSet holdingSet = new HoldingSet(holdingStack, count);
                             if (holdingSet.FromRow == fromRow)
                             {
                                 // No cards left to move.
