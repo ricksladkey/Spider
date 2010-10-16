@@ -8,34 +8,45 @@ namespace Spider
 {
     public class SearchMoveFinder : GameHelper
     {
-        private class Node
+        private struct Node
         {
-            public Node()
+            public Node(bool continueSearch)
             {
+                ContinueSearch = continueSearch;
+                Moves = null;
+                SupplementaryList = null;
+                Nodes = null;
             }
 
-            public Node(MoveList moves, MoveList supplementaryList)
+            public Node(IList<Move> moves, IList<Move> supplementaryList)
             {
+                ContinueSearch = true;
                 Moves = moves;
                 SupplementaryList = supplementaryList;
+                Nodes = null;
             }
 
-            public MoveList Moves { get; set; }
-            public MoveList SupplementaryList { get; set; }
-            public FastList<Node> Nodes { get; set; }
+            public bool ContinueSearch;
+            public IList<Move> Moves;
+            public IList<Move> SupplementaryList;
+            public IList<Node> Nodes;
         }
 
         public SearchMoveFinder(Game game)
             : base(game)
         {
+            UseDepthFirst = false;
             WorkingTableau = new Tableau();
             TranspositionTable = new HashSet<int>();
             MoveStack = new MoveList();
             Moves = new MoveList();
             MaxDepth = 20;
             MaxNodes = 10000;
+            MoveAllocator = new ListAllocator<Move>();
+            NodeAllocator = new ListAllocator<Node>();
         }
 
+        public bool UseDepthFirst { get; set; }
         public Tableau WorkingTableau { get; set; }
         public HashSet<int> TranspositionTable { get; set; }
         MoveList MoveStack { get; set; }
@@ -44,6 +55,8 @@ namespace Spider
         public int NodesSearched { get; set; }
         public MoveList Moves { get; set; }
         public double Score { get; set; }
+        private ListAllocator<Move> MoveAllocator { get; set; }
+        private ListAllocator<Node> NodeAllocator { get; set; }
 
         public void SearchMoves()
         {
@@ -52,40 +65,46 @@ namespace Spider
             WorkingTableau.CopyUpPiles(Tableau);
             WorkingTableau.BlockDownPiles(Tableau);
 
-#if false
-            StartSearch();
-            DepthFirstSearch(MaxDepth);
-            if (NodesSearched >= MaxNodes)
+            MoveAllocator.Clear();
+            NodeAllocator.Clear();
+
+            if (UseDepthFirst)
             {
-                int maxNodesSearched = 0;
-                for (int depth = 1; depth < MaxDepth; depth++)
+                StartSearch();
+                DepthFirstSearch(MaxDepth);
+                if (NodesSearched >= MaxNodes)
                 {
-                    StartSearch();
-                    DepthFirstSearch(depth);
-                    if (NodesSearched == maxNodesSearched)
+                    int maxNodesSearched = 0;
+                    for (int depth = 1; depth < MaxDepth; depth++)
                     {
-                        break;
+                        StartSearch();
+                        DepthFirstSearch(depth);
+                        if (NodesSearched == maxNodesSearched)
+                        {
+                            break;
+                        }
+                        maxNodesSearched = NodesSearched;
+                        if (maxNodesSearched >= MaxNodes)
+                        {
+                            break;
+                        }
                     }
-                    maxNodesSearched = NodesSearched;
-                    if (maxNodesSearched >= MaxNodes)
+                }
+            }
+            else
+            {
+                StartSearch();
+                Node root = new Node();
+                while (true)
+                {
+                    int lastNodesSearched = NodesSearched;
+                    BreadthFirstSearch(ref root);
+                    if (NodesSearched == lastNodesSearched || NodesSearched >= MaxNodes)
                     {
                         break;
                     }
                 }
             }
-#else
-            StartSearch();
-            Node root = new Node();
-            while (true)
-            {
-                int lastNodesSearched = NodesSearched;
-                BreadthFirstSearch(root);
-                if (lastNodesSearched == NodesSearched || lastNodesSearched >= MaxNodes)
-                {
-                    break;
-                }
-            }
-#endif
 
             if (TraceSearch)
             {
@@ -164,29 +183,33 @@ namespace Spider
             }
         }
 
-        private void BreadthFirstSearch(Node parent)
+        private void BreadthFirstSearch(ref Node parent)
         {
             if (parent.Moves == null)
             {
                 FindMoves(WorkingTableau);
+#if true
+                parent.Moves = new AllocatedList<Move>(MoveAllocator, Candidates);
+                parent.SupplementaryList = new AllocatedList<Move>(MoveAllocator, SupplementaryList);
+                parent.Nodes = new AllocatedList<Node>(NodeAllocator, parent.Moves.Count, parent.Moves.Count);
+#else
                 parent.Moves = new MoveList(Candidates);
                 parent.SupplementaryList = new MoveList(SupplementaryList);
-                parent.Nodes = new FastList<Node>();
+                parent.Nodes = new FastList<Node>(parent.Moves.Count, parent.Moves.Count);
+#endif
                 for (int i = 0; i < parent.Moves.Count; i++)
                 {
-                    Node child = null;
                     int checkPoint = WorkingTableau.CheckPoint;
                     MakeMove(parent, i);
                     if (ProcessNode())
                     {
-                        child = new Node();
+                        parent.Nodes[i] = new Node(true);
                     }
                     WorkingTableau.Revert(checkPoint);
                     if (NodesSearched >= MaxNodes)
                     {
                         return;
                     }
-                    parent.Nodes.Add(child);
                 }
             }
             else
@@ -194,17 +217,18 @@ namespace Spider
                 for (int i = 0; i < parent.Moves.Count; i++)
                 {
                     Node child = parent.Nodes[i];
-                    if (child != null)
+                    if (child.ContinueSearch)
                     {
                         int checkPoint = WorkingTableau.CheckPoint;
                         MakeMove(parent, i);
-                        BreadthFirstSearch(child);
+                        BreadthFirstSearch(ref child);
                         WorkingTableau.Revert(checkPoint);
                         if (NodesSearched >= MaxNodes)
                         {
                             return;
                         }
                     }
+                    parent.Nodes[i] = child;
                 }
             }
         }

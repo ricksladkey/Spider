@@ -102,6 +102,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AllocatedList.cs" />
     <Compile Include="BaseGame.cs" />
     <Compile Include="Card.cs" />
     <Compile Include="ComplexMove.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="IReadOnlyList.cs" />
     <Compile Include="IStack.cs" />
     <Compile Include="LayoutPart.cs" />
+    <Compile Include="ListAllocator.cs" />
     <Compile Include="lmmin.cs" />
     <Compile Include="Move.cs" />
     <Compile Include="MoveProcessor.cs" />

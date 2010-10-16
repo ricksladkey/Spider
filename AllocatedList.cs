@@ -8,34 +8,40 @@ namespace Spider
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class FastList<T> : IList<T>, IStack<T>, IReadOnlyList<T>
+    public class AllocatedList<T> : IList<T>
     {
-        protected int capacity;
-        protected int count;
-        protected T[] array;
+        private ListAllocator<T> allocator;
+        private T[] array;
+        private int offset;
+        private int capacity;
+        private int count;
         protected IEqualityComparer<T> comparer;
 
-        public FastList()
-            : this(10, 0)
+        public AllocatedList(ListAllocator<T> allocator, int capacity)
         {
-        }
-
-        public FastList(int capacity)
-            : this(capacity, 0)
-        {
-        }
-
-        public FastList(int capacity, int count)
-        {
+            this.allocator = allocator;
+            ListAllocator<T>.Allocation allocation = allocator.Allocate(capacity);
+            this.array = allocation.Array;
+            this.offset = allocation.Offset;
             this.capacity = capacity;
-            this.count = count;
-            array = new T[capacity];
-            comparer = EqualityComparer<T>.Default;
+            this.count = 0;
+            this.comparer = EqualityComparer<T>.Default;
         }
 
-        public void Copy(FastList<T> other)
+        public AllocatedList(ListAllocator<T> allocator, int capacity, int count)
+            : this(allocator, capacity)
         {
-            Clear();
+            this.count = count;
+        }
+
+        public AllocatedList(ListAllocator<T> allocator)
+            : this(allocator, 10)
+        {
+        }
+
+        public AllocatedList(ListAllocator<T> allocator, IList<T> other)
+            : this(allocator, other.Count)
+        {
             AddRange(other, 0, other.Count);
         }
 
@@ -45,35 +51,9 @@ namespace Spider
             AddRange(other, 0, other.Count);
         }
 
-        public void AddRange(IEnumerable<T> Ts)
-        {
-            foreach (T item in Ts)
-            {
-                Add(item);
-            }
-        }
-
-        public void AddRange(FastList<T> other)
-        {
-            AddRange(other, 0, other.Count);
-        }
-
         public void AddRange(IList<T> other)
         {
             AddRange(other, 0, other.Count);
-        }
-
-        public void AddRange(FastList<T> other, int index, int count)
-        {
-            if (capacity < this.count + count)
-            {
-                IncreaseCapacity(count);
-            }
-            for (int i = 0; i < count; i++)
-            {
-                array[this.count + i] = other.array[index + i];
-            }
-            this.count += count;
         }
 
         public void AddRange(IList<T> other, int index, int count)
@@ -84,19 +64,9 @@ namespace Spider
             }
             for (int i = 0; i < count; i++)
             {
-                array[this.count + i] = other[index + i];
+                array[this.count + i + offset] = other[index + i];
             }
             this.count += count;
-        }
-
-        public void RemoveRange(int index, int count)
-        {
-            Debug.Assert(index >= 0 && index + count <= this.count);
-            for (int i = index + count; i < count; i++)
-            {
-                array[i - count] = array[i];
-            }
-            this.count -= count;
         }
 
         #region IList<T> Members
@@ -105,7 +75,7 @@ namespace Spider
         {
             for (int i = 0; i < count; i++)
             {
-                if (comparer.Equals(array[i], item))
+                if (array[i + offset].Equals(item))
                 {
                     return i;
                 }
@@ -121,9 +91,9 @@ namespace Spider
             }
             for (int i = index; i < count; i++)
             {
-                array[i + 1] = array[i];
+                array[i + 1 + offset] = array[i + offset];
             }
-            array[index] = item;
+            array[index + offset] = item;
             count++;
         }
 
@@ -132,7 +102,7 @@ namespace Spider
             Debug.Assert(index >= 0 && index < count);
             for (int i = index + 1; i < count; i++)
             {
-                array[i - 1] = array[i];
+                array[i - 1 + offset] = array[i + offset];
             }
             count--;
         }
@@ -142,34 +112,13 @@ namespace Spider
             get
             {
                 Debug.Assert(index >= 0 && index < count);
-                return array[index];
+                return array[index + offset];
             }
             set
             {
                 Debug.Assert(index >= 0 && index < count);
-                array[index] = value;
+                array[index + offset] = value;
             }
-        }
-
-        #endregion
-
-        #region IStack<T> Members
-
-        public void Push(T item)
-        {
-            Add(item);
-        }
-
-        public T Peek()
-        {
-            Debug.Assert(count > 0);
-            return array[count - 1];
-        }
-
-        public T Pop()
-        {
-            Debug.Assert(count > 0);
-            return array[--count];
         }
 
         #endregion
@@ -182,7 +131,8 @@ namespace Spider
             {
                 IncreaseCapacity(1);
             }
-            array[count++] = item;
+            array[count + offset] = item;
+            count++;
         }
 
         public void Clear()
@@ -199,7 +149,7 @@ namespace Spider
         {
             for (int i = 0; i < count; i++)
             {
-                array[index + i] = this.array[i];
+                array[index + i] = this.array[i + offset];
             }
         }
 
@@ -223,7 +173,7 @@ namespace Spider
         {
             for (int i = 0; i < count; i++)
             {
-                if (comparer.Equals(array[i], item))
+                if (comparer.Equals(array[i + offset], item))
                 {
                     RemoveAt(i);
                     return true;
@@ -240,7 +190,7 @@ namespace Spider
         {
             for (int i = 0; i < count; i++)
             {
-                yield return array[i];
+                yield return array[i + offset];
             }
         }
 
@@ -255,57 +205,19 @@ namespace Spider
 
         #endregion
 
-        #region IReadOnlyList<T> Members
-
-        bool IReadOnlyList<T>.Contains(T item)
-        {
-            return Contains(item);
-        }
-
-        void IReadOnlyList<T>.CopyTo(T[] array, int index)
-        {
-            CopyTo(array, index);
-        }
-
-        int IReadOnlyList<T>.IndexOf(T item)
-        {
-            return IndexOf(item);
-        }
-
-        int IReadOnlyList<T>.Count
-        {
-            get
-            {
-                return count;
-            }
-        }
-
-        IList<T> IReadOnlyList<T>.Items
-        {
-            get
-            {
-                return this;
-            }
-        }
-
-        T IReadOnlyList<T>.this[int index]
-        {
-            get
-            {
-                return array[index];
-            }
-        }
-
-        #endregion
-
         private void IncreaseCapacity(int additionalCapacity)
         {
             int newCapacity = (count + additionalCapacity) * 2;
-            T[] newArray = new T[newCapacity];
-            array.CopyTo(newArray, 0);
-
-            capacity = newCapacity;
+            ListAllocator<T>.Allocation allocation = allocator.Allocate(newCapacity);
+            T[] newArray = allocation.Array;
+            int newOffset = allocation.Offset;
+            for (int i = 0; i < count; i++)
+            {
+                newArray[i + newOffset] = array[i + offset];
+            }
             array = newArray;
+            offset = newOffset;
+            capacity = newCapacity;
         }
     }
 }

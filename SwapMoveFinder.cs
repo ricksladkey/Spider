@@ -8,11 +8,13 @@ namespace Spider
     public class SwapMoveFinder : GameHelper
     {
         private CardMap CardMap { get; set; }
+        private FastList<int> Used { get; set; }
 
         public SwapMoveFinder(Game game)
             : base(game)
         {
             CardMap = new CardMap();
+            Used = new FastList<int>();
         }
 
         public void Check(int from, int fromRow, int extraSuits, int maxExtraSuits)
@@ -102,9 +104,9 @@ namespace Spider
                     continue;
                 }
 
-                FastList<int> used = new FastList<int>();
-                used.Add(from);
-                used.Add(to);
+                Used.Clear();
+                Used.Add(from);
+                Used.Add(to);
                 int fromHoldingCount = 0;
                 int toHoldingCount = 0;
                 int fromHoldingSuits = 0;
@@ -113,17 +115,17 @@ namespace Spider
                 {
                     if (fromHoldingCount < fromHoldingStack.Count &&
                         fromHoldingStack[fromHoldingCount].FromRow >= fromRow &&
-                        !used.Contains(fromHoldingStack[fromHoldingCount].To))
+                        !Used.Contains(fromHoldingStack[fromHoldingCount].To))
                     {
-                        used.Add(fromHoldingStack[fromHoldingCount].To);
+                        Used.Add(fromHoldingStack[fromHoldingCount].To);
                         fromHoldingSuits = fromHoldingStack[fromHoldingCount].Suits;
                         fromHoldingCount++;
                     }
                     else if (toHoldingCount < toHoldingStack.Count &&
                         toHoldingStack[toHoldingCount].FromRow >= toRow &&
-                        !used.Contains(toHoldingStack[toHoldingCount].To))
+                        !Used.Contains(toHoldingStack[toHoldingCount].To))
                     {
-                        used.Add(toHoldingStack[toHoldingCount].To);
+                        Used.Add(toHoldingStack[toHoldingCount].To);
                         toHoldingSuits = toHoldingStack[toHoldingCount].Suits;
                         toHoldingCount++;
                     }
