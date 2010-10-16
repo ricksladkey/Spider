@@ -46,8 +46,7 @@ namespace Spider
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
-        public int[] RunLengths { get { return game.RunLengths; } }
-        public int[] RunLengthsAnySuit { get { return game.RunLengthsAnySuit; } }
+        public RunFinder RunFinder { get { return game.RunFinder; } }
 
         public void FindMoves(Tableau tableau)
         {

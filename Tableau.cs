@@ -173,67 +173,6 @@ namespace Spider
             return upPiles[column].CountSuits(startRow, endRow);
         }
 
-        public int GetRunDelta(int from, int fromRow, int to, int toRow)
-        {
-            return GetRunUp(from, fromRow) - GetRunUp(to, toRow);
-        }
-
-        public int GetNetRunLength(int order, int from, int fromRow, int to, int toRow)
-        {
-            int moveRun = GetRunDown(from, fromRow);
-            int fromRun = GetRunUp(from, fromRow + 1) + moveRun - 1;
-            if (order != 2)
-            {
-                // The from card's suit doesn't match the to card's suit.
-                if (moveRun == fromRun)
-                {
-                    // The from card's suit doesn't match its parent.
-                    return 0;
-                }
-                return -fromRun;
-            }
-            int toRun = GetRunUp(to, toRow);
-            int newRun = moveRun + toRun;
-            if (moveRun == fromRun)
-            {
-                // The from card's suit doesn't match its parent.
-                return newRun;
-            }
-            return newRun - fromRun;
-        }
-
-        public int GetNewRunLength(int order, int from, int fromRow, int to, int toRow)
-        {
-            if (order != 2)
-            {
-                // The from card's suit doesn't match the to card's suit.
-                return 0;
-            }
-            int moveRun = GetRunDown(from, fromRow);
-            int toRun = GetRunUp(to, toRow);
-            int newRun = moveRun + toRun;
-            return newRun;
-        }
-
-        public int GetOneRunDelta(int oldOrder, int newOrder, Move move)
-        {
-            bool fromFree = GetDownCount(move.From) == 0;
-            bool toFree = GetDownCount(move.To) == 0;
-            bool fromUpper = GetRunUp(move.From, move.FromRow) == move.FromRow;
-            bool fromLower = move.HoldingNext == -1;
-            bool toUpper = GetRunUp(move.To, move.ToRow) == move.ToRow;
-            bool oldFrom = move.FromRow == 0 ?
-                (fromFree && fromLower) :
-                (fromFree && fromUpper && fromLower && oldOrder == 2);
-            bool newFrom = fromFree && fromUpper;
-            bool oldTo = toFree && toUpper;
-            bool newTo = move.ToRow == 0 ?
-                (toFree && fromLower) :
-                (toFree && toUpper && fromLower && newOrder == 2);
-            int oneRunDelta = (newFrom ? 1 : 0) - (oldFrom ? 1 : 0) + (newTo ? 1 : 0) - (oldTo ? 1 : 0);
-            return oneRunDelta > 0 ? 1 : 0;
-        }
-
         public void Copy(Tableau other)
         {
             ClearAll();
@@ -314,10 +253,7 @@ namespace Spider
             {
                 return SwapIsValid(move);
             }
-            else
-            {
-                throw new InvalidMoveException("unsupported move type");
-            }
+            return false;
         }
 
         public bool MoveIsValid(Move move)
@@ -473,10 +409,6 @@ namespace Spider
             else if (move.Type == MoveType.Swap)
             {
                 DoSwap(move);
-            }
-            else
-            {
-                throw new Exception("unsupported move type");
             }
         }
 
@@ -781,9 +713,10 @@ namespace Spider
         private static int GetZobristKey(int column, Pile pile)
         {
             int hashKey = 0;
+            int[][] keys = ZobristKeys[column];
             for (int row = 0; row < pile.Count; row++)
             {
-                hashKey ^= ZobristKeys[column][row][pile[row].GetHashKey()];
+                hashKey ^= keys[row][pile[row].GetHashKey()];
             }
             return hashKey;
         }

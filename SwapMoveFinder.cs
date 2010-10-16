@@ -48,7 +48,7 @@ namespace Spider
                 {
                     continue;
                 }
-                int splitRow = toPile.Count - RunLengthsAnySuit[to];
+                int splitRow = toPile.Count - RunFinder.GetRunLengthAnySuit(to);
                 int toRow = -1;
                 if (inSequence)
                 {
@@ -89,7 +89,7 @@ namespace Spider
                     continue;
                 }
 
-                int toSuits = toPile.CountSuits(toRow);
+                int toSuits = RunFinder.CountSuits(to, toRow);
                 if (extraSuits + toSuits <= maxExtraSuits)
                 {
                     // Swap with no holding piles.

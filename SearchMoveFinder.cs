@@ -42,8 +42,8 @@ namespace Spider
             Moves = new MoveList();
             MaxDepth = 20;
             MaxNodes = 10000;
-            MoveAllocator = new ListAllocator<Move>();
-            NodeAllocator = new ListAllocator<Node>();
+            MoveAllocator = new ListAllocator<Move>(false);
+            NodeAllocator = new ListAllocator<Node>(true);
         }
 
         public bool UseDepthFirst { get; set; }

@@ -19,8 +19,7 @@ namespace Spider
         MoveList Candidates { get; }
         PileList OneRunPiles { get; }
         HoldingStack[] HoldingStacks { get; }
-        int[] RunLengths { get; }
-        int[] RunLengthsAnySuit { get; }
+        RunFinder RunFinder { get; }
 
         void FindMoves(Tableau tableau);
         void ProcessCandidate(Move move);

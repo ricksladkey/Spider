@@ -24,6 +24,15 @@ average moves: 276.9 (won: 514.52, lost: 184.95)
 C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000
 games played: 1000, games won: 58.2%, games with discards: 76.8%
 average moves: 261.77 (won: 350.38, lost: 138.39)
+--------------------------------------------------------------------------------------------------------
+current results:
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --
+search
+games played: 100000, games won: 67.17%, games with discards: 85.442%
+average moves: 258.7 (won: 322.57, lost: 128.01)
+0.01user 0.01system 6:02:47elapsed 0%CPU (0avgtext+0avgdata 148736maxresident)k
+0inputs+0outputs (578major+0minor)pagefaults 0swaps
 ========================================================================================================
 
 - eliminate fine-grained scoring when searching

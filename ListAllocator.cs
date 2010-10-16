@@ -19,35 +19,40 @@ namespace Spider
             public int Offset;
         }
 
+        private bool clearEntries;
         private List<T[]> arrays;
         private int current;
         private int offset;
         private int segmentSize;
 
-        public ListAllocator()
+        public ListAllocator(bool clearEntries)
         {
-            segmentSize = 0x10000;
-            arrays = new List<T[]>();
-            arrays.Add(new T[segmentSize]);
-            current = 0;
-            offset = 0;
+            this.clearEntries = clearEntries;
+            this.segmentSize = 0x10000;
+            this.arrays = new List<T[]>();
+            this.arrays.Add(new T[segmentSize]);
+            this.current = 0;
+            this.offset = 0;
         }
 
         public void Clear()
         {
-            for (int i = 0; i < current; i++)
+            if (clearEntries)
             {
-                T[] array = arrays[i];
-                for (int j = 0; j < segmentSize; j++)
+                for (int i = 0; i < current; i++)
                 {
-                    array[j] = default(T);
+                    T[] array = arrays[i];
+                    for (int j = 0; j < segmentSize; j++)
+                    {
+                        array[j] = default(T);
+                    }
                 }
-            }
-            {
-                T[] array = arrays[current];
-                for (int j = 0; j < offset; j++)
                 {
-                    array[j] = default(T);
+                    T[] array = arrays[current];
+                    for (int j = 0; j < offset; j++)
+                    {
+                        array[j] = default(T);
+                    }
                 }
             }
             current = 0;

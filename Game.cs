@@ -54,8 +54,7 @@ namespace Spider
         public MoveList SupplementaryMoves { get; private set; }
         public MoveList SupplementaryList { get; private set; }
         public HoldingStack[] HoldingStacks { get; private set; }
-        public int[] RunLengths { get; private set; }
-        public int[] RunLengthsAnySuit { get; private set; }
+        public RunFinder RunFinder { get; private set; }
         public PileList OneRunPiles { get; private set; }
         public PileList[] FaceLists { get; private set; }
         public MoveList UncoveringMoves { get; private set; }
@@ -104,6 +103,7 @@ namespace Spider
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
+            RunFinder = new RunFinder();
             OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
@@ -216,8 +216,6 @@ namespace Spider
             {
                 HoldingStacks[column] = new HoldingStack();
             }
-            RunLengths = new int[NumberOfPiles];
-            RunLengthsAnySuit = new int[NumberOfPiles];
             Won = false;
             Shuffled.Clear();
             Tableau.ClearAll();
@@ -453,7 +451,7 @@ namespace Spider
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
-                int splitRow = fromPile.Count - RunLengthsAnySuit[from];
+                int splitRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
                 int extraSuits = 0;
                 HoldingStack holdingStack = HoldingStacks[from];
                 for (int fromRow = fromPile.Count - 1; fromRow >= splitRow; fromRow--)
@@ -478,6 +476,14 @@ namespace Spider
 
         public void ProcessCandidate(Move move)
         {
+            if (UseSearch)
+            {
+                if (IsViableCandidate(move))
+                {
+                    Candidates.Add(move);
+                }
+                return;
+            }
             double score = CalculateScore(move);
             if (score == RejectScore)
             {
@@ -495,12 +501,12 @@ namespace Spider
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
-                int fromRow = fromPile.Count - RunLengthsAnySuit[from];
+                int fromRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
                 if (fromRow == 0)
                 {
                     continue;
                 }
-                int fromSuits = fromPile.CountSuits(fromRow);
+                int fromSuits = RunFinder.CountSuits(from, fromRow);
                 Card fromCard = fromPile[fromRow];
                 PileList faceList = FaceLists[(int)fromCard.Face + 1];
                 for (int i = 0; i < faceList.Count; i++)
@@ -526,12 +532,12 @@ namespace Spider
         private void FindOneRunPiles()
         {
             OneRunPiles.Clear();
-            for (int i = 0; i < NumberOfPiles; i++)
+            for (int column = 0; column < NumberOfPiles; column++)
             {
-                int upCount = FindTableau[i].Count;
-                if (upCount != 0 && upCount == RunLengthsAnySuit[i])
+                int upCount = FindTableau[column].Count;
+                if (upCount != 0 && upCount == RunFinder.GetRunLengthAnySuit(column))
                 {
-                    OneRunPiles.Add(i);
+                    OneRunPiles.Add(column);
                 }
             }
         }
@@ -649,25 +655,80 @@ namespace Spider
 
         private void Analyze()
         {
+            RunFinder.Find(FindTableau);
+
+            // Prepare face lists.
             for (int i = (int)Face.Ace; i <= (int)Face.King; i++)
             {
                 FaceLists[i].Clear();
             }
-
             for (int i = 0; i < NumberOfPiles; i++)
             {
-                // Prepare face lists.
                 Pile pile = FindTableau[i];
                 int pileCount = pile.Count;
                 if (pileCount != 0 && !pile[pileCount - 1].IsEmpty)
                 {
                     FaceLists[(int)pile[pileCount - 1].Face].Add(i);
                 }
-
-                // Cache run lengths.
-                RunLengths[i] = pile.GetRunUp(pileCount);
-                RunLengthsAnySuit[i] = pile.GetRunUpAnySuit(pileCount);
             }
+        }
+
+        private bool IsViableCandidate(Move move)
+        {
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
+            int toRow = move.ToRow;
+
+            Pile fromPile = FindTableau[from];
+            Pile toPile = FindTableau[to];
+            if (toPile.Count == 0)
+            {
+                if (fromPile.Count == 0 && FindTableau.GetDownCount(from) == 0)
+                {
+                    return false;
+                }
+                else if (fromRow != 0 && fromPile[fromRow - 1].IsTargetFor(fromPile[fromRow]))
+                {
+                    return false;
+                }
+                return true;
+            }
+            bool isSwap = move.Type == MoveType.Swap;
+            Card fromParent = fromRow != 0 ? fromPile[fromRow - 1] : Card.Empty;
+            Card fromChild = fromPile[fromRow];
+            Card toParent = toRow != 0 ? toPile[toRow - 1] : Card.Empty;
+            Card toChild = toRow != toPile.Count ? toPile[toRow] : Card.Empty;
+            int oldOrderFrom = GetOrder(fromParent, fromChild);
+            int newOrderFrom = GetOrder(toParent, fromChild);
+            int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
+            int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
+            int order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
+            if (order < 0)
+            {
+                return false;
+            }
+            int netRunLengthFrom = RunFinder.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
+            int netRunLengthTo = isSwap ? RunFinder.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
+            int netRunLength = netRunLengthFrom + netRunLengthTo;
+            if (order == 0 && netRunLength < 0)
+            {
+                return false;
+            }
+            int delta = 0;
+            if (order == 0 && netRunLength == 0)
+            {
+                if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
+                {
+                    delta = RunFinder.GetRunDelta(from, fromRow, to, toRow);
+                }
+                if (delta <= 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private double CalculateScore(Move move)
@@ -710,17 +771,17 @@ namespace Spider
             }
             score.Reversible = oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
             score.Uses = CountUses(move);
-            score.OneRunDelta = !isSwap ? FindTableau.GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
+            score.OneRunDelta = !isSwap ? RunFinder.GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
             int faceFrom = (int)fromChild.Face;
             int faceTo = isSwap ? (int)toChild.Face : 0;
             score.FaceValue = Math.Max(faceFrom, faceTo);
             bool wholePile = fromRow == 0 && toRow == toPile.Count;
-            int netRunLengthFrom = FindTableau.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int netRunLengthTo = isSwap ? FindTableau.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
+            int netRunLengthFrom = RunFinder.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
+            int netRunLengthTo = isSwap ? RunFinder.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
             score.NetRunLength = netRunLengthFrom + netRunLengthTo;
 #if true
-            int newRunLengthFrom = FindTableau.GetNewRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int newRunLengthTo = isSwap ? FindTableau.GetNewRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
+            int newRunLengthFrom = RunFinder.GetNewRunLength(newOrderFrom, from, fromRow, to, toRow);
+            int newRunLengthTo = isSwap ? RunFinder.GetNewRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
             score.Discards = newRunLengthFrom == 13 || newRunLengthTo == 13;
 #endif
             score.DownCount = FindTableau.GetDownCount(from);
@@ -736,7 +797,7 @@ namespace Spider
             {
                 if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
                 {
-                    delta = FindTableau.GetRunDelta(from, fromRow, to, toRow);
+                    delta = RunFinder.GetRunDelta(from, fromRow, to, toRow);
                 }
                 if (delta <= 0)
                 {
@@ -826,7 +887,7 @@ namespace Spider
                 // Check whether the exposed card will be useful.
                 int numberOfSpaces = FindTableau.NumberOfSpaces - 1;
                 int maxExtraSuits = ExtraSuits(numberOfSpaces);
-                int fromSuits = fromPile.CountSuits(move.FromRow);
+                int fromSuits = RunFinder.CountSuits(move.From, move.FromRow);
                 for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
                 {
                     if (nextFrom == move.From || nextFrom == move.To)
@@ -840,13 +901,13 @@ namespace Spider
                         // Column is empty.
                         continue;
                     }
-                    int nextFromRow = nextFromPile.Count - RunLengthsAnySuit[nextFrom];
+                    int nextFromRow = nextFromPile.Count - RunFinder.GetRunLengthAnySuit(nextFrom);
                     if (!nextFromPile[nextFromRow].IsSourceFor(exposedCard))
                     {
                         // Not the card we need.
                         continue;
                     }
-                    int extraSuits = nextFromPile.CountSuits(nextFromRow) - 1;
+                    int extraSuits = RunFinder.CountSuits(nextFrom, nextFromRow) - 1;
                     if (extraSuits <= maxExtraSuits)
                     {
                         // Card leads to a useful move.
@@ -854,7 +915,7 @@ namespace Spider
                     }
 
                     // Check whether the exposed run will be useful.
-                    int upperFromRow = move.FromRow - fromPile.GetRunUp(move.FromRow);
+                    int upperFromRow = move.FromRow - RunFinder.GetRunUp(move.From, move.FromRow);
                     if (upperFromRow != move.FromRow)
                     {
                         Card upperFromCard = fromPile[upperFromRow];

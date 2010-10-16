@@ -140,6 +140,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="RegressionResult.cs" />
+    <Compile Include="RunFinder.cs" />
     <Compile Include="ScoreInfo.cs" />
     <Compile Include="SearchMoveFinder.cs" />
     <Compile Include="SimplexConstant.cs" />
