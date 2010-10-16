@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -10,7 +11,6 @@ namespace Spider
         private class PileInfo
         {
             public int Count;
-            public int RunLength;
             public int RunLengthAnySuit;
             public RunInfo[] RunInfoArray;
         }
@@ -58,18 +58,14 @@ namespace Spider
                 PileInfo pileInfo = pileInfoArray[column];
                 int m = pile.Count;
                 pileInfo.Count = m;
-                pileInfo.RunLength = pile.GetRunUp(m);
-                pileInfo.RunLengthAnySuit = pile.GetRunUpAnySuit(m);
                 pileInfo.RunInfoArray[m] = new RunInfo(m, m, 0);
                 if (m == 0)
                 {
-                    pileInfo.RunLength = 0;
                     pileInfo.RunLengthAnySuit = 0;
                     continue;
                 }
                 if (m == 1)
                 {
-                    pileInfo.RunLength = 1;
                     pileInfo.RunLengthAnySuit = 1;
                     pileInfo.RunInfoArray[0] = new RunInfo(0, 1, 1);
                     continue;
@@ -83,41 +79,36 @@ namespace Spider
                 for (int currentRow = m - 2; currentRow >= 0; currentRow--)
                 {
                     Card currentCard = pile[currentRow];
-                    int order = GetOrder(currentCard, previousCard);
-                    if (order == 2)
+                    if (!currentCard.IsTargetFor(previousCard))
+                    {
+                        break;
+                    }
+                    if (currentCard.Suit == previousCard.Suit)
                     {
                         startRow = currentRow;
                     }
                     else
                     {
+                        RunInfo runInfo = new RunInfo(startRow, endRow, suits);
                         for (int row = startRow; row < endRow; row++)
                         {
-                            runInfoArray[row] = new RunInfo(startRow, endRow, suits);
+                            runInfoArray[row] = runInfo;
                         }
                         startRow = currentRow;
                         endRow = currentRow + 1;
-                        if (order == 0)
-                        {
-                            suits = -1;
-                        }
-                        else if (suits != -1)
-                        {
-                            suits++;
-                        }
+                        suits++;
                     }
                     previousCard = currentCard;
                 }
-                for (int row = startRow; row < endRow; row++)
                 {
-                    runInfoArray[row] = new RunInfo(startRow, endRow, suits);
+                    RunInfo runInfo = new RunInfo(startRow, endRow, suits);
+                    for (int row = startRow; row < endRow; row++)
+                    {
+                        runInfoArray[row] = runInfo;
+                    }
                 }
+                pileInfo.RunLengthAnySuit = m - startRow;
             }
-        }
-
-        public int GetRunLength(int column)
-        {
-            return pileInfoArray[column].RunLength;
-
         }
 
         public int GetRunLengthAnySuit(int column)
