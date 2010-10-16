@@ -6,6 +6,10 @@ using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Spider.Collections;
+using Spider.Engine;
+using Spider.GamePlay;
+
 namespace Spider.Tests
 {
     [TestClass]

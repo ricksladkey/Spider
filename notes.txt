@@ -1,35 +1,3 @@
-========================================================================================================
-r123 results:
-
-C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search
-games played: 1000, games won: 67.9%, games with discards: 85.8%
-average moves: 267.94 (won: 331.91, lost: 132.61)
-
-C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 100000 --search
-games played: 100000, games won: 67.063%, games with discards: 86.638%
-average moves: 267.88 (won: 331.38, lost: 138.58)
-
-C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search --variation 4
-games played: 1000, games won: 27.9%, games with discards: 39%
-average moves: 276.9 (won: 514.52, lost: 184.95)
---------------------------------------------------------------------------------------------------------
-current results:
-
-C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --search
-games played: 100000, games won: 67.17%, games with discards: 85.442%
-average moves: 258.7 (won: 322.57, lost: 128.01)
-0.01user 0.01system 6:02:47elapsed 0%CPU (0avgtext+0avgdata 148736maxresident)k
-
-C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --search --variation 4
-games played: 100000, games won: 27.999%, games with discards: 39.336%
-average moves: 266.36 (won: 514.47, lost: 169.88)
-0.01user 0.03system 4:43:37elapsed 0%CPU (0avgtext+0avgdata 149248maxresident)k
-========================================================================================================
-
-- eliminate fine-grained scoring when searching
-- rewrite search into breadth-first search
-- organize source files into folders
-
 - rename workingTableau to WorkingTableau
 - unify the three places where complex moves with holding piles are performed
 
@@ -63,3 +31,31 @@ average moves: 266.36 (won: 514.47, lost: 169.88)
 
 - alternate Nelder-Mead implementation:
   http://www.koders.com/csharp/fid218B2E3946027CB5037676EA50CE549B6FC26CF7.aspx?s=mdef:search
+
+========================================================================================================
+r123 results:
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search
+games played: 1000, games won: 67.9%, games with discards: 85.8%
+average moves: 267.94 (won: 331.91, lost: 132.61)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 100000 --search
+games played: 100000, games won: 67.063%, games with discards: 86.638%
+average moves: 267.88 (won: 331.38, lost: 138.58)
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>spider --games 1000 --search --variation 4
+games played: 1000, games won: 27.9%, games with discards: 39%
+average moves: 276.9 (won: 514.52, lost: 184.95)
+--------------------------------------------------------------------------------------------------------
+current results:
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --search
+games played: 100000, games won: 67.17%, games with discards: 85.442%
+average moves: 258.7 (won: 322.57, lost: 128.01)
+0.01user 0.01system 6:02:47elapsed 0%CPU (0avgtext+0avgdata 148736maxresident)k
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --search --variation 4
+games played: 100000, games won: 27.999%, games with discards: 39.336%
+average moves: 266.36 (won: 514.47, lost: 169.88)
+0.01user 0.03system 4:43:37elapsed 0%CPU (0avgtext+0avgdata 149248maxresident)k
+========================================================================================================
