@@ -26,6 +26,10 @@ namespace Spider.GamePlay
             /* 9 */ 1.756489081, 0.0002561898898, -0.04347481483, -0.1737026135, 3.471266012, 1,
         };
 
+        public static double[] SearchCoefficients = new double[] {
+            5, 1000, 2, 24
+        };
+
         public const int MaximumMoves = 1500;
 
         public const int Group0 = 0;
@@ -120,6 +124,12 @@ namespace Spider.GamePlay
             MoveProcessor = new MoveProcessor(this);
         }
 
+        public Game(Variation variation)
+            : this()
+        {
+            Variation = variation;
+        }
+
         public Game(string s)
             : this()
         {
@@ -136,6 +146,46 @@ namespace Spider.GamePlay
             : this()
         {
             FromTableau(tableau);
+        }
+
+        public void Initialize()
+        {
+            Tableau.Variation = Variation;
+            NumberOfPiles = Variation.NumberOfPiles;
+            NumberOfSuits = Variation.NumberOfSuits;
+            HoldingStacks = new HoldingStack[NumberOfPiles];
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                HoldingStacks[column] = new HoldingStack();
+            }
+            Won = false;
+            Shuffled.Clear();
+            Tableau.ClearAll();
+
+            if (UseSearch)
+            {
+                SetDefaultCoefficients(SearchCoefficients);
+            }
+            else
+            {
+                int suits = Variation.NumberOfSuits;
+                if (suits == 1)
+                {
+                    SetDefaultCoefficients(OneSuitCoefficients);
+                }
+                else if (suits == 2)
+                {
+                    SetDefaultCoefficients(TwoSuitCoefficients);
+                }
+                else if (suits == 4)
+                {
+                    SetDefaultCoefficients(FourSuitCoefficients);
+                }
+                else
+                {
+                    throw new Exception("invalid number of suits");
+                }
+            }
         }
 
         public void Play()
@@ -203,39 +253,6 @@ namespace Spider.GamePlay
             {
                 Utils.WriteLine("spider: seed: {0}, message: {1}", Seed, exception.Message);
                 throw;
-            }
-        }
-
-        private void Initialize()
-        {
-            Tableau.Variation = Variation;
-            NumberOfPiles = Variation.NumberOfPiles;
-            NumberOfSuits = Variation.NumberOfSuits;
-            HoldingStacks = new HoldingStack[NumberOfPiles];
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                HoldingStacks[column] = new HoldingStack();
-            }
-            Won = false;
-            Shuffled.Clear();
-            Tableau.ClearAll();
-
-            int suits = Variation.NumberOfSuits;
-            if (suits == 1)
-            {
-                SetDefaultCoefficients(OneSuitCoefficients);
-            }
-            else if (suits == 2)
-            {
-                SetDefaultCoefficients(TwoSuitCoefficients);
-            }
-            else if (suits == 4)
-            {
-                SetDefaultCoefficients(FourSuitCoefficients);
-            }
-            else
-            {
-                throw new Exception("invalid number of suits");
             }
         }
 
@@ -478,7 +495,7 @@ namespace Spider.GamePlay
         {
             if (UseSearch)
             {
-                if (IsViableCandidate(move))
+                if (IsViable(move))
                 {
                     Candidates.Add(move);
                 }
@@ -673,7 +690,7 @@ namespace Spider.GamePlay
             }
         }
 
-        private bool IsReversible(Move move)
+        public bool IsReversible(Move move)
         {
             int from = move.From;
             int fromRow = move.FromRow;
@@ -693,7 +710,7 @@ namespace Spider.GamePlay
             return oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
         }
 
-        private bool IsViableCandidate(Move move)
+        public bool IsViable(Move move)
         {
             int from = move.From;
             int fromRow = move.FromRow;
@@ -946,7 +963,7 @@ namespace Spider.GamePlay
             return uses;
         }
 
-        private void ChooseMove()
+        public void ChooseMove()
         {
             // We may be strictly out of moves.
             if (Candidates.Count == 0)

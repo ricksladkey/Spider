@@ -27,6 +27,9 @@ namespace Spider.GamePlay
         void FindMoves(Tableau tableau);
         void ProcessCandidate(Move move);
         void ProcessMove(Move move);
+        bool IsReversible(Move move);
+        bool IsViable(Move move);
+        void ChooseMove();
         int AddHolding(HoldingSet holdingSet);
         int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2);
         int AddSupplementary();

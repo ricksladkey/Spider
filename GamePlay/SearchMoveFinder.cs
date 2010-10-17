@@ -63,6 +63,25 @@ namespace Spider.GamePlay
 
         public void SearchMoves()
         {
+            FindMoves(Tableau);
+            int best = -1;
+            for (int i = 0; i < Candidates.Count; i++)
+            {
+                Move move = Candidates[i];
+                if (IsReversible(move))
+                {
+                    if (best == -1 || move.Score > Candidates[best].Score)
+                    {
+                        best = i;
+                    }
+                }
+            }
+            if (best != -1)
+            {
+                ProcessMove(Candidates[best]);
+                return;
+            }
+
             WorkingTableau.Variation = Variation;
             WorkingTableau.ClearAll();
             WorkingTableau.CopyUpPiles(Tableau);
@@ -297,11 +316,12 @@ namespace Spider.GamePlay
 
         public double CalculateSearchScore()
         {
-            double TurnedOverCardScore = 5;
-            double SpaceScore = 1000;
+            double TurnedOverCardScore = Coefficients[0];
+            double SpaceScore = Coefficients[1];
             double FacesMatchScore = 1;
-            double SuitsMatchScore = 2;
-            double DiscardedScore = SuitsMatchScore * 12;
+            double SuitsMatchScore = Coefficients[2];
+            double DiscardedScore = Coefficients[3];
+
             double score = 0;
             for (int column = 0; column < NumberOfPiles; column++)
             {

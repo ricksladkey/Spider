@@ -71,6 +71,21 @@ namespace Spider.GamePlay
             game.ProcessMove(move);
         }
 
+        public void ChooseMove()
+        {
+            game.ChooseMove();
+        }
+
+        public bool IsReversible(Move move)
+        {
+            return game.IsReversible(move);
+        }
+
+        public bool IsViable(Move move)
+        {
+            return game.IsViable(move);
+        }
+
         public int AddHolding(HoldingSet holdingSet)
         {
             return game.AddHolding(holdingSet);

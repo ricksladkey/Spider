@@ -130,20 +130,13 @@ namespace Spider.GamePlay
 
         private void SetCoefficients()
         {
+
+            Game game = new Game();
+            game.Variation = Variation;
+            game.UseSearch = UseSearch;
+            game.Initialize();
             int suits = Variation.NumberOfSuits;
-            double[] coefficients = null;
-            if (suits == 1)
-            {
-                coefficients = Game.OneSuitCoefficients;
-            }
-            else if (suits == 2)
-            {
-                coefficients = Game.TwoSuitCoefficients;
-            }
-            else if (suits == 4)
-            {
-                coefficients = Game.FourSuitCoefficients;
-            }
+            double[] coefficients = game.Coefficients;
             InitialCoefficients = new List<double>(coefficients).ToArray();
             Coefficients = new List<double>(coefficients).ToArray();
         }
