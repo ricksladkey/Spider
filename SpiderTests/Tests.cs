@@ -693,7 +693,7 @@ namespace Spider.Tests
 
         private void PrintSearch()
         {
-            MoveList moves = game.SearchMoveFinder.Moves;
+            MoveList moves = game.Tableau.Moves;
             int n = 0;
             for (int i = 0; i < moves.Count; i++)
             {

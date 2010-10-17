@@ -20,7 +20,37 @@ namespace Spider.GamePlay
             Used = new FastList<int>();
         }
 
-        public void Check(int from, int fromRow, int extraSuits, int maxExtraSuits)
+        public void Find()
+        {
+            // Check for swaps.
+            int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
+            for (int from = 0; from < NumberOfPiles; from++)
+            {
+                Pile fromPile = FindTableau[from];
+                int splitRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
+                int extraSuits = 0;
+                HoldingStack holdingStack = HoldingStacks[from];
+                for (int fromRow = fromPile.Count - 1; fromRow >= splitRow; fromRow--)
+                {
+                    if (fromRow < fromPile.Count - 1)
+                    {
+                        if (fromPile[fromRow].Suit != fromPile[fromRow + 1].Suit)
+                        {
+                            // This is a cross-suit run.
+                            extraSuits++;
+                            if (extraSuits > maxExtraSuits + holdingStack.Suits)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    Check(from, fromRow, extraSuits, maxExtraSuits);
+                }
+            }
+        }
+
+        private void Check(int from, int fromRow, int extraSuits, int maxExtraSuits)
         {
 #if false
             if (extraSuits + 1 > maxExtraSuits + HoldingStack.Suits)
@@ -96,7 +126,7 @@ namespace Spider.GamePlay
                 if (extraSuits + toSuits <= maxExtraSuits)
                 {
                     // Swap with no holding piles.
-                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow));
+                    Algorithm.ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow));
                     continue;
                 }
 
@@ -148,7 +178,7 @@ namespace Spider.GamePlay
                     Debug.Assert(fromRow == 0 || fromCardParent.IsTargetFor(toPile[toRow]));
                     HoldingSet fromHoldingSet = new HoldingSet(fromHoldingStack, fromHoldingCount);
                     HoldingSet toHoldingSet = new HoldingSet(toHoldingStack, toHoldingCount);
-                    ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(fromHoldingSet, toHoldingSet)));
+                    Algorithm.ProcessCandidate(new Move(MoveType.Swap, from, fromRow, to, toRow, AddHolding(fromHoldingSet, toHoldingSet)));
                     break;
                 }
             }

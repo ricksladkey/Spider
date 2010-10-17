@@ -32,9 +32,6 @@ namespace Spider.GamePlay
 
         public const int MaximumMoves = 1500;
 
-        public const int Group0 = 0;
-        public const int Group1 = 9;
-
         public Variation Variation { get; set; }
         public int Seed { get; set; }
         public double[] Coefficients { get; set; }
@@ -53,6 +50,7 @@ namespace Spider.GamePlay
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
         public Tableau FindTableau { get; private set; }
+        public IAlgorithm Algorithm { get; private set; }
 
         public MoveList Candidates { get; private set; }
         public MoveList SupplementaryMoves { get; private set; }
@@ -66,11 +64,12 @@ namespace Spider.GamePlay
         public int NumberOfPiles { get; private set; }
         public int NumberOfSuits { get; private set; }
 
-        public TableauInputOutput TableauInputOutput { get; set; }
-        public SwapMoveFinder SwapMoveFinder { get; set; }
-        public CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
-        public SearchMoveFinder SearchMoveFinder { get; set; }
-        public MoveProcessor MoveProcessor { get; set; }
+        private TableauInputOutput TableauInputOutput { get; set; }
+        private BasicMoveFinder BasicMoveFinder { get; set; }
+        private SwapMoveFinder SwapMoveFinder { get; set; }
+        private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
+        private SearchMoveFinder SearchMoveFinder { get; set; }
+        private MoveProcessor MoveProcessor { get; set; }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -102,7 +101,6 @@ namespace Spider.GamePlay
 
             Shuffled = new Pile();
             Tableau = new Tableau();
-            FindTableau = Tableau;
 
             Candidates = new MoveList();
             SupplementaryMoves = new MoveList();
@@ -118,6 +116,8 @@ namespace Spider.GamePlay
             Coefficients = null;
 
             TableauInputOutput = new TableauInputOutput(Tableau);
+
+            BasicMoveFinder = new BasicMoveFinder(this);
             SwapMoveFinder = new SwapMoveFinder(this);
             CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(this);
             SearchMoveFinder = new SearchMoveFinder(this);
@@ -153,6 +153,14 @@ namespace Spider.GamePlay
             Tableau.Variation = Variation;
             NumberOfPiles = Variation.NumberOfPiles;
             NumberOfSuits = Variation.NumberOfSuits;
+            if (UseSearch)
+            {
+                Algorithm = new SearchAlgorithm(this);
+            }
+            else
+            {
+                Algorithm = new StudyAlgorithm(this);
+            }
             HoldingStacks = new HoldingStack[NumberOfPiles];
             for (int column = 0; column < NumberOfPiles; column++)
             {
@@ -160,7 +168,7 @@ namespace Spider.GamePlay
             }
             Won = false;
             Shuffled.Clear();
-            Tableau.ClearAll();
+            Tableau.Clear();
 
             if (UseSearch)
             {
@@ -186,6 +194,7 @@ namespace Spider.GamePlay
                     throw new Exception("invalid number of suits");
                 }
             }
+            LastGame = Debugger.IsAttached ? new Tableau(Tableau) : null;
         }
 
         public void Play()
@@ -193,7 +202,7 @@ namespace Spider.GamePlay
             try
             {
                 Initialize();
-                PrepareToPlay();
+                Algorithm.PrepareToPlay();
                 Start();
                 if (TraceStartFinish)
                 {
@@ -221,14 +230,14 @@ namespace Spider.GamePlay
                     {
                         if (Tableau.StockPile.Count > 0)
                         {
-                            PrepareToDeal();
+                            Algorithm.PrepareToDeal();
                             if (TraceDeals)
                             {
                                 PrintGame();
                                 Utils.WriteLine("dealing");
                             }
                             Tableau.Deal();
-                            RespondToDeal();
+                            Algorithm.RespondToDeal();
                             continue;
                         }
                         if (TraceStartFinish)
@@ -258,7 +267,6 @@ namespace Spider.GamePlay
 
         private void PrepareToPlay()
         {
-            LastGame = Debugger.IsAttached ? new Tableau(Tableau) : null;
         }
 
         public void Start()
@@ -298,15 +306,7 @@ namespace Spider.GamePlay
             }
 
             int checkPoint = Tableau.CheckPoint;
-            if (UseSearch)
-            {
-                SearchMoves();
-            }
-            else
-            {
-                FindMoves(Tableau);
-                ChooseMove();
-            }
+            Algorithm.MakeMove();
             return Tableau.CheckPoint != checkPoint;
         }
 
@@ -314,200 +314,21 @@ namespace Spider.GamePlay
         {
             FindTableau = tableau;
 
-            Candidates.Clear();
-            SupplementaryList.Clear();
-
-            int numberOfSpaces = FindTableau.NumberOfSpaces;
-            int maxExtraSuits = ExtraSuits(numberOfSpaces);
-            int maxExtraSuitsToSpace = ExtraSuits(numberOfSpaces - 1);
-
             Analyze();
 
             if (!UseSearch)
             {
+                int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
                 FindUncoveringMoves(maxExtraSuits);
                 FindOneRunPiles();
             }
 
-            for (int from = 0; from < NumberOfPiles; from++)
+            BasicMoveFinder.Find();
+            SwapMoveFinder.Find();
+            if (!UseSearch)
             {
-                HoldingStack holdingStack = HoldingStacks[from];
-                Pile fromPile = FindTableau[from];
-                holdingStack.Clear();
-                holdingStack.StartingRow = fromPile.Count;
-                int extraSuits = 0;
-                for (int fromRow = fromPile.Count - 1; fromRow >= 0; fromRow--)
-                {
-                    Card fromCard = fromPile[fromRow];
-                    if (fromCard.IsEmpty)
-                    {
-                        break;
-                    }
-                    if (fromRow < fromPile.Count - 1)
-                    {
-                        Card previousCard = fromPile[fromRow + 1];
-                        if (!previousCard.IsSourceFor(fromCard))
-                        {
-                            break;
-                        }
-                        if (fromCard.Suit != previousCard.Suit)
-                        {
-                            // This is a cross-suit run.
-                            extraSuits++;
-                            if (extraSuits > maxExtraSuits + holdingStack.Suits)
-                            {
-                                break;
-                            }
-                        }
-                    }
-
-                    // Add moves to other piles.
-                    if (fromCard.Face < Face.King)
-                    {
-                        PileList piles = FaceLists[(int)fromCard.Face + 1];
-                        for (int i = 0; i < piles.Count; i++)
-                        {
-                            for (int count = 0; count <= holdingStack.Count; count++)
-                            {
-                                HoldingSet holdingSet = new HoldingSet(holdingStack, count);
-                                if (extraSuits > maxExtraSuits + holdingSet.Suits)
-                                {
-                                    continue;
-                                }
-                                int to = piles[i];
-                                if (from == to || holdingSet.Contains(from))
-                                {
-                                    continue;
-                                }
-
-                                // We've found a legal move.
-                                Pile toPile = FindTableau[to];
-                                ProcessCandidate(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
-
-                                // Update the holding pile move.
-                                int holdingSuits = extraSuits;
-                                if (fromRow > 0 && (!fromPile[fromRow - 1].IsTargetFor(fromCard) || fromCard.Suit != fromPile[fromRow - 1].Suit))
-                                {
-                                    holdingSuits++;
-                                }
-                                if (holdingSuits > holdingStack.Suits)
-                                {
-                                    int length = holdingStack.FromRow - fromRow;
-                                    holdingStack.Push(new HoldingInfo(from, fromRow, to, holdingSuits, length));
-                                }
-
-                                break;
-                            }
-                        }
-                    }
-
-                    // Add moves to an space.
-                    for (int i = 0; i < FindTableau.NumberOfSpaces; i++)
-                    {
-                        int to = FindTableau.Spaces[i];
-
-                        if (fromRow == 0)
-                        {
-                            // No point in moving from a full pile
-                            // from one open position to another unless
-                            // there are more cards to turn over.
-                            if (FindTableau.GetDownCount(from) == 0)
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            // No point in moving anything less than
-                            // as much as possible to an space.
-                            Card nextCard = fromPile[fromRow - 1];
-                            if (fromCard.Suit == nextCard.Suit)
-                            {
-                                if (nextCard.IsTargetFor(fromCard))
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-
-                        for (int count = 0; count <= holdingStack.Count; count++)
-                        {
-                            HoldingSet holdingSet = new HoldingSet(holdingStack, count);
-                            if (holdingSet.FromRow == fromRow)
-                            {
-                                // No cards left to move.
-                                continue;
-                            }
-                            if (extraSuits > maxExtraSuitsToSpace + holdingSet.Suits)
-                            {
-                                // Not enough spaces.
-                                continue;
-                            }
-
-                            // We've found a legal move.
-                            Pile toPile = FindTableau[to];
-                            ProcessCandidate(new Move(from, fromRow, to, toPile.Count, AddHolding(holdingSet)));
-                            break;
-                        }
-
-                        // Only need to check the first space
-                        // since all spaces are the same
-                        // except for undealt cards.
-                        break;
-                    }
-                }
-
-                if (!UseSearch)
-                {
-                    // Check for composite single pile moves.
-                    CompositeSinglePileMoveFinder.Check(from);
-                }
+                CompositeSinglePileMoveFinder.Find();
             }
-
-            // Check for swaps.
-            for (int from = 0; from < NumberOfPiles; from++)
-            {
-                Pile fromPile = FindTableau[from];
-                int splitRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
-                int extraSuits = 0;
-                HoldingStack holdingStack = HoldingStacks[from];
-                for (int fromRow = fromPile.Count - 1; fromRow >= splitRow; fromRow--)
-                {
-                    if (fromRow < fromPile.Count - 1)
-                    {
-                        if (fromPile[fromRow].Suit != fromPile[fromRow + 1].Suit)
-                        {
-                            // This is a cross-suit run.
-                            extraSuits++;
-                            if (extraSuits > maxExtraSuits + holdingStack.Suits)
-                            {
-                                break;
-                            }
-                        }
-                    }
-
-                    SwapMoveFinder.Check(from, fromRow, extraSuits, maxExtraSuits);
-                }
-            }
-        }
-
-        public void ProcessCandidate(Move move)
-        {
-            if (UseSearch)
-            {
-                if (IsViable(move))
-                {
-                    Candidates.Add(move);
-                }
-                return;
-            }
-            double score = CalculateScore(move);
-            if (score == Move.RejectScore)
-            {
-                return;
-            }
-            move.Score = score;
-            Candidates.Add(move);
         }
 
         private void FindUncoveringMoves(int maxExtraSuits)
@@ -559,15 +380,7 @@ namespace Spider.GamePlay
             }
         }
 
-        private void PrepareToDeal()
-        {
-        }
-
-        private void RespondToDeal()
-        {
-        }
-
-        private void SearchMoves()
+        public void SearchMoves()
         {
             SearchMoveFinder.SearchMoves();
         }
@@ -766,234 +579,6 @@ namespace Spider.GamePlay
             }
 
             return true;
-        }
-
-        private double CalculateScore(Move move)
-        {
-            if (move.IsEmpty)
-            {
-                return Move.RejectScore;
-            }
-
-            ScoreInfo score = new ScoreInfo(Coefficients, Group0);
-
-            int from = move.From;
-            int fromRow = move.FromRow;
-            int to = move.To;
-            int toRow = move.ToRow;
-
-            if (move.Type == MoveType.CompositeSinglePile)
-            {
-                return CalculateCompositeSinglePileScore(move);
-            }
-            Pile fromPile = FindTableau[from];
-            Pile toPile = FindTableau[to];
-            if (toPile.Count == 0)
-            {
-                return CalculateLastResortScore(move);
-            }
-            bool isSwap = move.Type == MoveType.Swap;
-            Card fromParent = fromRow != 0 ? fromPile[fromRow - 1] : Card.Empty;
-            Card fromChild = fromPile[fromRow];
-            Card toParent = toRow != 0 ? toPile[toRow - 1] : Card.Empty;
-            Card toChild = toRow != toPile.Count ? toPile[toRow] : Card.Empty;
-            int oldOrderFrom = GetOrder(fromParent, fromChild);
-            int newOrderFrom = GetOrder(toParent, fromChild);
-            int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
-            int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
-            score.Order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
-            if (score.Order < 0)
-            {
-                return Move.RejectScore;
-            }
-            score.Reversible = oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
-            score.Uses = CountUses(move);
-            score.OneRunDelta = !isSwap ? RunFinder.GetOneRunDelta(oldOrderFrom, newOrderFrom, move) : 0;
-            int faceFrom = (int)fromChild.Face;
-            int faceTo = isSwap ? (int)toChild.Face : 0;
-            score.FaceValue = Math.Max(faceFrom, faceTo);
-            bool wholePile = fromRow == 0 && toRow == toPile.Count;
-            int netRunLengthFrom = RunFinder.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int netRunLengthTo = isSwap ? RunFinder.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
-            score.NetRunLength = netRunLengthFrom + netRunLengthTo;
-#if true
-            int newRunLengthFrom = RunFinder.GetNewRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int newRunLengthTo = isSwap ? RunFinder.GetNewRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
-            score.Discards = newRunLengthFrom == 13 || newRunLengthTo == 13;
-#endif
-            score.DownCount = FindTableau.GetDownCount(from);
-            score.TurnsOverCard = wholePile && score.DownCount != 0;
-            score.CreatesSpace = wholePile && score.DownCount == 0;
-            score.NoSpaces = FindTableau.NumberOfSpaces == 0;
-            if (score.Order == 0 && score.NetRunLength < 0)
-            {
-                return Move.RejectScore;
-            }
-            int delta = 0;
-            if (score.Order == 0 && score.NetRunLength == 0)
-            {
-                if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
-                {
-                    delta = RunFinder.GetRunDelta(from, fromRow, to, toRow);
-                }
-                if (delta <= 0)
-                {
-                    return Move.RejectScore;
-                }
-            }
-            score.IsCompositeSinglePile = false;
-
-            return score.Score;
-        }
-
-        private double CalculateCompositeSinglePileScore(Move move)
-        {
-            ScoreInfo score = new ScoreInfo(Coefficients, Group0);
-
-            score.Order = move.ToRow;
-            score.FaceValue = 0;
-            score.NetRunLength = 0;
-            score.DownCount = FindTableau.GetDownCount(move.From);
-            score.TurnsOverCard = move.Flags.TurnsOverCard();
-            score.CreatesSpace = move.Flags.CreatesSpace();
-            score.UsesSpace = move.Flags.UsesSpace();
-            score.Discards = move.Flags.Discards();
-            score.IsCompositeSinglePile = true;
-            score.NoSpaces = FindTableau.NumberOfSpaces == 0;
-            score.OneRunDelta = 0;
-
-            if (score.UsesSpace)
-            {
-                // XXX: should calculate uses, is king, etc.
-                score.Coefficient0 = Group1;
-                return score.LastResortScore;
-            }
-            return score.Score;
-        }
-
-        private double CalculateLastResortScore(Move move)
-        {
-            ScoreInfo score = new ScoreInfo(Coefficients, Group1);
-
-            Pile fromPile = FindTableau[move.From];
-            Pile toPile = FindTableau[move.To];
-            Card fromCard = fromPile[move.FromRow];
-            bool wholePile = move.FromRow == 0;
-            score.UsesSpace = true;
-            score.DownCount = FindTableau.GetDownCount(move.From);
-            score.TurnsOverCard = wholePile && score.DownCount != 0;
-            score.FaceValue = (int)fromCard.Face;
-            score.IsKing = fromCard.Face == Face.King;
-            score.Uses = CountUses(move);
-
-            if (wholePile)
-            {
-                // Only move an entire pile if there
-                // are more cards to be turned over.
-                if (!score.TurnsOverCard)
-                {
-                    return Move.RejectScore;
-                }
-            }
-            else if (fromPile[move.FromRow - 1].IsTargetFor(fromCard))
-            {
-                // No point in splitting consecutive cards
-                // unless they are part of a multi-move
-                // sequence.
-                return Move.RejectScore;
-            }
-
-            return score.LastResortScore;
-        }
-
-        private int CountUses(Move move)
-        {
-            if (move.FromRow == 0 || move.ToRow != FindTableau[move.To].Count)
-            {
-                // No exposed card, no uses.
-                return 0;
-            }
-
-            int uses = 0;
-
-            Pile fromPile = FindTableau[move.From];
-            Card fromCard = fromPile[move.FromRow];
-            Card exposedCard = fromPile[move.FromRow - 1];
-            if (!exposedCard.IsTargetFor(fromCard))
-            {
-                // Check whether the exposed card will be useful.
-                int numberOfSpaces = FindTableau.NumberOfSpaces - 1;
-                int maxExtraSuits = ExtraSuits(numberOfSpaces);
-                int fromSuits = RunFinder.CountSuits(move.From, move.FromRow);
-                for (int nextFrom = 0; nextFrom < NumberOfPiles; nextFrom++)
-                {
-                    if (nextFrom == move.From || nextFrom == move.To)
-                    {
-                        // Inappropriate column.
-                        continue;
-                    }
-                    Pile nextFromPile = FindTableau[nextFrom];
-                    if (nextFromPile.Count == 0)
-                    {
-                        // Column is empty.
-                        continue;
-                    }
-                    int nextFromRow = nextFromPile.Count - RunFinder.GetRunLengthAnySuit(nextFrom);
-                    if (!nextFromPile[nextFromRow].IsSourceFor(exposedCard))
-                    {
-                        // Not the card we need.
-                        continue;
-                    }
-                    int extraSuits = RunFinder.CountSuits(nextFrom, nextFromRow) - 1;
-                    if (extraSuits <= maxExtraSuits)
-                    {
-                        // Card leads to a useful move.
-                        uses++;
-                    }
-
-                    // Check whether the exposed run will be useful.
-                    int upperFromRow = move.FromRow - RunFinder.GetRunUp(move.From, move.FromRow);
-                    if (upperFromRow != move.FromRow)
-                    {
-                        Card upperFromCard = fromPile[upperFromRow];
-                        uses += FaceLists[(int)upperFromCard.Face + 1].Count;
-                    }
-                }
-            }
-            return uses;
-        }
-
-        public void ChooseMove()
-        {
-            // We may be strictly out of moves.
-            if (Candidates.Count == 0)
-            {
-                return;
-            }
-
-            if (Diagnostics)
-            {
-                PrintGame();
-                PrintViableCandidates();
-                Utils.WriteLine("Moves.Count = {0}", Tableau.Moves.Count);
-            }
-
-            Move move = Candidates[0];
-            for (int i = 0; i < Candidates.Count; i++)
-            {
-                if (Candidates[i].Score > move.Score)
-                {
-                    move = Candidates[i];
-                }
-            }
-
-            // The best move may not be worth making.
-            if (move.Score == Move.RejectScore)
-            {
-                return;
-            }
-
-            ProcessMove(move);
         }
 
         public void ProcessMove(Move move)

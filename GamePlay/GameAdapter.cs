@@ -44,6 +44,7 @@ namespace Spider.GamePlay
 
         public Pile Shuffled { get { return game.Shuffled; } }
         public Tableau Tableau { get { return game.Tableau; } }
+        public IAlgorithm Algorithm { get { return game.Algorithm; } }
         public Tableau FindTableau { get { return game.FindTableau; } }
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
         public int NumberOfSuits { get { return game.NumberOfSuits; } }
@@ -52,6 +53,7 @@ namespace Spider.GamePlay
         public MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }
         public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
+        public PileList[] FaceLists { get { return game.FaceLists; } }
         public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
         public RunFinder RunFinder { get { return game.RunFinder; } }
@@ -61,19 +63,14 @@ namespace Spider.GamePlay
             game.FindMoves(tableau);
         }
 
-        public void ProcessCandidate(Move move)
+        public void SearchMoves()
         {
-            game.ProcessCandidate(move);
+            game.SearchMoves();
         }
 
         public void ProcessMove(Move move)
         {
             game.ProcessMove(move);
-        }
-
-        public void ChooseMove()
-        {
-            game.ChooseMove();
         }
 
         public bool IsReversible(Move move)

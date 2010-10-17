@@ -61,7 +61,7 @@ namespace Spider.GamePlay
         private ListAllocator<Move> MoveAllocator { get; set; }
         private ListAllocator<Node> NodeAllocator { get; set; }
 
-        public void SearchMoves()
+        public new void SearchMoves()
         {
             FindMoves(Tableau);
             int best = -1;
@@ -83,7 +83,7 @@ namespace Spider.GamePlay
             }
 
             WorkingTableau.Variation = Variation;
-            WorkingTableau.ClearAll();
+            WorkingTableau.Clear();
             WorkingTableau.CopyUpPiles(Tableau);
             WorkingTableau.BlockDownPiles(Tableau);
 

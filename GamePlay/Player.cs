@@ -255,7 +255,7 @@ namespace Spider.GamePlay
             Console.Write("Coefficients = new double[] {");
             for (int i = 0; i < coefficients.Length; i++)
             {
-                if (i == Game.Group0 || i == Game.Group1)
+                if (i == StudyAlgorithm.Group0 || i == StudyAlgorithm.Group1)
                 {
                     Console.WriteLine();
                     Console.Write("    /* {0} */", i);

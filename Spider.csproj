@@ -106,6 +106,8 @@
     <Compile Include="Engine\Core.cs" />
     <Compile Include="Engine\Card.cs" />
     <Compile Include="Engine\ComplexMove.cs" />
+    <Compile Include="GamePlay\IAlgorithm.cs" />
+    <Compile Include="GamePlay\BasicMoveFinder.cs" />
     <Compile Include="GamePlay\CompositeSinglePileMoveFinder.cs" />
     <Compile Include="GamePlay\Debug.cs" />
     <Compile Include="Engine\Deck.cs" />
@@ -123,6 +125,8 @@
     <Compile Include="Collections\IStack.cs" />
     <Compile Include="Engine\LayoutPart.cs" />
     <Compile Include="Collections\ListAllocator.cs" />
+    <Compile Include="GamePlay\SearchAlgorithm.cs" />
+    <Compile Include="GamePlay\StudyAlgorithm.cs" />
     <Compile Include="Optimization\lmmin.cs" />
     <Compile Include="Engine\Move.cs" />
     <Compile Include="GamePlay\MoveProcessor.cs" />

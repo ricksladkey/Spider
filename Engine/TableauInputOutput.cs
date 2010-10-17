@@ -143,7 +143,7 @@ namespace Spider.Engine
 
             // Prepare game.
             Tableau.Variation = variation;
-            Tableau.ClearAll();
+            Tableau.Clear();
             foreach (Card discardCard in discardCards)
             {
                 Pile discardPile = new Pile();
@@ -191,7 +191,7 @@ namespace Spider.Engine
         public void FromTableau(Tableau tableau)
         {
             Tableau.Variation = tableau.Variation;
-            Tableau.ClearAll();
+            Tableau.Clear();
             foreach (Pile pile in tableau.DiscardPiles)
             {
                 Tableau.DiscardPiles.Add(pile);

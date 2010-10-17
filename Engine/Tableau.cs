@@ -118,7 +118,7 @@ namespace Spider.Engine
             }
         }
 
-        public void ClearAll()
+        public void Clear()
         {
             Moves.Clear();
             if (NumberOfPiles != Variation.NumberOfPiles)
@@ -177,7 +177,7 @@ namespace Spider.Engine
 
         public void Copy(Tableau other)
         {
-            ClearAll();
+            Clear();
             discardPiles.Copy(other.discardPiles);
             for (int column = 0; column < NumberOfPiles; column++)
             {

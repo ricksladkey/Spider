@@ -34,7 +34,15 @@ namespace Spider.GamePlay
             holdingStack = new HoldingStack();
         }
 
-        public void Check(int column)
+        public void Find()
+        {
+            for (int from = 0; from < Tableau.NumberOfPiles; from++)
+            {
+                Check(from);
+            }
+        }
+
+        private void Check(int column)
         {
             from = column;
             fromPile = FindTableau[from];
@@ -116,7 +124,7 @@ namespace Spider.GamePlay
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
-            workingTableau.ClearAll();
+            workingTableau.Clear();
             workingTableau.CopyUpPiles(FindTableau);
             workingTableau.BlockDownPiles(FindTableau);
 
@@ -584,7 +592,7 @@ namespace Spider.GamePlay
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
-            ProcessCandidate(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
+            Algorithm.ProcessCandidate(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
 
             return flags.CreatesSpace();
         }
