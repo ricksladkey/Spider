@@ -7,7 +7,7 @@ using Spider.Collections;
 
 namespace Spider.Engine
 {
-    public class BaseGame
+    public class Core
     {
         public static int ExtraSuits(int numberOfSpaces)
         {

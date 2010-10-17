@@ -8,11 +8,16 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class GameHelper : BaseGame, IGame
+    /// <summary>
+    /// A GameAdapter is a base class that can be used to
+    /// make it appear as though classes derived from it
+    /// are actually part of the Game class itself.
+    /// </summary>
+    public class GameAdapter : Core, IGame
     {
         protected IGame game;
 
-        public GameHelper(IGame game)
+        public GameAdapter(IGame game)
         {
             this.game = game;
         }

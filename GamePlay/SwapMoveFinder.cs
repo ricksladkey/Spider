@@ -8,7 +8,7 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class SwapMoveFinder : GameHelper
+    public class SwapMoveFinder : GameAdapter
     {
         private CardMap CardMap { get; set; }
         private FastList<int> Used { get; set; }

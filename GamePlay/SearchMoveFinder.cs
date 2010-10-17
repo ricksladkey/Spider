@@ -9,7 +9,7 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class SearchMoveFinder : GameHelper
+    public class SearchMoveFinder : GameAdapter
     {
         private struct Node
         {

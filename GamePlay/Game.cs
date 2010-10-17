@@ -9,7 +9,7 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class Game : BaseGame, IGame
+    public class Game : Core, IGame
     {
         public static double[] FourSuitCoefficients = new double[] {
             /* 0 */ 4.97385808, 63.53977337, -0.07690241043, -3.361553585, -0.2933748314, 1.781253839, 4.819874539, 0.4819874538, 86.27048442,
@@ -671,6 +671,26 @@ namespace Spider.GamePlay
                     FaceLists[(int)pile[pileCount - 1].Face].Add(i);
                 }
             }
+        }
+
+        private bool IsReversible(Move move)
+        {
+            int from = move.From;
+            int fromRow = move.FromRow;
+            int to = move.To;
+            int toRow = move.ToRow;
+            Pile fromPile = FindTableau[from];
+            Pile toPile = FindTableau[to];
+            bool isSwap = move.Type == MoveType.Swap;
+            Card fromParent = fromRow != 0 ? fromPile[fromRow - 1] : Card.Empty;
+            Card fromChild = fromPile[fromRow];
+            Card toParent = toRow != 0 ? toPile[toRow - 1] : Card.Empty;
+            Card toChild = toRow != toPile.Count ? toPile[toRow] : Card.Empty;
+            int oldOrderFrom = GetOrder(fromParent, fromChild);
+            int newOrderFrom = GetOrder(toParent, fromChild);
+            int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
+            int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
+            return oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
         }
 
         private bool IsViableCandidate(Move move)

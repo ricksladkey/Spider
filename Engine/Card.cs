@@ -10,12 +10,11 @@ namespace Spider.Engine
     public struct Card : IEquatable<Card>
     {
         public static Card Empty = new Card();
-        public static Card Unknown = new Card(Face.Unknown, Suit.Unknown);
 
-        public Face Face;
-        public Suit Suit;
-
-        public bool IsEmpty { get { return Face == Face.Empty; } }
+        public static Card Parse(string s)
+        {
+            return new Card(FaceUtils.Parse(s.Substring(0, 1)), SuitUtils.Parse(s.Substring(1, 1)));
+        }
 
         public Card(Face face, Suit suit)
             : this()
@@ -23,6 +22,11 @@ namespace Spider.Engine
             Face = face;
             Suit = suit;
         }
+
+        public Face Face;
+        public Suit Suit;
+
+        public bool IsEmpty { get { return Face == Face.Empty; } }
 
         public void Clear()
         {
@@ -39,19 +43,22 @@ namespace Spider.Engine
             return Face.IsTargetFor(other.Face);
         }
 
-        public int GetHashKey()
+        public int HashKey
         {
-            return (int)Face + 14 * (int)Suit;
+            get
+            {
+                return (int)Face + 14 * (int)Suit;
+            }
         }
 
         public string ToPrettyString()
         {
-            return Utils.GetString(Face) + Utils.GetPrettyString(Suit);
+            return Face.ToAsciiString() + Suit.ToPrettyString();
         }
 
         public string ToAsciiString()
         {
-            return Utils.GetString(Face) + Utils.GetAsciiString(Suit);
+            return Face.ToAsciiString() + Suit.ToAsciiString();
         }
 
         public override string ToString()

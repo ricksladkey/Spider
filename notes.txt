@@ -1,3 +1,9 @@
+- create study and search algorithms
+- move FindMoves to BasicMoveFinder
+- try performing all reversible moves during search
+- try increasing set of viable moves
+- move some Utils methods to extension methods
+
 - rename workingTableau to WorkingTableau
 - unify the three places where complex moves with holding piles are performed
 
@@ -58,4 +64,13 @@ C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spid
 games played: 100000, games won: 27.999%, games with discards: 39.336%
 average moves: 266.36 (won: 514.47, lost: 169.88)
 0.01user 0.03system 4:43:37elapsed 0%CPU (0avgtext+0avgdata 149248maxresident)k
+
+MaxNodes = 5000
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --games 100000 --search
+games played: 100000, games won: 66.57%, games with discards: 84.874%
+average moves: 258.49 (won: 324.13, lost: 127.79)
+0.01user 0.00system 2:44:37elapsed 0%CPU (0avgtext+0avgdata 148736maxresident)k
 ========================================================================================================
+
+7.628170578, 953.3391651, 2.128232166, 23.27022363

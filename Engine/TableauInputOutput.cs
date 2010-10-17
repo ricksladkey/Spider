@@ -183,7 +183,7 @@ namespace Spider.Engine
             Pile pile = new Pile();
             for (int i = 0; i < n; i++)
             {
-                pile.Add(Utils.GetCard(s.Substring(2 * i, 2)));
+                pile.Add(Card.Parse(s.Substring(2 * i, 2)));
             }
             return pile;
         }

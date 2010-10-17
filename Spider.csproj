@@ -103,7 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\AllocatedList.cs" />
-    <Compile Include="Engine\BaseGame.cs" />
+    <Compile Include="Engine\Core.cs" />
     <Compile Include="Engine\Card.cs" />
     <Compile Include="Engine\ComplexMove.cs" />
     <Compile Include="GamePlay\CompositeSinglePileMoveFinder.cs" />
@@ -111,7 +111,7 @@
     <Compile Include="Engine\Deck.cs" />
     <Compile Include="Collections\EnumerableDebugView.cs" />
     <Compile Include="Engine\Face.cs" />
-    <Compile Include="GamePlay\GameHelper.cs" />
+    <Compile Include="GamePlay\GameAdapter.cs" />
     <Compile Include="Engine\HoldingInfo.cs" />
     <Compile Include="Engine\HoldingSet.cs" />
     <Compile Include="Engine\HoldingStack.cs" />

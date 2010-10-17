@@ -8,7 +8,7 @@ using Spider.Collections;
 
 namespace Spider.Engine
 {
-    public class RunFinder : BaseGame
+    public class RunFinder : Core
     {
         private class PileInfo
         {

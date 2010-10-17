@@ -9,7 +9,7 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class CompositeSinglePileMoveFinder : GameHelper
+    public class CompositeSinglePileMoveFinder : GameAdapter
     {
         private PileList used;
         private PileList roots;

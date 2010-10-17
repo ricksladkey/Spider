@@ -6,6 +6,13 @@ using System.Text;
 
 namespace Spider.Collections
 {
+    /// <summary>
+    /// An AllocatedList is a list that uses a ListAllocator
+    /// to allocate its storage.  This can be used to avoid
+    /// memory allocation by combining multiple lists into
+    /// a smaller number of pre-allocated underlying arrays.
+    /// </summary>
+    /// <typeparam name="T">The type of the list item.</typeparam>
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class AllocatedList<T> : IList<T>

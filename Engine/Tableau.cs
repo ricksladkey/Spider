@@ -10,7 +10,7 @@ namespace Spider.Engine
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class Tableau : BaseGame, IEnumerable<Pile>, IGetCard
+    public class Tableau : Core, IEnumerable<Pile>, IGetCard
     {
         static Tableau()
         {
@@ -680,7 +680,7 @@ namespace Spider.Engine
             int offset = 0;
             for (int row = 0; row < discardPiles.Count; row++)
             {
-                hash ^= ZobristKeys[offset][row][discardPiles[row][12].GetHashKey()];
+                hash ^= ZobristKeys[offset][row][discardPiles[row][12].HashKey];
             }
             offset++;
             for (int column = 0; column < NumberOfPiles; column++)
@@ -713,7 +713,7 @@ namespace Spider.Engine
             int[][] keys = ZobristKeys[column];
             for (int row = 0; row < pile.Count; row++)
             {
-                hashKey ^= keys[row][pile[row].GetHashKey()];
+                hashKey ^= keys[row][pile[row].HashKey];
             }
             return hashKey;
         }

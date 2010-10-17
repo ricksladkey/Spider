@@ -9,7 +9,7 @@ using Spider.Engine;
 
 namespace Spider.GamePlay
 {
-    public class MoveProcessor : GameHelper
+    public class MoveProcessor : GameAdapter
     {
         public MoveProcessor(Game game)
             : base(game)
