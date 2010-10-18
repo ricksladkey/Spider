@@ -1,7 +1,6 @@
 - call initialize automatically if variation or algorithmtype is set
 - try increasing set of viable moves
 
-- rename workingTableau to WorkingTableau
 - unify the three places where complex moves with holding piles are performed
 
 - undo holding piles if it increases the order
@@ -20,7 +19,6 @@
 - consider enumerating all offload moves instead of one per pile
 - for offload consider trying to find homes for homeless runs by uncovering targets
 
-- optimize scoring factors using designed experiments
 - before playing onto an space search for an space preserving sequence
 
 - prefer holding moves that match suit

@@ -11,34 +11,91 @@ namespace Spider.GamePlay
 {
     public class CompositeSinglePileMoveFinder : GameAdapter
     {
-        private PileList used;
-        private PileList roots;
-        private Tableau workingTableau;
-        private HoldingStack holdingStack;
+        private MoveList UncoveringMoves { get; set; }
+        private PileList OneRunPiles { get; set; }
+        private PileList Used { get; set; }
+        private PileList Roots { get; set; }
+        private Tableau WorkingTableau { get; set; }
+        private HoldingStack HoldingStack { get; set; }
+        private OffloadInfo Offload { get; set; }
 
         private int from;
         private Pile fromPile;
-        private OffloadInfo offload;
         private int best;
         private int order;
-
         private int tableauCheckPoint;
         private int supplementaryMovesCount;
 
         public CompositeSinglePileMoveFinder(Game game)
             : base(game)
         {
-            used = new PileList();
-            roots = new PileList();
-            workingTableau = new Tableau();
-            holdingStack = new HoldingStack();
+            UncoveringMoves = new MoveList();
+            OneRunPiles = new PileList();
+            Used = new PileList();
+            Roots = new PileList();
+            WorkingTableau = new Tableau();
+            HoldingStack = new HoldingStack();
         }
 
         public void Find()
         {
+            int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
+
+            FindUncoveringMoves(maxExtraSuits);
+            FindOneRunPiles();
+
             for (int from = 0; from < Tableau.NumberOfPiles; from++)
             {
                 Check(from);
+            }
+        }
+
+        private void FindUncoveringMoves(int maxExtraSuits)
+        {
+            // Find all uncovering moves.
+            UncoveringMoves.Clear();
+            HoldingStack holdingStack = new HoldingStack();
+            for (int from = 0; from < NumberOfPiles; from++)
+            {
+                Pile fromPile = FindTableau[from];
+                int fromRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
+                if (fromRow == 0)
+                {
+                    continue;
+                }
+                int fromSuits = RunFinder.CountSuits(from, fromRow);
+                Card fromCard = fromPile[fromRow];
+                PileList faceList = FaceLists[(int)fromCard.Face + 1];
+                for (int i = 0; i < faceList.Count; i++)
+                {
+                    holdingStack.Clear();
+                    int to = faceList[i];
+                    if (fromSuits - 1 > maxExtraSuits)
+                    {
+                        int holdingSuits = FindHolding(FindTableau, holdingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                        if (fromSuits - 1 > maxExtraSuits + holdingSuits)
+                        {
+                            break;
+                        }
+                    }
+                    Pile toPile = FindTableau[to];
+                    Card toCard = toPile[toPile.Count - 1];
+                    int order = GetOrder(toCard, fromCard);
+                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(holdingStack.Set)));
+                }
+            }
+        }
+
+        private void FindOneRunPiles()
+        {
+            OneRunPiles.Clear();
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                int upCount = FindTableau[column].Count;
+                if (upCount != 0 && upCount == RunFinder.GetRunLengthAnySuit(column))
+                {
+                    OneRunPiles.Add(column);
+                }
             }
         }
 
@@ -53,19 +110,19 @@ namespace Spider.GamePlay
             }
 
             // Configure the working tableau.
-            workingTableau.Variation = Variation;
+            WorkingTableau.Variation = Variation;
 
             // Find roots.
-            roots.Clear();
+            Roots.Clear();
             int row = fromPile.Count;
-            roots.Add(row);
+            Roots.Add(row);
             while (row > 0)
             {
                 int count = fromPile.GetRunUpAnySuit(row);
                 row -= count;
-                roots.Add(row);
+                Roots.Add(row);
             }
-            int runs = roots.Count - 1;
+            int runs = Roots.Count - 1;
             if (runs <= 1)
             {
                 // Not at least two runs.
@@ -76,7 +133,7 @@ namespace Spider.GamePlay
             best = -1;
             CheckOne(Move.Empty);
 
-            used.Clear();
+            Used.Clear();
             for (int i = 0; i < UncoveringMoves.Count; i++)
             {
                 // Make sure the move doesn't interfere.
@@ -87,18 +144,18 @@ namespace Spider.GamePlay
                 }
 
                 // Only need to try an uncovered card once.
-                if (used.Contains(move.From))
+                if (Used.Contains(move.From))
                 {
                     continue;
                 }
-                used.Add(move.From);
+                Used.Add(move.From);
 
                 // The uncovered card has to match a root to be useful.
                 Card uncoveredCard = FindTableau[move.From][move.FromRow - 1];
                 bool matchesRoot = false;
-                for (int j = 1; j < roots.Count; j++)
+                for (int j = 1; j < Roots.Count; j++)
                 {
-                    if (uncoveredCard.IsTargetFor(fromPile[roots[j]]))
+                    if (uncoveredCard.IsTargetFor(fromPile[Roots[j]]))
                     {
                         matchesRoot = true;
                         break;
@@ -119,14 +176,14 @@ namespace Spider.GamePlay
         {
             // Prepare data structures.
             order = 0;
-            int runs = roots.Count - 1;
-            offload = OffloadInfo.Empty;
+            int runs = Roots.Count - 1;
+            Offload = OffloadInfo.Empty;
             SupplementaryMoves.Clear();
 
             // Initialize the pile map.
-            workingTableau.Clear();
-            workingTableau.CopyUpPiles(FindTableau);
-            workingTableau.BlockDownPiles(FindTableau);
+            WorkingTableau.Clear();
+            WorkingTableau.CopyUpPiles(FindTableau);
+            WorkingTableau.BlockDownPiles(FindTableau);
 
             if (!uncoveringMove.IsEmpty)
             {
@@ -138,34 +195,34 @@ namespace Spider.GamePlay
                 {
                     Move holdingMove = SupplementaryList[next];
                     SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, uncoveringMove.From, holdingMove.FromRow, holdingMove.To));
-                    workingTableau.Move(holdingMove);
+                    WorkingTableau.Move(holdingMove);
                     moveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, uncoveringMove.To));
                 }
                 SupplementaryMoves.Add(uncoveringMove);
-                workingTableau.Move(uncoveringMove);
+                WorkingTableau.Move(uncoveringMove);
                 while (moveStack.Count > 0)
                 {
                     Move holdingMove = moveStack.Pop();
-                    if (!workingTableau.IsValid(holdingMove))
+                    if (!WorkingTableau.IsValid(holdingMove))
                     {
                         break;
                     }
                     SupplementaryMoves.Add(holdingMove);
-                    workingTableau.Move(holdingMove);
+                    WorkingTableau.Move(holdingMove);
                 }
             }
 
             // Check all the roots.
             int offloads = 0;
-            for (int n = 1; n < roots.Count; n++)
+            for (int n = 1; n < Roots.Count; n++)
             {
-                int rootRow = roots[n];
+                int rootRow = Roots[n];
                 Card rootCard = fromPile[rootRow];
-                int runLength = roots[n - 1] - roots[n];
+                int runLength = Roots[n - 1] - Roots[n];
                 int suits = fromPile.CountSuits(rootRow, rootRow + runLength);
                 int maxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
                 bool suitsMatch = false;
-                holdingStack.Clear();
+                HoldingStack.Clear();
 
                 // Try to find the best matching target.
                 int to = -1;
@@ -175,10 +232,10 @@ namespace Spider.GamePlay
                     {
                         continue;
                     }
-                    Card card = workingTableau.GetCard(i);
+                    Card card = WorkingTableau.GetCard(i);
                     if (card.IsTargetFor(rootCard))
                     {
-                        if (!offload.IsEmpty && to == offload.To)
+                        if (!Offload.IsEmpty && to == Offload.To)
                         {
                             to = -1;
                             suitsMatch = false;
@@ -200,9 +257,9 @@ namespace Spider.GamePlay
                 if (to != -1)
                 {
                     // Check for inverting.
-                    if (!offload.IsEmpty && to == offload.To)
+                    if (!Offload.IsEmpty && to == Offload.To)
                     {
-                        if (!offload.SinglePile)
+                        if (!Offload.SinglePile)
                         {
                             // Not enough spaces to invert.
                             return;
@@ -213,7 +270,7 @@ namespace Spider.GamePlay
                     if (suits - 1 > maxExtraSuits)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(WorkingTableau, HoldingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits - 1 > maxExtraSuits)
                         {
                             // Not enough spaces.
@@ -226,7 +283,7 @@ namespace Spider.GamePlay
                 }
                 else
                 {
-                    if (!offload.IsEmpty)
+                    if (!Offload.IsEmpty)
                     {
                         // Already have an offload.
                         return;
@@ -254,12 +311,12 @@ namespace Spider.GamePlay
                         // Not enough spaces.
                         return;
                     }
-                    to = workingTableau.Spaces[0];
+                    to = WorkingTableau.Spaces[0];
                     int maxExtraSuitsOnePile = ExtraSuits(GetNumberOfSpacesLeft() - 1) + 1;
                     if (suits > maxExtraSuitsOnePile)
                     {
                         // Try using holding piles.
-                        suits -= FindHolding(workingTableau, holdingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
+                        suits -= FindHolding(WorkingTableau, HoldingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
                         if (suits > maxExtraSuits)
                         {
                             // Still not enough spaces.
@@ -267,14 +324,14 @@ namespace Spider.GamePlay
                         }
                     }
                     int numberOfSpacesUsed = SpacesUsed(GetNumberOfSpacesLeft(), suits);
-                    offload = new OffloadInfo(to, numberOfSpacesUsed);
-                    type = offload.SinglePile ? MoveType.Basic : MoveType.Unload;
+                    Offload = new OffloadInfo(to, numberOfSpacesUsed);
+                    type = Offload.SinglePile ? MoveType.Basic : MoveType.Unload;
                     isOffload = true;
                     offloads++;
                 }
 
                 // Do the move and the holding moves.
-                HoldingSet holdingSet = holdingStack.Set;
+                HoldingSet holdingSet = HoldingStack.Set;
                 bool undoHolding = !isOffload;
                 AddSupplementaryMove(new Move(type, from, rootRow, to), fromPile, holdingSet, undoHolding);
 
@@ -297,7 +354,7 @@ namespace Spider.GamePlay
             }
 
             // Check for unload that needs to be reloaded.
-            if (!offload.IsEmpty && !offload.SinglePile)
+            if (!Offload.IsEmpty && !Offload.SinglePile)
             {
                 if (FindTableau.GetDownCount(from) != 0)
                 {
@@ -307,7 +364,7 @@ namespace Spider.GamePlay
                 else
                 {
                     // Reload the offload onto the now empty space.
-                    SupplementaryMoves.Add(new Move(MoveType.Reload, offload.To, 0, from, 0));
+                    SupplementaryMoves.Add(new Move(MoveType.Reload, Offload.To, 0, from, 0));
                 }
             }
 
@@ -317,46 +374,46 @@ namespace Spider.GamePlay
 
         private int GetNumberOfSpacesLeft()
         {
-            int n = workingTableau.NumberOfSpaces;
-            if (!offload.IsEmpty)
+            int n = WorkingTableau.NumberOfSpaces;
+            if (!Offload.IsEmpty)
             {
-                n -= offload.NumberOfSpacesUsed - 1;
+                n -= Offload.NumberOfSpacesUsed - 1;
             }
             return n;
         }
 
         private void CheckOffload(int to)
         {
-            if (offload.IsEmpty)
+            if (Offload.IsEmpty)
             {
                 // No offload to check.
                 return;
             }
 
-            Pile offloadPile = workingTableau[offload.To];
+            Pile offloadPile = WorkingTableau[Offload.To];
             if (offloadPile.Count == 0)
             {
                 // A discard emptied the offload pile.
-                offload = OffloadInfo.Empty;
+                Offload = OffloadInfo.Empty;
                 return;
             }
 
             Card offloadRootCard = offloadPile[0];
             int offloadSuits = offloadPile.CountSuits();
             int offloadMaxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
-            MoveType offloadType = offload.SinglePile ? MoveType.Basic : MoveType.Reload;
+            MoveType offloadType = Offload.SinglePile ? MoveType.Basic : MoveType.Reload;
 
             // Check whether offload matches from pile.
-            Card fromCard = workingTableau.GetCard(from);
+            Card fromCard = WorkingTableau.GetCard(from);
             if (offloadRootCard.IsSourceFor(fromCard))
             {
                 // Check whether we can make the move.
                 bool canMove = true;
-                holdingStack.Clear();
-                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+                HoldingStack.Clear();
+                if (Offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough spaces.
-                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offloadPile, offload.To, 0, offloadPile.Count, from, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(WorkingTableau, HoldingStack, false, offloadPile, Offload.To, 0, offloadPile.Count, from, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough spaces and/or holding piles.
@@ -370,7 +427,7 @@ namespace Spider.GamePlay
                     SaveWorkingState();
 
                     // Offload matches from pile.
-                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, from), offloadPile, holdingStack.Set, true);
+                    AddSupplementaryMove(new Move(offloadType, Offload.To, 0, from), offloadPile, HoldingStack.Set, true);
 
                     // Add the intermediate move.
                     AddMove(order + GetOrder(fromCard, offloadRootCard));
@@ -381,17 +438,17 @@ namespace Spider.GamePlay
             }
 
             // Check whether offoad matches to pile.
-            Card toCard = workingTableau.GetCard(to);
+            Card toCard = WorkingTableau.GetCard(to);
             if (offloadRootCard.IsSourceFor(toCard))
             {
 
                 // Check whether we can make the move.
                 bool canMove = true;
-                holdingStack.Clear();
-                if (offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
+                HoldingStack.Clear();
+                if (Offload.SinglePile && offloadSuits - 1 > offloadMaxExtraSuits)
                 {
                     // Not enough spaces.
-                    offloadSuits -= FindHolding(workingTableau, holdingStack, false, offloadPile, offload.To, 0, offloadPile.Count, to, offloadMaxExtraSuits);
+                    offloadSuits -= FindHolding(WorkingTableau, HoldingStack, false, offloadPile, Offload.To, 0, offloadPile.Count, to, offloadMaxExtraSuits);
                     if (offloadSuits - 1 > offloadMaxExtraSuits)
                     {
                         // Not enough spaces and/or holding piles.
@@ -405,10 +462,10 @@ namespace Spider.GamePlay
                     order += GetOrder(toCard, offloadRootCard);
 
                     // Found a home for the offload.
-                    AddSupplementaryMove(new Move(offloadType, offload.To, 0, to), offloadPile, holdingStack.Set, true);
+                    AddSupplementaryMove(new Move(offloadType, Offload.To, 0, to), offloadPile, HoldingStack.Set, true);
 
                     // Update the state.
-                    offload = OffloadInfo.Empty;
+                    Offload = OffloadInfo.Empty;
                 }
             }
         }
@@ -433,7 +490,7 @@ namespace Spider.GamePlay
 
         private bool TryToAddOneRunMove(int oneRun, int target)
         {
-            Pile oneRunPile = workingTableau[oneRun];
+            Pile oneRunPile = WorkingTableau[oneRun];
             if (oneRunPile.Count == 0)
             {
                 return false;
@@ -441,7 +498,7 @@ namespace Spider.GamePlay
             Card oneRunRootCard = oneRunPile[0];
 
             // Check whether the one run pile matches the target pile.
-            Card targetCard = workingTableau.GetCard(target);
+            Card targetCard = WorkingTableau.GetCard(target);
             if (!oneRunRootCard.IsSourceFor(targetCard))
             {
                 return false;
@@ -450,10 +507,10 @@ namespace Spider.GamePlay
             // Check whether we can make the move.
             int oneRunSuits = oneRunPile.CountSuits();
             int oneRunMaxExtraSuits = ExtraSuits(GetNumberOfSpacesLeft());
-            holdingStack.Clear();
+            HoldingStack.Clear();
             if (oneRunSuits - 1 > oneRunMaxExtraSuits)
             {
-                oneRunSuits -= FindHolding(workingTableau, holdingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
+                oneRunSuits -= FindHolding(WorkingTableau, HoldingStack, false, oneRunPile, oneRun, 0, oneRunPile.Count, target, oneRunMaxExtraSuits);
                 if (oneRunSuits - 1 > oneRunMaxExtraSuits)
                 {
                     // Not enough spaces and/or holding piles.
@@ -462,13 +519,13 @@ namespace Spider.GamePlay
             }
 
             // Handle the messy cases.
-            if (offload.IsEmpty || offload.SinglePile && FindTableau.GetDownCount(oneRun) == 0)
+            if (Offload.IsEmpty || Offload.SinglePile && FindTableau.GetDownCount(oneRun) == 0)
             {
                 // Save working state.
                 SaveWorkingState();
 
                 // Found a home for the one run pile.
-                AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, holdingStack.Set, true);
+                AddSupplementaryMove(new Move(oneRun, 0, target), oneRunPile, HoldingStack.Set, true);
 
                 if (AddMove(order + GetOrder(targetCard, oneRunRootCard)))
                 {
@@ -488,12 +545,12 @@ namespace Spider.GamePlay
             foreach (HoldingInfo holding in holdingSet.Forwards)
             {
                 Move holdingMove = new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To);
-                workingTableau.Move(holdingMove);
+                WorkingTableau.Move(holdingMove);
                 SupplementaryMoves.Add(holdingMove);
             }
 
             // Add the primary move.
-            workingTableau.Move(new Move(move.From, move.FromRow, move.To));
+            WorkingTableau.Move(new Move(move.From, move.FromRow, move.To));
             SupplementaryMoves.Add(move);
 
             if (undoHolding)
@@ -502,7 +559,7 @@ namespace Spider.GamePlay
                 foreach (HoldingInfo holding in holdingSet.Backwards)
                 {
                     Move holdingMove = new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To);
-                    if (!workingTableau.TryToMove(holdingMove))
+                    if (!WorkingTableau.TryToMove(holdingMove))
                     {
                         break;
                     }
@@ -513,14 +570,14 @@ namespace Spider.GamePlay
 
         private void SaveWorkingState()
         {
-            tableauCheckPoint = workingTableau.CheckPoint;
+            tableauCheckPoint = WorkingTableau.CheckPoint;
             supplementaryMovesCount = SupplementaryMoves.Count;
         }
 
         private void RestoreWorkingState()
         {
             // Restore state of the working tableau prior to intermediate move.
-            workingTableau.Revert(tableauCheckPoint);
+            WorkingTableau.Revert(tableauCheckPoint);
 
             // Restore state of supplementary moves prior to intermediate move.
             while (SupplementaryMoves.Count > supplementaryMovesCount)
@@ -533,21 +590,21 @@ namespace Spider.GamePlay
         {
             // Infer move flags from state of the working tableau.
             MoveFlags flags = MoveFlags.Empty;
-            if (workingTableau.DiscardPiles.Count != 0)
+            if (WorkingTableau.DiscardPiles.Count != 0)
             {
                 flags |= MoveFlags.Discards;
             }
-            if (workingTableau.NumberOfSpaces > FindTableau.NumberOfSpaces)
+            if (WorkingTableau.NumberOfSpaces > FindTableau.NumberOfSpaces)
             {
                 flags |= MoveFlags.CreatesSpace;
             }
-            if (workingTableau.NumberOfSpaces < FindTableau.NumberOfSpaces)
+            if (WorkingTableau.NumberOfSpaces < FindTableau.NumberOfSpaces)
             {
                 flags |= MoveFlags.UsesSpace;
             }
-            for (int column = 0; column < workingTableau.NumberOfPiles; column++)
+            for (int column = 0; column < WorkingTableau.NumberOfPiles; column++)
             {
-                Pile pile = workingTableau[column];
+                Pile pile = WorkingTableau[column];
                 if (pile.Count == 1 && pile[0].IsEmpty)
                 {
                     flags |= MoveFlags.TurnsOverCard;

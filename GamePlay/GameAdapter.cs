@@ -49,12 +49,10 @@ namespace Spider.GamePlay
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
         public int NumberOfSuits { get { return game.NumberOfSuits; } }
 
-        public MoveList UncoveringMoves { get { return game.UncoveringMoves; } }
         public MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }
         public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
         public PileList[] FaceLists { get { return game.FaceLists; } }
-        public PileList OneRunPiles { get { return game.OneRunPiles; } }
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
         public RunFinder RunFinder { get { return game.RunFinder; } }
 
@@ -71,16 +69,6 @@ namespace Spider.GamePlay
         public void ProcessMove(Move move)
         {
             game.ProcessMove(move);
-        }
-
-        public bool IsReversible(Move move)
-        {
-            return game.IsReversible(move);
-        }
-
-        public bool IsViable(Move move)
-        {
-            return game.IsViable(move);
         }
 
         public int AddHolding(HoldingSet holdingSet)

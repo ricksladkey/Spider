@@ -41,7 +41,6 @@ namespace Spider.GamePlay
             {
                 FaceLists[i] = new PileList();
             }
-            UncoveringMoves = new MoveList();
             Coefficients = null;
 
             TableauInputOutput = new TableauInputOutput(Tableau);
@@ -129,7 +128,6 @@ namespace Spider.GamePlay
         public RunFinder RunFinder { get; private set; }
         public PileList OneRunPiles { get; private set; }
         public PileList[] FaceLists { get; private set; }
-        public MoveList UncoveringMoves { get; private set; }
         public Tableau LastGame { get; private set; }
         public int NumberOfPiles { get; private set; }
         public int NumberOfSuits { get; private set; }
@@ -410,84 +408,6 @@ namespace Spider.GamePlay
                     FaceLists[(int)pile[pileCount - 1].Face].Add(i);
                 }
             }
-        }
-
-        public bool IsReversible(Move move)
-        {
-            int from = move.From;
-            int fromRow = move.FromRow;
-            int to = move.To;
-            int toRow = move.ToRow;
-            Pile fromPile = FindTableau[from];
-            Pile toPile = FindTableau[to];
-            bool isSwap = move.Type == MoveType.Swap;
-            Card fromParent = fromRow != 0 ? fromPile[fromRow - 1] : Card.Empty;
-            Card fromChild = fromPile[fromRow];
-            Card toParent = toRow != 0 ? toPile[toRow - 1] : Card.Empty;
-            Card toChild = toRow != toPile.Count ? toPile[toRow] : Card.Empty;
-            int oldOrderFrom = GetOrder(fromParent, fromChild);
-            int newOrderFrom = GetOrder(toParent, fromChild);
-            int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
-            int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
-            return oldOrderFrom != 0 && (!isSwap || oldOrderTo != 0);
-        }
-
-        public bool IsViable(Move move)
-        {
-            int from = move.From;
-            int fromRow = move.FromRow;
-            int to = move.To;
-            int toRow = move.ToRow;
-
-            Pile fromPile = FindTableau[from];
-            Pile toPile = FindTableau[to];
-            if (toPile.Count == 0)
-            {
-                if (fromPile.Count == 0 && FindTableau.GetDownCount(from) == 0)
-                {
-                    return false;
-                }
-                else if (fromRow != 0 && fromPile[fromRow - 1].IsTargetFor(fromPile[fromRow]))
-                {
-                    return false;
-                }
-                return true;
-            }
-            bool isSwap = move.Type == MoveType.Swap;
-            Card fromParent = fromRow != 0 ? fromPile[fromRow - 1] : Card.Empty;
-            Card fromChild = fromPile[fromRow];
-            Card toParent = toRow != 0 ? toPile[toRow - 1] : Card.Empty;
-            Card toChild = toRow != toPile.Count ? toPile[toRow] : Card.Empty;
-            int oldOrderFrom = GetOrder(fromParent, fromChild);
-            int newOrderFrom = GetOrder(toParent, fromChild);
-            int oldOrderTo = isSwap ? GetOrder(toParent, toChild) : 0;
-            int newOrderTo = isSwap ? GetOrder(fromParent, toChild) : 0;
-            int order = newOrderFrom - oldOrderFrom + newOrderTo - oldOrderTo;
-            if (order < 0)
-            {
-                return false;
-            }
-            int netRunLengthFrom = RunFinder.GetNetRunLength(newOrderFrom, from, fromRow, to, toRow);
-            int netRunLengthTo = isSwap ? RunFinder.GetNetRunLength(newOrderTo, to, toRow, from, fromRow) : 0;
-            int netRunLength = netRunLengthFrom + netRunLengthTo;
-            if (order == 0 && netRunLength < 0)
-            {
-                return false;
-            }
-            int delta = 0;
-            if (order == 0 && netRunLength == 0)
-            {
-                if (!isSwap && oldOrderFrom == 1 && newOrderFrom == 1)
-                {
-                    delta = RunFinder.GetRunDelta(from, fromRow, to, toRow);
-                }
-                if (delta <= 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         public void ProcessMove(Move move)

@@ -17,11 +17,9 @@ namespace Spider.GamePlay
         int NumberOfPiles { get; }
         int NumberOfSuits { get; }
 
-        MoveList UncoveringMoves { get; }
         MoveList SupplementaryMoves { get; }
         MoveList SupplementaryList { get; }
         MoveList Candidates { get; }
-        PileList OneRunPiles { get; }
         PileList[] FaceLists { get; }
         HoldingStack[] HoldingStacks { get; }
         RunFinder RunFinder { get; }
@@ -29,8 +27,6 @@ namespace Spider.GamePlay
         void SetDefaultCoefficients(double[] coefficients);
         void PrepareToFindMoves(Tableau tableau);
         void ProcessMove(Move move);
-        bool IsReversible(Move move);
-        bool IsViable(Move move);
         int AddHolding(HoldingSet holdingSet);
         int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2);
         int AddSupplementary();

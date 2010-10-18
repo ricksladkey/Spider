@@ -70,9 +70,6 @@ namespace Spider.GamePlay
         public void FindMoves(Tableau tableau)
         {
             PrepareToFindMoves(tableau);
-            int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
-            FindUncoveringMoves(maxExtraSuits);
-            FindOneRunPiles();
             BasicMoveFinder.Find();
             SwapMoveFinder.Find();
             CompositeSinglePileMoveFinder.Find();
@@ -104,55 +101,6 @@ namespace Spider.GamePlay
         }
 
         #endregion
-
-        private void FindUncoveringMoves(int maxExtraSuits)
-        {
-            // Find all uncovering moves.
-            UncoveringMoves.Clear();
-            HoldingStack holdingStack = new HoldingStack();
-            for (int from = 0; from < NumberOfPiles; from++)
-            {
-                Pile fromPile = FindTableau[from];
-                int fromRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
-                if (fromRow == 0)
-                {
-                    continue;
-                }
-                int fromSuits = RunFinder.CountSuits(from, fromRow);
-                Card fromCard = fromPile[fromRow];
-                PileList faceList = FaceLists[(int)fromCard.Face + 1];
-                for (int i = 0; i < faceList.Count; i++)
-                {
-                    holdingStack.Clear();
-                    int to = faceList[i];
-                    if (fromSuits - 1 > maxExtraSuits)
-                    {
-                        int holdingSuits = FindHolding(FindTableau, holdingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
-                        if (fromSuits - 1 > maxExtraSuits + holdingSuits)
-                        {
-                            break;
-                        }
-                    }
-                    Pile toPile = FindTableau[to];
-                    Card toCard = toPile[toPile.Count - 1];
-                    int order = GetOrder(toCard, fromCard);
-                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(holdingStack.Set)));
-                }
-            }
-        }
-
-        private void FindOneRunPiles()
-        {
-            OneRunPiles.Clear();
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                int upCount = FindTableau[column].Count;
-                if (upCount != 0 && upCount == RunFinder.GetRunLengthAnySuit(column))
-                {
-                    OneRunPiles.Add(column);
-                }
-            }
-        }
 
         private double CalculateScore(Move move)
         {
