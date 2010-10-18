@@ -61,27 +61,8 @@ namespace Spider.GamePlay
         private ListAllocator<Move> MoveAllocator { get; set; }
         private ListAllocator<Node> NodeAllocator { get; set; }
 
-        public new void SearchMoves()
+        public MoveList SearchMoves()
         {
-            FindMoves(Tableau);
-            int best = -1;
-            for (int i = 0; i < Candidates.Count; i++)
-            {
-                Move move = Candidates[i];
-                if (IsReversible(move))
-                {
-                    if (best == -1 || move.Score > Candidates[best].Score)
-                    {
-                        best = i;
-                    }
-                }
-            }
-            if (best != -1)
-            {
-                ProcessMove(Candidates[best]);
-                return;
-            }
-
             WorkingTableau.Variation = Variation;
             WorkingTableau.Clear();
             WorkingTableau.CopyUpPiles(Tableau);
@@ -147,19 +128,7 @@ namespace Spider.GamePlay
                 }
             }
 
-            for (int i = 0; i < Moves.Count; i++)
-            {
-                Move move = Moves[i];
-                if (move.Type == MoveType.Basic || move.Type == MoveType.Swap)
-                {
-                    ProcessMove(move);
-                }
-                else if (move.Type == MoveType.TurnOverCard)
-                {
-                    // New information.
-                    break;
-                }
-            }
+            return Moves;
         }
 
         private void StartSearch()
@@ -178,7 +147,7 @@ namespace Spider.GamePlay
                 return;
             }
 
-            FindMoves(WorkingTableau);
+            Algorithm.FindMoves(WorkingTableau);
             Node node = new Node(new MoveList(Candidates), new MoveList(SupplementaryList));
 
             for (int i = 0; i < node.Moves.Count; i++)
@@ -209,7 +178,7 @@ namespace Spider.GamePlay
         {
             if (parent.Moves == null)
             {
-                FindMoves(WorkingTableau);
+                Algorithm.FindMoves(WorkingTableau);
 #if true
                 parent.Moves = new AllocatedList<Move>(MoveAllocator, Candidates);
                 parent.SupplementaryList = new AllocatedList<Move>(MoveAllocator, SupplementaryList);

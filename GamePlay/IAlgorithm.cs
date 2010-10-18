@@ -10,7 +10,9 @@ namespace Spider.GamePlay
 {
     public interface IAlgorithm
     {
+        void SetCoefficients();
         void PrepareToPlay();
+        void FindMoves(Tableau tableau);
         void MakeMove();
         void ProcessCandidate(Move move);
         void PrepareToDeal();

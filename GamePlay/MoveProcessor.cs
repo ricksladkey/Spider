@@ -16,7 +16,7 @@ namespace Spider.GamePlay
         {
         }
 
-        public new void ProcessMove(Move move)
+        public void Process(Move move)
         {
             if (ComplexMoves)
             {
@@ -28,7 +28,7 @@ namespace Spider.GamePlay
             }
         }
 
-        public void ConvertToSimpleMoves(Move move)
+        private void ConvertToSimpleMoves(Move move)
         {
             if (Diagnostics)
             {
@@ -67,7 +67,7 @@ namespace Spider.GamePlay
             }
         }
 
-        public void MakeMove(Move move)
+        private void MakeMove(Move move)
         {
             if (move.Next != -1)
             {

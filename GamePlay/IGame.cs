@@ -26,8 +26,8 @@ namespace Spider.GamePlay
         HoldingStack[] HoldingStacks { get; }
         RunFinder RunFinder { get; }
 
-        void FindMoves(Tableau tableau);
-        void SearchMoves();
+        void SetDefaultCoefficients(double[] coefficients);
+        void PrepareToFindMoves(Tableau tableau);
         void ProcessMove(Move move);
         bool IsReversible(Move move);
         bool IsViable(Move move);

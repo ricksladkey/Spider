@@ -10,18 +10,72 @@ namespace Spider.GamePlay
 {
     public class StudyAlgorithm : GameAdapter, IAlgorithm
     {
+        public static double[] FourSuitCoefficients = new double[] {
+            /* 0 */ 4.97385808, 63.53977337, -0.07690241043, -3.361553585, -0.2933748314, 1.781253839, 4.819874539, 0.4819874538, 86.27048442,
+            /* 9 */ 4.465708423, 0.001610653073, -0.1302184743, -0.9577011316, 2.95155848, 0.7840526817,
+        };
+
+        public static double[] TwoSuitCoefficients = new double[] {
+            /* 0 */ 5.633744758, 80.97892108, -0.05372285251, -3.999455611, -0.9077026719, 0.8480919033, 9.447113329, 1, 76.38970958,
+            /* 9 */ 4.191362497, 4.048432827E-05, -0.03960051729, -0.1601725542, 0.7790220167, 0.4819874539,
+        };
+
+        public static double[] OneSuitCoefficients = new double[] {
+            /* 0 */ 4.241634919, 93.31341988, -0.08091391227, -3.265541832, -0.5942021654, 2.565712243, 17.64117551, 1, 110.0314895,
+            /* 9 */ 1.756489081, 0.0002561898898, -0.04347481483, -0.1737026135, 3.471266012, 1,
+        };
+
         public const int Group0 = 0;
         public const int Group1 = 9;
 
         public StudyAlgorithm(Game game)
             : base(game)
         {
+            BasicMoveFinder = new BasicMoveFinder(game);
+            SwapMoveFinder = new SwapMoveFinder(game);
+            CompositeSinglePileMoveFinder = new CompositeSinglePileMoveFinder(game);
         }
+
+        private BasicMoveFinder BasicMoveFinder { get; set; }
+        private SwapMoveFinder SwapMoveFinder { get; set; }
+        private CompositeSinglePileMoveFinder CompositeSinglePileMoveFinder { get; set; }
 
         #region IAlgorithm Members
 
+        public void SetCoefficients()
+        {
+            int suits = Variation.NumberOfSuits;
+            if (suits == 1)
+            {
+                SetDefaultCoefficients(OneSuitCoefficients);
+            }
+            else if (suits == 2)
+            {
+                SetDefaultCoefficients(TwoSuitCoefficients);
+            }
+            else if (suits == 4)
+            {
+                SetDefaultCoefficients(FourSuitCoefficients);
+            }
+            else
+            {
+                throw new Exception("invalid number of suits");
+            }
+        }
+
         public void PrepareToPlay()
         {
+        }
+
+        public void FindMoves(Tableau tableau)
+        {
+            PrepareToFindMoves(tableau);
+            int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
+            FindUncoveringMoves(maxExtraSuits);
+            FindOneRunPiles();
+            BasicMoveFinder.Find();
+            SwapMoveFinder.Find();
+            CompositeSinglePileMoveFinder.Find();
         }
 
         public void MakeMove()
@@ -50,6 +104,55 @@ namespace Spider.GamePlay
         }
 
         #endregion
+
+        private void FindUncoveringMoves(int maxExtraSuits)
+        {
+            // Find all uncovering moves.
+            UncoveringMoves.Clear();
+            HoldingStack holdingStack = new HoldingStack();
+            for (int from = 0; from < NumberOfPiles; from++)
+            {
+                Pile fromPile = FindTableau[from];
+                int fromRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
+                if (fromRow == 0)
+                {
+                    continue;
+                }
+                int fromSuits = RunFinder.CountSuits(from, fromRow);
+                Card fromCard = fromPile[fromRow];
+                PileList faceList = FaceLists[(int)fromCard.Face + 1];
+                for (int i = 0; i < faceList.Count; i++)
+                {
+                    holdingStack.Clear();
+                    int to = faceList[i];
+                    if (fromSuits - 1 > maxExtraSuits)
+                    {
+                        int holdingSuits = FindHolding(FindTableau, holdingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                        if (fromSuits - 1 > maxExtraSuits + holdingSuits)
+                        {
+                            break;
+                        }
+                    }
+                    Pile toPile = FindTableau[to];
+                    Card toCard = toPile[toPile.Count - 1];
+                    int order = GetOrder(toCard, fromCard);
+                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(holdingStack.Set)));
+                }
+            }
+        }
+
+        private void FindOneRunPiles()
+        {
+            OneRunPiles.Clear();
+            for (int column = 0; column < NumberOfPiles; column++)
+            {
+                int upCount = FindTableau[column].Count;
+                if (upCount != 0 && upCount == RunFinder.GetRunLengthAnySuit(column))
+                {
+                    OneRunPiles.Add(column);
+                }
+            }
+        }
 
         private double CalculateScore(Move move)
         {

@@ -58,14 +58,14 @@ namespace Spider.GamePlay
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
         public RunFinder RunFinder { get { return game.RunFinder; } }
 
-        public void FindMoves(Tableau tableau)
+        public void SetDefaultCoefficients(double[] coefficients)
         {
-            game.FindMoves(tableau);
+            game.SetDefaultCoefficients(coefficients);
         }
 
-        public void SearchMoves()
+        public void PrepareToFindMoves(Tableau tableau)
         {
-            game.SearchMoves();
+            game.PrepareToFindMoves(tableau);
         }
 
         public void ProcessMove(Move move)
