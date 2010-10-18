@@ -25,12 +25,12 @@ namespace Spider.GamePlay
         #region IGameSettings Members
 
         public Variation Variation { get { return game.Variation; } set { game.Variation = value; } }
+        public AlgorithmType AlgorithmType { get { return game.AlgorithmType; } set { game.AlgorithmType = value; } }
         public int Seed { get { return game.Seed; } set { game.Seed = value; } }
         public double[] Coefficients { get { return game.Coefficients; } set { game.Coefficients = value; } }
         public bool Diagnostics { get { return game.Diagnostics; } set { game.Diagnostics = value; } }
         public bool Interactive { get { return game.Interactive; } set { game.Interactive = value; } }
         public int Instance { get { return game.Instance; } set { game.Instance = value; } }
-        public bool UseSearch { get { return game.UseSearch; } set { game.UseSearch = value; } }
 
         public bool TraceMoves { get { return game.TraceMoves; } set { game.TraceMoves = value; } }
         public bool TraceStartFinish { get { return game.TraceStartFinish; } set { game.TraceStartFinish = value; } }

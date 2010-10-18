@@ -43,7 +43,7 @@ namespace Spider.GamePlay
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
-        public bool UseSearch { get; set; }
+        public AlgorithmType AlgorithmType { get; set; }
 
         public bool Won { get; private set; }
 
@@ -128,6 +128,7 @@ namespace Spider.GamePlay
             : this()
         {
             Variation = variation;
+            Initialize();
         }
 
         public Game(string s)
@@ -148,12 +149,41 @@ namespace Spider.GamePlay
             FromTableau(tableau);
         }
 
-        public void Initialize()
+        public Game(Variation variation, AlgorithmType algorithmType)
+            : this()
+        {
+            Variation = variation;
+            AlgorithmType = algorithmType;
+            Initialize();
+        }
+
+        public Game(string s, AlgorithmType algorithmType)
+            : this()
+        {
+            AlgorithmType = algorithmType;
+            FromAsciiString(s);
+        }
+
+        public Game(Game other, AlgorithmType algorithmType)
+            : this()
+        {
+            AlgorithmType = algorithmType;
+            FromGame(other);
+        }
+
+        public Game(Tableau tableau, AlgorithmType algorithmType)
+            : this()
+        {
+            AlgorithmType = algorithmType;
+            FromTableau(tableau);
+        }
+
+        private void Initialize()
         {
             Tableau.Variation = Variation;
             NumberOfPiles = Variation.NumberOfPiles;
             NumberOfSuits = Variation.NumberOfSuits;
-            if (UseSearch)
+            if (AlgorithmType == AlgorithmType.Search)
             {
                 Algorithm = new SearchAlgorithm(this);
             }
@@ -170,7 +200,7 @@ namespace Spider.GamePlay
             Shuffled.Clear();
             Tableau.Clear();
 
-            if (UseSearch)
+            if (AlgorithmType == AlgorithmType.Search)
             {
                 SetDefaultCoefficients(SearchCoefficients);
             }
@@ -265,10 +295,6 @@ namespace Spider.GamePlay
             }
         }
 
-        private void PrepareToPlay()
-        {
-        }
-
         public void Start()
         {
             if (Seed == -1)
@@ -278,7 +304,7 @@ namespace Spider.GamePlay
             }
             Shuffled.Copy(Variation.Deck);
             Shuffled.Shuffle(Seed);
-            Tableau.Layout(Shuffled);
+            Tableau.PrepareLayout(Shuffled);
         }
 
         private void SetDefaultCoefficients(double[] coefficients)
@@ -316,7 +342,7 @@ namespace Spider.GamePlay
 
             Analyze();
 
-            if (!UseSearch)
+            if (AlgorithmType == AlgorithmType.Study)
             {
                 int maxExtraSuits = ExtraSuits(FindTableau.NumberOfSpaces);
                 FindUncoveringMoves(maxExtraSuits);
@@ -325,7 +351,7 @@ namespace Spider.GamePlay
 
             BasicMoveFinder.Find();
             SwapMoveFinder.Find();
-            if (!UseSearch)
+            if (AlgorithmType == AlgorithmType.Study)
             {
                 CompositeSinglePileMoveFinder.Find();
             }
@@ -665,21 +691,21 @@ namespace Spider.GamePlay
         {
             Initialize();
             TableauInputOutput.FromAsciiString(s);
-            PrepareToPlay();
+            Algorithm.PrepareToPlay();
         }
 
         public void FromGame(Game other)
         {
             Initialize();
             TableauInputOutput.FromTableau(other.Tableau);
-            PrepareToPlay();
+            Algorithm.PrepareToPlay();
         }
 
         public void FromTableau(Tableau tableau)
         {
             Initialize();
             TableauInputOutput.FromTableau(tableau);
-            PrepareToPlay();
+            Algorithm.PrepareToPlay();
         }
 
         public string ToPrettyString()

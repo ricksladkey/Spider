@@ -500,7 +500,7 @@ namespace Spider.Engine
             OnPileChanged(to);
         }
 
-        public void Layout(Pile shuffled)
+        public void PrepareLayout(Pile shuffled)
         {
             stockPile.AddRange(shuffled);
             foreach (LayoutPart layoutPart in Variation.LayoutParts)

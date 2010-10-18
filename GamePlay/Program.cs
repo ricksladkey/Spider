@@ -97,10 +97,10 @@ namespace Spider.GamePlay
                     i++;
                     continue;
                 }
-                if (arg == "--search")
+                if (arg == "--algorithm")
                 {
-                    player.UseSearch = true;
-                    i++;
+                    player.AlgorithmType = AlgorithmType.Parse(args[i + 1]);
+                    i += 2;
                     continue;
                 }
                 if (arg == "--complex_moves")

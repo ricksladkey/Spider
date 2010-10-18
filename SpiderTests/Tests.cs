@@ -237,7 +237,6 @@ namespace Spider.Tests
         }
 
         [TestMethod]
-        [DebugTestMethod]
         public void SwapTest14()
         {
             // A 1/1 in-order swap move, 0 spaces, 2 holding piles.
@@ -518,6 +517,7 @@ namespace Spider.Tests
         }
 
         [TestMethod]
+        [DebugTestMethod]
         public void SearchTest2()
         {
             string data1 = "@2|||Ts-9s9s-8s9s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -539,8 +539,7 @@ namespace Spider.Tests
         private void CheckSearchSucceeds(string data1, string data2)
         {
             string initial = data1;
-            game = new Game(initial);
-            game.UseSearch = true;
+            game = new Game(initial, AlgorithmType.Search);
             game.Diagnostics = true;
             Assert.IsTrue(game.MakeMove());
             string expected = data2;

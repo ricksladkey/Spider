@@ -1,4 +1,4 @@
-- create study and search algorithms
+- call initialize automatically if variation of algorithmtype is set
 - try increasing set of viable moves
 
 - rename workingTableau to WorkingTableau

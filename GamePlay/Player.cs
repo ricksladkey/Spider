@@ -17,12 +17,12 @@ namespace Spider.GamePlay
         #region IGameSettings Members
 
         public Variation Variation { get; set; }
+        public AlgorithmType AlgorithmType { get; set; }
         public int Seed { get; set; }
         public double[] Coefficients { get; set; }
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
-        public bool UseSearch { get; set; }
 
         public bool TraceMoves { get; set; }
         public bool TraceStartFinish { get; set; }
@@ -69,7 +69,7 @@ namespace Spider.GamePlay
             TraceMoves = game.TraceMoves;
             TraceSearch = game.TraceSearch;
             ComplexMoves = game.ComplexMoves;
-            UseSearch = game.UseSearch;
+            AlgorithmType = game.AlgorithmType;
             ShowResults = false;
 
             Games = 100000;
@@ -85,7 +85,7 @@ namespace Spider.GamePlay
             game.TraceMoves = TraceMoves;
             game.TraceSearch = TraceSearch;
             game.ComplexMoves = ComplexMoves;
-            game.UseSearch = UseSearch;
+            game.AlgorithmType = AlgorithmType;
             game.Diagnostics = Diagnostics;
             game.Interactive = Interactive;
 
@@ -130,12 +130,7 @@ namespace Spider.GamePlay
 
         private void SetCoefficients()
         {
-
-            Game game = new Game();
-            game.Variation = Variation;
-            game.UseSearch = UseSearch;
-            game.Initialize();
-            int suits = Variation.NumberOfSuits;
+            Game game = new Game(Variation, AlgorithmType);
             double[] coefficients = game.Coefficients;
             InitialCoefficients = new List<double>(coefficients).ToArray();
             Coefficients = new List<double>(coefficients).ToArray();
