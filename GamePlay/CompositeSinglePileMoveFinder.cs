@@ -18,6 +18,7 @@ namespace Spider.GamePlay
         private Tableau WorkingTableau { get; set; }
         private HoldingStack HoldingStack { get; set; }
         private OffloadInfo Offload { get; set; }
+        private MoveList SupplementaryMoves { get; set; }
 
         private int from;
         private Pile fromPile;
@@ -35,6 +36,7 @@ namespace Spider.GamePlay
             Roots = new PileList();
             WorkingTableau = new Tableau();
             HoldingStack = new HoldingStack();
+            SupplementaryMoves = new MoveList();
         }
 
         public void Find()
@@ -649,7 +651,7 @@ namespace Spider.GamePlay
 
             // Add the scoring move and the accumulated supplementary moves.
             best = Candidates.Count;
-            Algorithm.ProcessCandidate(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary()));
+            Algorithm.ProcessCandidate(new Move(MoveType.CompositeSinglePile, flags, from, 0, 0, totalOrder, -1, AddSupplementary(SupplementaryMoves)));
 
             return flags.CreatesSpace();
         }

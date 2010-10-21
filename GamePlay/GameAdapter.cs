@@ -49,9 +49,8 @@ namespace Spider.GamePlay
         public int NumberOfPiles { get { return game.NumberOfPiles; } }
         public int NumberOfSuits { get { return game.NumberOfSuits; } }
 
-        public MoveList SupplementaryMoves { get { return game.SupplementaryMoves; } }
-        public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public MoveList Candidates { get { return game.Candidates; } }
+        public MoveList SupplementaryList { get { return game.SupplementaryList; } }
         public PileList[] FaceLists { get { return game.FaceLists; } }
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
         public RunFinder RunFinder { get { return game.RunFinder; } }
@@ -81,9 +80,9 @@ namespace Spider.GamePlay
             return game.AddHolding(holdingSet1, holdingSet2);
         }
 
-        public int AddSupplementary()
+        public int AddSupplementary(MoveList supplementaryMoves)
         {
-            return game.AddSupplementary();
+            return game.AddSupplementary(supplementaryMoves);
         }
 
         public int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits)

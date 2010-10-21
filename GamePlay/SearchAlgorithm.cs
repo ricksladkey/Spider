@@ -20,11 +20,13 @@ namespace Spider.GamePlay
             BasicMoveFinder = new BasicMoveFinder(game);
             SwapMoveFinder = new SwapMoveFinder(game);
             SearchMoveFinder = new SearchMoveFinder(game);
+            ScoreCalculator = new ScoreCalculator(game);
         }
 
         private BasicMoveFinder BasicMoveFinder { get; set; }
         private SwapMoveFinder SwapMoveFinder { get; set; }
         private SearchMoveFinder SearchMoveFinder { get; set; }
+        private ScoreCalculator ScoreCalculator { get; set; }
 
         #region IAlgorithm Members
 
@@ -48,14 +50,21 @@ namespace Spider.GamePlay
         {
             Algorithm.FindMoves(Tableau);
             int best = -1;
+            double bestScore = 0;
             for (int i = 0; i < Candidates.Count; i++)
             {
                 Move move = Candidates[i];
                 if (IsReversible(move))
                 {
-                    if (best == -1 || move.Score > Candidates[best].Score)
+#if false
+                    double score = ScoreCalculator.Calculate(move);
+#else
+                    double score = 0;
+#endif
+                    if (best == -1 || score > bestScore)
                     {
                         best = i;
+                        bestScore = score;
                     }
                 }
             }

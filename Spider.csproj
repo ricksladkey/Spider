@@ -126,6 +126,7 @@
     <Compile Include="Collections\IStack.cs" />
     <Compile Include="Engine\LayoutPart.cs" />
     <Compile Include="Collections\ListAllocator.cs" />
+    <Compile Include="GamePlay\ScoreCalculator.cs" />
     <Compile Include="GamePlay\SearchAlgorithm.cs" />
     <Compile Include="GamePlay\StudyAlgorithm.cs" />
     <Compile Include="Optimization\lmmin.cs" />

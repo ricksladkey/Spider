@@ -250,7 +250,7 @@ namespace Spider.GamePlay
             Console.Write("Coefficients = new double[] {");
             for (int i = 0; i < coefficients.Length; i++)
             {
-                if (i == StudyAlgorithm.Group0 || i == StudyAlgorithm.Group1)
+                if (i == ScoreCalculator.Group0 || i == ScoreCalculator.Group1)
                 {
                     Console.WriteLine();
                     Console.Write("    /* {0} */", i);

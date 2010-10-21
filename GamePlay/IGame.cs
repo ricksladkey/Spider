@@ -17,9 +17,8 @@ namespace Spider.GamePlay
         int NumberOfPiles { get; }
         int NumberOfSuits { get; }
 
-        MoveList SupplementaryMoves { get; }
-        MoveList SupplementaryList { get; }
         MoveList Candidates { get; }
+        MoveList SupplementaryList { get; }
         PileList[] FaceLists { get; }
         HoldingStack[] HoldingStacks { get; }
         RunFinder RunFinder { get; }
@@ -29,7 +28,7 @@ namespace Spider.GamePlay
         void ProcessMove(Move move);
         int AddHolding(HoldingSet holdingSet);
         int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2);
-        int AddSupplementary();
+        int AddSupplementary(MoveList supplementaryMoves);
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
         void PrintGame();
         void PrintGames();

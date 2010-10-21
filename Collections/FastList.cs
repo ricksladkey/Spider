@@ -197,6 +197,7 @@ namespace Spider.Collections
 
         public void CopyTo(T[] array, int index)
         {
+            //this.array.CopyTo(array, index);
             for (int i = 0; i < count; i++)
             {
                 array[index + i] = this.array[i];

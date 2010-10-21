@@ -1,7 +1,12 @@
+- fix swap unit test
+- address algorithm-specific shared data structures
 - call initialize automatically if variation or algorithmtype is set
 - try increasing set of viable moves
+- try adding composite single pile moves to search
+- try scoring search moves based on descendents
 
 - unify the three places where complex moves with holding piles are performed
+- merge the multiple different places that space algorithms are implemented
 
 - undo holding piles if it increases the order
 - try to reuse TryToAddOneRunMove for CheckOffload
@@ -13,13 +18,10 @@
 - could collect composite uncovering moves
 - rename test jig
 - retest complex
-- merge the multiple different places that space algorithms are implemented
-- upgrade to full power of two extra suits algorithm
+- upgrade to full "power of two" extra suits algorithm
 - improve scoring of offload moves
 - consider enumerating all offload moves instead of one per pile
 - for offload consider trying to find homes for homeless runs by uncovering targets
-
-- before playing onto an space search for an space preserving sequence
 
 - prefer holding moves that match suit
 

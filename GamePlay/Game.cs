@@ -32,10 +32,8 @@ namespace Spider.GamePlay
             Tableau = new Tableau();
 
             Candidates = new MoveList();
-            SupplementaryMoves = new MoveList();
             SupplementaryList = new MoveList();
             RunFinder = new RunFinder();
-            OneRunPiles = new PileList();
             FaceLists = new PileList[(int)Face.King + 2];
             for (int i = 0; i < FaceLists.Length; i++)
             {
@@ -122,11 +120,9 @@ namespace Spider.GamePlay
         public IAlgorithm Algorithm { get; private set; }
 
         public MoveList Candidates { get; private set; }
-        public MoveList SupplementaryMoves { get; private set; }
         public MoveList SupplementaryList { get; private set; }
         public HoldingStack[] HoldingStacks { get; private set; }
         public RunFinder RunFinder { get; private set; }
-        public PileList OneRunPiles { get; private set; }
         public PileList[] FaceLists { get; private set; }
         public Tableau LastGame { get; private set; }
         public int NumberOfPiles { get; private set; }
@@ -292,17 +288,17 @@ namespace Spider.GamePlay
             Analyze();
         }
 
-        public int AddSupplementary()
+        public int AddSupplementary(MoveList supplementaryMoves)
         {
-            if (SupplementaryMoves.Count == 0)
+            if (supplementaryMoves.Count == 0)
             {
                 return -1;
             }
             int first = SupplementaryList.Count;
-            int count = SupplementaryMoves.Count;
+            int count = supplementaryMoves.Count;
             for (int i = 0; i < count; i++)
             {
-                Move move = SupplementaryMoves[i];
+                Move move = supplementaryMoves[i];
                 move.Next = i < count - 1 ? first + i + 1 : -1;
                 SupplementaryList.Add(move);
             }
