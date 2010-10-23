@@ -74,6 +74,19 @@ C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spid
 games played: 100000, games won: 66.57%, games with discards: 84.874%
 average moves: 258.49 (won: 324.13, lost: 127.79)
 0.01user 0.00system 2:44:37elapsed 0%CPU (0avgtext+0avgdata 148736maxresident)k
+
+Include down count in search score:
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --algorithm search --games 100000
+games played: 100000, games won: 67.998%, games with discards: 86.077%
+average moves: 267.4 (won: 330.35, lost: 133.66)
+0.01user 0.00system 3:53:47elapsed 0%CPU (0avgtext+0avgdata 149504maxresident)k
+
+C:\Documents and Settings\jrs\build\Spider\bin\Release>c:\cygwin\bin\time ./spider --algorithm searc
+h --games 100000 --variation 4
+games played: 100000, games won: 29.002%, games with discards: 40.642%
+average moves: 283.44 (won: 533.12, lost: 181.44)
+0.01user 0.00system 3:01:35elapsed 0%CPU (0avgtext+0avgdata 149504maxresident)k
 ========================================================================================================
 
 7.628170578, 953.3391651, 2.128232166, 23.27022363
