@@ -27,7 +27,7 @@ namespace Spider.Collections
         public AllocatedList(ListAllocator<T> allocator, int capacity)
         {
             this.allocator = allocator;
-            ListAllocator<T>.Allocation allocation = allocator.Allocate(capacity);
+            ArraySegment<T> allocation = allocator.Allocate(capacity);
             this.array = allocation.Array;
             this.offset = allocation.Offset;
             this.capacity = capacity;
@@ -215,13 +215,10 @@ namespace Spider.Collections
         private void IncreaseCapacity(int additionalCapacity)
         {
             int newCapacity = (count + additionalCapacity) * 2;
-            ListAllocator<T>.Allocation allocation = allocator.Allocate(newCapacity);
+            ArraySegment<T> allocation = allocator.Allocate(newCapacity);
             T[] newArray = allocation.Array;
             int newOffset = allocation.Offset;
-            for (int i = 0; i < count; i++)
-            {
-                newArray[i + newOffset] = array[i + offset];
-            }
+            Array.Copy(array, offset, newArray, newOffset, count);
             array = newArray;
             offset = newOffset;
             capacity = newCapacity;

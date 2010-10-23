@@ -301,7 +301,7 @@ namespace Spider.GamePlay
                 }
                 else if (pile.Count == 1 && pile[0].IsEmpty)
                 {
-                    score += TurnedOverCardScore;
+                    score += TurnedOverCardScore + 5 - Tableau.GetDownCount(column);
                 }
                 else
                 {

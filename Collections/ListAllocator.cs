@@ -59,7 +59,7 @@ namespace Spider.Collections
             offset = 0;
         }
 
-        public Allocation Allocate(int count)
+        public ArraySegment<T> Allocate(int count)
         {
             T[] array = arrays[current];
             if (offset + count > segmentSize)
@@ -74,7 +74,7 @@ namespace Spider.Collections
             }
             int oldOffset = offset;
             offset += count;
-            return new Allocation(array, oldOffset);
+            return new ArraySegment<T>(array, oldOffset, count);
         }
     }
 }
