@@ -38,6 +38,7 @@ namespace Spider.Engine
         private Pile[] upPiles;
         private bool[] spaceFlags;
         private Pile stockPile;
+        private Pile[] discardPileStock;
         private FastList<Pile> discardPiles;
         private FastList<int> spaces;
         private Pile scratchPile;
@@ -50,6 +51,12 @@ namespace Spider.Engine
             downPiles = new Pile[NumberOfPiles];
             upPiles = new Pile[NumberOfPiles];
             spaceFlags = new bool[NumberOfPiles];
+            int numberOfDiscardPiles = Variation.NumberOfCards / 13;
+            discardPileStock = new Pile[numberOfDiscardPiles];
+            for (int i = 0; i < numberOfDiscardPiles; i++)
+            {
+                discardPileStock[i] = new Pile();
+            }
             discardPiles = new FastList<Pile>(NumberOfPiles);
             spaces = new FastList<int>(NumberOfPiles);
             for (int row = 0; row < NumberOfPiles; row++)
@@ -583,7 +590,8 @@ namespace Spider.Engine
         {
             Pile pile = upPiles[column];
             int row = pile.Count - 13;
-            Pile sequence = new Pile();
+            Pile sequence = discardPileStock[discardPiles.Count];
+            sequence.Clear();
             sequence.AddRange(pile, row, 13);
             pile.RemoveRange(row, 13);
             discardPiles.Add(sequence);
