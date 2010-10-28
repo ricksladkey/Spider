@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -7,7 +8,8 @@ using Spider.Collections;
 
 namespace Spider.Engine
 {
-    public struct Variation
+    [DebuggerDisplay("{value}")]
+    public struct Variation : IEquatable<Variation>
     {
         private enum Value
         {
@@ -27,6 +29,16 @@ namespace Spider.Engine
         public static Variation Spiderette1 = new Variation(Value.Spiderette1);
         public static Variation Spiderette2 = new Variation(Value.Spiderette2);
         public static Variation Spiderette4 = new Variation(Value.Spiderette4);
+
+        public static bool operator==(Variation a, Variation b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Variation a, Variation b)
+        {
+            return !a.Equals(b);
+        }
 
         private static Pile SpiderOneSuitDeck = new Deck(2, 1);
         private static Pile SpiderTwoSuitDeck = new Deck(2, 2);
@@ -228,5 +240,28 @@ namespace Spider.Engine
         {
             return value.ToString();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is Variation)
+            {
+                return Equals((Variation)obj);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)value;
+        }
+
+        #region IEquatable<Variation> Members
+
+        public bool Equals(Variation other)
+        {
+            return value == other.value;
+        }
+
+        #endregion
     }
 }

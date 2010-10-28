@@ -19,6 +19,7 @@ namespace Spider.GamePlay
         private HoldingStack HoldingStack { get; set; }
         private OffloadInfo Offload { get; set; }
         private MoveList SupplementaryMoves { get; set; }
+        private FastList<Move> MoveStack { get; set; }
 
         private int from;
         private Pile fromPile;
@@ -37,6 +38,7 @@ namespace Spider.GamePlay
             WorkingTableau = new Tableau();
             HoldingStack = new HoldingStack();
             SupplementaryMoves = new MoveList();
+            MoveStack = new FastList<Move>();
         }
 
         public void Find()
@@ -56,7 +58,6 @@ namespace Spider.GamePlay
         {
             // Find all uncovering moves.
             UncoveringMoves.Clear();
-            HoldingStack holdingStack = new HoldingStack();
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
@@ -70,11 +71,11 @@ namespace Spider.GamePlay
                 PileList faceList = FaceLists[(int)fromCard.Face + 1];
                 for (int i = 0; i < faceList.Count; i++)
                 {
-                    holdingStack.Clear();
+                    HoldingStack.Clear();
                     int to = faceList[i];
                     if (fromSuits - 1 > maxExtraSuits)
                     {
-                        int holdingSuits = FindHolding(FindTableau, holdingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
+                        int holdingSuits = FindHolding(FindTableau, HoldingStack, false, fromPile, from, fromRow, fromPile.Count, to, maxExtraSuits);
                         if (fromSuits - 1 > maxExtraSuits + holdingSuits)
                         {
                             break;
@@ -83,7 +84,7 @@ namespace Spider.GamePlay
                     Pile toPile = FindTableau[to];
                     Card toCard = toPile[toPile.Count - 1];
                     int order = GetOrder(toCard, fromCard);
-                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(holdingStack.Set)));
+                    UncoveringMoves.Add(new Move(from, fromRow, to, order, AddHolding(HoldingStack.Set)));
                 }
             }
         }
@@ -192,19 +193,19 @@ namespace Spider.GamePlay
                 // Update the map for the uncovering move but don't
                 // include its order contribution so we don't make
                 // the uncovering move unless it is really necessary.
-                Stack<Move> moveStack = new Stack<Move>();
+                MoveStack.Clear();
                 for (int next = uncoveringMove.HoldingNext; next != -1; next = SupplementaryList[next].Next)
                 {
                     Move holdingMove = SupplementaryList[next];
                     SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, uncoveringMove.From, holdingMove.FromRow, holdingMove.To));
                     WorkingTableau.Move(holdingMove);
-                    moveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, uncoveringMove.To));
+                    MoveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, uncoveringMove.To));
                 }
                 SupplementaryMoves.Add(uncoveringMove);
                 WorkingTableau.Move(uncoveringMove);
-                while (moveStack.Count > 0)
+                while (MoveStack.Count > 0)
                 {
-                    Move holdingMove = moveStack.Pop();
+                    Move holdingMove = MoveStack.Pop();
                     if (!WorkingTableau.IsValid(holdingMove))
                     {
                         break;
@@ -544,8 +545,9 @@ namespace Spider.GamePlay
         private void AddSupplementaryMove(Move move, Pile pile, HoldingSet holdingSet, bool undoHolding)
         {
             // Add moves to the holding piles.
-            foreach (HoldingInfo holding in holdingSet.Forwards)
+            for (int i = 0; i < holdingSet.Count; i++)
             {
+                HoldingInfo holding = holdingSet[i];
                 Move holdingMove = new Move(MoveType.Basic, MoveFlags.Holding, move.From, -holding.Length, holding.To);
                 WorkingTableau.Move(holdingMove);
                 SupplementaryMoves.Add(holdingMove);
@@ -558,8 +560,9 @@ namespace Spider.GamePlay
             if (undoHolding)
             {
                 // Undo moves from the holding piles.
-                foreach (HoldingInfo holding in holdingSet.Backwards)
+                for (int i = holdingSet.Count - 1; i >= 0; i--)
                 {
+                    HoldingInfo holding = holdingSet[i];
                     Move holdingMove = new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To);
                     if (!WorkingTableau.TryToMove(holdingMove))
                     {

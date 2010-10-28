@@ -30,9 +30,19 @@ namespace Spider.GamePlay
 
         #region IAlgorithm Members
 
+        public void Initialize()
+        {
+        }
+
+        public IList<double> GetCoefficients()
+        {
+            double[] searchCoefficients = SearchCoefficients;
+            double[] studyCoefficients = StudyAlgorithm.GetCoefficients(Variation);
+            return Enumerable.Concat(searchCoefficients, studyCoefficients).ToArray();
+        }
+
         public void SetCoefficients()
         {
-            SetDefaultCoefficients(SearchCoefficients);
         }
 
         public void PrepareToPlay()

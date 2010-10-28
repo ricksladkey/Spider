@@ -25,6 +25,25 @@ namespace Spider.GamePlay
             /* 9 */ 1.756489081, 0.0002561898898, -0.04347481483, -0.1737026135, 3.471266012, 1,
         };
 
+        public static double[] GetCoefficients(Variation Variation)
+        {
+            int suits = Variation.NumberOfSuits;
+            switch (Variation.NumberOfSuits)
+            {
+                case 1:
+                    return OneSuitCoefficients;
+
+                case 2:
+                    return TwoSuitCoefficients;
+
+                case 4:
+                    return FourSuitCoefficients;
+
+                default:
+                    throw new Exception("invalid number of suits");
+            }
+        }
+
         public StudyAlgorithm(Game game)
             : base(game)
         {
@@ -41,25 +60,17 @@ namespace Spider.GamePlay
 
         #region IAlgorithm Members
 
+        public void Initialize()
+        {
+        }
+
+        public IList<double> GetCoefficients()
+        {
+            return GetCoefficients(Variation);
+        }
+
         public void SetCoefficients()
         {
-            int suits = Variation.NumberOfSuits;
-            if (suits == 1)
-            {
-                SetDefaultCoefficients(OneSuitCoefficients);
-            }
-            else if (suits == 2)
-            {
-                SetDefaultCoefficients(TwoSuitCoefficients);
-            }
-            else if (suits == 4)
-            {
-                SetDefaultCoefficients(FourSuitCoefficients);
-            }
-            else
-            {
-                throw new Exception("invalid number of suits");
-            }
         }
 
         public void PrepareToPlay()

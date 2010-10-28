@@ -88,9 +88,8 @@ namespace Spider.GamePlay
             game.AlgorithmType = AlgorithmType;
             game.Diagnostics = Diagnostics;
             game.Interactive = Interactive;
-
-            game.Coefficients = Coefficients;
             game.Variation = Variation;
+            game.Coefficients = Coefficients;
             game.Seed = Interlocked.Increment(ref currentSeed) - 1;
 
             if (Profile)

@@ -55,11 +55,6 @@ namespace Spider.GamePlay
         public HoldingStack[] HoldingStacks { get { return game.HoldingStacks; } }
         public RunFinder RunFinder { get { return game.RunFinder; } }
 
-        public void SetDefaultCoefficients(double[] coefficients)
-        {
-            game.SetDefaultCoefficients(coefficients);
-        }
-
         public void PrepareToFindMoves(Tableau tableau)
         {
             game.PrepareToFindMoves(tableau);

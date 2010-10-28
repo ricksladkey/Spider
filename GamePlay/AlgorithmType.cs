@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Spider.GamePlay
 {
+    [DebuggerDisplay("{value}")]
     public struct AlgorithmType : IEquatable<AlgorithmType>
     {
         private enum Value

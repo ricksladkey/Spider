@@ -19,7 +19,7 @@ namespace Spider.GamePlay
 
         public Game()
         {
-            Variation = Variation.Spider4;
+            variation = Variation.Spider4;
             Seed = -1;
             TraceStartFinish = false;
             TraceDeals = false;
@@ -99,9 +99,48 @@ namespace Spider.GamePlay
             FromTableau(tableau);
         }
 
-        public Variation Variation { get; set; }
+        private Variation variation;
+        private AlgorithmType algorithmType;
+        private double[] coefficients;
+
+        public Variation Variation
+        {
+            get { return variation; }
+            set
+            {
+                if (variation != value)
+                {
+                    variation = value;
+                    SetVariation();
+                }
+            }
+        }
+        public AlgorithmType AlgorithmType
+        {
+            get { return algorithmType; }
+            set
+            {
+                if (algorithmType != value)
+                {
+                    algorithmType = value;
+                    SetAlgorithm();
+                }
+            }
+        }
+        public double[] Coefficients
+        {
+            get { return coefficients; }
+            set
+            {
+                if (!ArrayEquals(coefficients, value))
+                {
+                    coefficients = value;
+                    SetCoefficients();
+                }
+            }
+        }
+
         public int Seed { get; set; }
-        public double[] Coefficients { get; set; }
         public bool TraceMoves { get; set; }
         public bool TraceStartFinish { get; set; }
         public bool TraceDeals { get; set; }
@@ -110,7 +149,6 @@ namespace Spider.GamePlay
         public bool Diagnostics { get; set; }
         public bool Interactive { get; set; }
         public int Instance { get; set; }
-        public AlgorithmType AlgorithmType { get; set; }
 
         public bool Won { get; private set; }
 
@@ -144,33 +182,56 @@ namespace Spider.GamePlay
             }
         }
 
-        private void Initialize()
+        private void SetVariation()
         {
             Tableau.Variation = Variation;
             NumberOfPiles = Variation.NumberOfPiles;
             NumberOfSuits = Variation.NumberOfSuits;
-            if (AlgorithmType == AlgorithmType.Study)
-            {
-                Algorithm = new StudyAlgorithm(this);
-            }
-            else if (AlgorithmType == AlgorithmType.Search)
-            {
-                Algorithm = new SearchAlgorithm(this);
-            }
-            else
-            {
-                throw new Exception("unsupported algorithm type");
-            }
             HoldingStacks = new HoldingStack[NumberOfPiles];
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 HoldingStacks[column] = new HoldingStack();
             }
+        }
+
+        private void SetAlgorithm()
+        {
+            Algorithm = GetAlgorithm();
+        }
+
+        private void SetCoefficients()
+        {
+            Algorithm.SetCoefficients();
+        }
+
+        private void Initialize()
+        {
             Won = false;
             Shuffled.Clear();
             Tableau.Clear();
-            Algorithm.SetCoefficients();
+            if (Algorithm == null)
+            {
+                Algorithm = GetAlgorithm();
+            }
+            Algorithm.Initialize();
+            if (coefficients == null)
+            {
+                coefficients = Algorithm.GetCoefficients().ToArray();
+            }
             LastGame = Debugger.IsAttached ? new Tableau(Tableau) : null;
+        }
+
+        private IAlgorithm GetAlgorithm()
+        {
+            if (AlgorithmType == AlgorithmType.Study)
+            {
+                return new StudyAlgorithm(this);
+            }
+            else if (AlgorithmType == AlgorithmType.Search)
+            {
+                return new SearchAlgorithm(this);
+            }
+            throw new Exception("unsupported algorithm type");
         }
 
         public void Play()
@@ -251,14 +312,6 @@ namespace Spider.GamePlay
             Shuffled.Copy(Variation.Deck);
             Shuffled.Shuffle(Seed);
             Tableau.PrepareLayout(Shuffled);
-        }
-
-        public void SetDefaultCoefficients(double[] coefficients)
-        {
-            if (Coefficients == null)
-            {
-                Coefficients = new List<double>(coefficients).ToArray();
-            }
         }
 
         private void CopyGame()
@@ -525,6 +578,19 @@ namespace Spider.GamePlay
         public override string ToString()
         {
             return TableauInputOutput.ToPrettyString();
+        }
+
+        private static bool ArrayEquals<T>(T[] a, T[] b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+            if (a == null || b == null)
+            {
+                return false;
+            }
+            return (a as System.Collections.IStructuralEquatable).Equals(b, EqualityComparer<T>.Default);
         }
     }
 }
