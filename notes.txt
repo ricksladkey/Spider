@@ -1,6 +1,8 @@
+- score interior search nodes as the best descendant score and take best path until a card is turned over
+- find out why using non-viable moves while searching leads to infinite loops
+
 - fix swap unit test
 - address algorithm-specific shared data structures
-- call initialize automatically if variation or algorithmtype is set
 - try increasing set of viable moves
 - try adding composite single pile moves to search
 - try scoring search moves based on descendents

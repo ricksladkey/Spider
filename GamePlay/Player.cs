@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+
 using NumUtils.NelderMeadSimplex;
 using LevenbergMarquardtLeastSquaresFitting;
 
@@ -38,8 +40,8 @@ namespace Spider.GamePlay
         public bool ShowResults { get; set; }
         public bool Profile { get; set; }
 
-        public int Threads { get; set; }
-        public int Games { get; set; }
+        public int NumberOfThreads { get; set; }
+        public int NumberOfGames { get; set; }
 
         public int Played { get { return played; } }
         public int Won { get { return won; } }
@@ -50,14 +52,13 @@ namespace Spider.GamePlay
         public bool[] Results { get; private set; }
         public int[] Instances { get; private set; }
 
-        private int currentSeed;
         private int played;
         private int won;
         private int discards;
         private int moves;
         private int movesWon;
         private int movesLost;
-        private int instance;
+        private int nextInstance;
         private Semaphore semaphore;
         private Queue<Game> gameQueue;
 
@@ -69,16 +70,86 @@ namespace Spider.GamePlay
             TraceMoves = game.TraceMoves;
             TraceSearch = game.TraceSearch;
             ComplexMoves = game.ComplexMoves;
-            AlgorithmType = game.AlgorithmType;
             ShowResults = false;
 
-            Games = 100000;
+            NumberOfGames = 100000;
             Variation = Variation.Spider2;
+            AlgorithmType = AlgorithmType.Study;
             Seed = 0;
-            Threads = -1;
+            NumberOfThreads = -1;
+
+            gameQueue = new Queue<Game>();
         }
 
-        private void PlayOneGame(Game game)
+        public void PlayOneSet()
+        {
+            played = 0;
+            won = 0;
+            discards = 0;
+            moves = 0;
+            movesWon = 0;
+            movesLost = 0;
+            nextInstance = 0;
+            Results = new bool[NumberOfGames];
+            Instances = new int[NumberOfGames];
+            int threads = NumberOfThreads;
+            if (threads == -1)
+            {
+                threads = Environment.ProcessorCount;
+            }
+            if (Debugger.IsAttached || Interactive)
+            {
+                threads = 1;
+            }
+            if (threads == 1)
+            {
+                Game game = new Game();
+                game.Instance = nextInstance;
+                for (int i = 0; i < NumberOfGames; i++)
+                {
+                    PlayOneGame(game, Seed + i);
+                }
+            }
+            else if (threads == 0)
+            {
+                Parallel.For<Game>(
+                    0, NumberOfGames,
+                    () => GetGame(),
+                    (i, loop, game) => PlayOneGame(game, Seed + i),
+                    game => ReleaseGame(game));
+            }
+            else
+            {
+                semaphore = new Semaphore(threads, threads);
+                WaitCallback callback = new WaitCallback(ThreadPlayOneGame);
+
+                for (int i = 0; i < NumberOfGames; i++)
+                {
+                    // Wait for a processor to become available.
+                    semaphore.WaitOne();
+
+                    // Queue the work item to a thread.
+                    ThreadPool.QueueUserWorkItem(callback, Seed + i);
+
+                }
+
+                //  Allow all threads to finish.
+                for (int i = 0; i < threads; i++)
+                {
+                    semaphore.WaitOne();
+                }
+            }
+        }
+
+        private void ThreadPlayOneGame(object state)
+        {
+            Game game = GetGame();
+            PlayOneGame(game, (int)state);
+            ReleaseGame(game);
+            semaphore.Release();
+        }
+
+        private Game PlayOneGame(Game game, int seed)
         {
             game.TraceStartFinish = TraceStartFinish;
             game.TraceDeals = TraceDeals;
@@ -90,7 +161,7 @@ namespace Spider.GamePlay
             game.Interactive = Interactive;
             game.Variation = Variation;
             game.Coefficients = Coefficients;
-            game.Seed = Interlocked.Increment(ref currentSeed) - 1;
+            game.Seed = seed;
 
             if (Profile)
             {
@@ -105,6 +176,13 @@ namespace Spider.GamePlay
                 game.Play();
             }
 
+            ProcessResult(game);
+
+            return game;
+        }
+
+        private void ProcessResult(Game game)
+        {
             if (game.Won)
             {
                 Interlocked.Increment(ref won);
@@ -125,6 +203,28 @@ namespace Spider.GamePlay
             }
             Results[game.Seed - Seed] = game.Won;
             Instances[game.Seed - Seed] = game.Instance;
+        }
+
+        private Game GetGame()
+        {
+            lock (gameQueue)
+            {
+                if (gameQueue.Count == 0)
+                {
+                    Game game = new Game();
+                    game.Instance = nextInstance++;
+                    return game;
+                }
+                return gameQueue.Dequeue();
+            }
+        }
+
+        private void ReleaseGame(Game game)
+        {
+            lock (gameQueue)
+            {
+                gameQueue.Enqueue(game);
+            }
         }
 
         private void SetCoefficients()
@@ -260,6 +360,38 @@ namespace Spider.GamePlay
             Console.WriteLine("};");
         }
 
+        public void Compare()
+        {
+            SetCoefficients();
+
+            while (true)
+            {
+                ComplexMoves = false;
+                PlayOneSet();
+                int won1 = Won;
+                bool[] results1 = Results;
+                int[] instances1 = Instances;
+                ComplexMoves = true;
+                PlayOneSet();
+                int won2 = Won;
+                bool[] results2 = Results;
+                int[] instances2 = Instances;
+                if (won1 != won2)
+                {
+                    for (int i = 0; i < results1.Length; i++)
+                    {
+                        if (results1[i] != results2[i])
+                        {
+                            Console.WriteLine("Game: {0}, Seed: {1}, Instance: {2}/{3}, Won: {4}/{5}",
+                                i, Seed + i, instances1[i], instances2[i], results1[i] ? 1 : 0, results2[i] ? 1 : 0);
+                        }
+                    }
+                    break;
+                }
+                break;
+            }
+        }
+
 #if false
         private delegate double f_delegate(double[] par);
 
@@ -388,121 +520,5 @@ namespace Spider.GamePlay
             Console.WriteLine("};");
         }
 #endif
-
-        public void Compare()
-        {
-            SetCoefficients();
-
-            while (true)
-            {
-                ComplexMoves = false;
-                PlayOneSet();
-                int won1 = Won;
-                bool[] results1 = Results;
-                int[] instances1 = Instances;
-                ComplexMoves = true;
-                PlayOneSet();
-                int won2 = Won;
-                bool[] results2 = Results;
-                int[] instances2 = Instances;
-                if (won1 != won2)
-                {
-                    for (int i = 0; i < results1.Length; i++)
-                    {
-                        if (results1[i] != results2[i])
-                        {
-                            Console.WriteLine("Game: {0}, Seed: {1}, Instance: {2}/{3}, Won: {4}/{5}",
-                                i, Seed + i, instances1[i], instances2[i], results1[i] ? 1 : 0, results2[i] ? 1 : 0);
-                        }
-                    }
-                    break;
-                }
-                break;
-            }
-        }
-
-        public void PlayOneSet()
-        {
-            played = 0;
-            won = 0;
-            discards = 0;
-            moves = 0;
-            movesWon = 0;
-            movesLost = 0;
-            instance = 0;
-            Results = new bool[Games];
-            Instances = new int[Games];
-            currentSeed = Seed;
-            int threads = Threads;
-            if (threads == -1)
-            {
-                threads = Environment.ProcessorCount;
-            }
-            if (Debugger.IsAttached || Interactive)
-            {
-                threads = 1;
-            }
-            if (threads == 1)
-            {
-                Game game = new Game();
-                game.Instance = instance;
-                for (int i = 0; i < Games; i++)
-                {
-                    PlayOneGame(game);
-                }
-            }
-            else
-            {
-                semaphore = new Semaphore(threads, threads);
-                WaitCallback callback = new WaitCallback(ThreadPlayOneGame);
-                gameQueue = new Queue<Game>();
-
-                for (int i = 0; i < Games; i++)
-                {
-                    // Wait for a processor to become available.
-                    semaphore.WaitOne();
-
-                    // Queue the work item to a thread.
-                    ThreadPool.QueueUserWorkItem(callback, null);
-
-                }
-
-                //  Allow all threads to finish.
-                for (int i = 0; i < threads; i++)
-                {
-                    semaphore.WaitOne();
-                }
-            }
-        }
-
-        private void ThreadPlayOneGame(object state)
-        {
-            Game game = GetGame();
-            PlayOneGame(game);
-            ReleaseGame(game);
-            semaphore.Release();
-        }
-
-        private Game GetGame()
-        {
-            lock (gameQueue)
-            {
-                if (gameQueue.Count == 0)
-                {
-                    Game game = new Game();
-                    game.Instance = instance++;
-                    return game;
-                }
-                return gameQueue.Dequeue();
-            }
-        }
-
-        private void ReleaseGame(Game game)
-        {
-            lock (gameQueue)
-            {
-                gameQueue.Enqueue(game);
-            }
-        }
     }
 }

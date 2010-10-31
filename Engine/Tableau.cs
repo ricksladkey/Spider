@@ -577,6 +577,10 @@ namespace Spider.Engine
             {
                 return;
             }
+            if (pile[pile.Count - 13].Face != Face.King)
+            {
+                return;
+            }
 
             int runLength = pile.GetRunUp(pile.Count);
             if (runLength != 13)

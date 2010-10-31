@@ -24,13 +24,13 @@ namespace Spider.GamePlay
                 string arg = args[i];
                 if (arg == "--threads")
                 {
-                    player.Threads = int.Parse(args[i + 1]);
+                    player.NumberOfThreads = int.Parse(args[i + 1]);
                     i += 2;
                     continue;
                 }
                 if (arg == "--games")
                 {
-                    player.Games = int.Parse(args[i + 1]);
+                    player.NumberOfGames = int.Parse(args[i + 1]);
                     i += 2;
                     continue;
                 }

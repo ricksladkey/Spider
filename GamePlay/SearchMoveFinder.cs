@@ -179,15 +179,9 @@ namespace Spider.GamePlay
             if (parent.Moves == null)
             {
                 Algorithm.FindMoves(WorkingTableau);
-#if true
                 parent.Moves = new AllocatedList<Move>(MoveAllocator, Candidates);
                 parent.SupplementaryList = new AllocatedList<Move>(MoveAllocator, SupplementaryList);
                 parent.Nodes = new AllocatedList<Node>(NodeAllocator, parent.Moves.Count, parent.Moves.Count);
-#else
-                parent.Moves = new MoveList(Candidates);
-                parent.SupplementaryList = new MoveList(SupplementaryList);
-                parent.Nodes = new FastList<Node>(parent.Moves.Count, parent.Moves.Count);
-#endif
                 for (int i = 0; i < parent.Moves.Count; i++)
                 {
                     int checkPoint = WorkingTableau.CheckPoint;
@@ -268,17 +262,6 @@ namespace Spider.GamePlay
                 Score = score;
                 Moves.Copy(WorkingTableau.Moves);
             }
-
-#if false
-            for (int column = 0; column < NumberOfPiles; column++)
-            {
-                Pile pile = WorkingTableau[column];
-                if (pile.Count == 1 && pile[0].IsEmpty)
-                {
-                    return false;
-                }
-            }
-#endif
 
             return true;
         }
