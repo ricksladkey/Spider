@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -60,7 +61,7 @@ namespace Spider.GamePlay
         private int movesLost;
         private int nextInstance;
         private Semaphore semaphore;
-        private Queue<Game> gameQueue;
+        private ConcurrentQueue<Game> gameQueue;
 
         public Player()
         {
@@ -78,7 +79,7 @@ namespace Spider.GamePlay
             Seed = 0;
             NumberOfThreads = -1;
 
-            gameQueue = new Queue<Game>();
+            gameQueue = new ConcurrentQueue<Game>();
         }
 
         public void PlayOneSet()
@@ -116,7 +117,8 @@ namespace Spider.GamePlay
                     0, NumberOfGames,
                     () => GetGame(),
                     (i, loop, game) => PlayOneGame(game, Seed + i),
-                    game => ReleaseGame(game));
+                    game => ReleaseGame(game)
+                    );
             }
             else
             {
@@ -207,24 +209,19 @@ namespace Spider.GamePlay
 
         private Game GetGame()
         {
-            lock (gameQueue)
+            Game game;
+            if (gameQueue.TryDequeue(out game))
             {
-                if (gameQueue.Count == 0)
-                {
-                    Game game = new Game();
-                    game.Instance = nextInstance++;
-                    return game;
-                }
-                return gameQueue.Dequeue();
+                return game;
             }
+            game = new Game();
+            game.Instance = nextInstance++;
+            return game;
         }
 
         private void ReleaseGame(Game game)
         {
-            lock (gameQueue)
-            {
-                gameQueue.Enqueue(game);
-            }
+            gameQueue.Enqueue(game);
         }
 
         private void SetCoefficients()
