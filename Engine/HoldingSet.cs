@@ -12,15 +12,15 @@ namespace Spider.Engine
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public struct HoldingSet : IEnumerable<HoldingInfo>
     {
-        public HoldingStack Stack { get; set; }
-        public int Count { get; set; }
-
         public HoldingSet(HoldingStack stack, int count)
             : this()
         {
             Stack = stack;
             Count = count;
         }
+
+        public HoldingStack Stack { get; set; }
+        public int Count { get; set; }
 
         public bool Contains(int column)
         {

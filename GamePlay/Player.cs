@@ -17,6 +17,35 @@ namespace Spider.GamePlay
 {
     public class Player : IGameSettings
     {
+        private int played;
+        private int won;
+        private int discards;
+        private int moves;
+        private int movesWon;
+        private int movesLost;
+        private int nextInstance;
+        private Semaphore semaphore;
+        private ConcurrentQueue<Game> gameQueue;
+
+        public Player()
+        {
+            Game game = new Game();
+            TraceStartFinish = game.TraceStartFinish;
+            TraceDeals = game.TraceDeals;
+            TraceMoves = game.TraceMoves;
+            TraceSearch = game.TraceSearch;
+            ComplexMoves = game.ComplexMoves;
+            ShowResults = false;
+
+            NumberOfGames = 100000;
+            Variation = Variation.Spider2;
+            AlgorithmType = AlgorithmType.Study;
+            Seed = 0;
+            NumberOfThreads = 0;
+
+            gameQueue = new ConcurrentQueue<Game>();
+        }
+
         #region IGameSettings Members
 
         public Variation Variation { get; set; }
@@ -52,35 +81,6 @@ namespace Spider.GamePlay
         public int MovesLost { get { return movesLost; } }
         public bool[] Results { get; private set; }
         public int[] Instances { get; private set; }
-
-        private int played;
-        private int won;
-        private int discards;
-        private int moves;
-        private int movesWon;
-        private int movesLost;
-        private int nextInstance;
-        private Semaphore semaphore;
-        private ConcurrentQueue<Game> gameQueue;
-
-        public Player()
-        {
-            Game game = new Game();
-            TraceStartFinish = game.TraceStartFinish;
-            TraceDeals = game.TraceDeals;
-            TraceMoves = game.TraceMoves;
-            TraceSearch = game.TraceSearch;
-            ComplexMoves = game.ComplexMoves;
-            ShowResults = false;
-
-            NumberOfGames = 100000;
-            Variation = Variation.Spider2;
-            AlgorithmType = AlgorithmType.Study;
-            Seed = 0;
-            NumberOfThreads = 0;
-
-            gameQueue = new ConcurrentQueue<Game>();
-        }
 
         public void PlayOneSet()
         {

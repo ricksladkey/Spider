@@ -11,16 +11,6 @@ namespace Spider.GamePlay
 {
     public class CompositeSinglePileMoveFinder : GameAdapter
     {
-        private MoveList UncoveringMoves { get; set; }
-        private PileList OneRunPiles { get; set; }
-        private PileList Used { get; set; }
-        private PileList Roots { get; set; }
-        private Tableau WorkingTableau { get; set; }
-        private HoldingStack HoldingStack { get; set; }
-        private OffloadInfo Offload { get; set; }
-        private MoveList SupplementaryMoves { get; set; }
-        private FastList<Move> MoveStack { get; set; }
-
         private int from;
         private Pile fromPile;
         private int best;
@@ -40,6 +30,16 @@ namespace Spider.GamePlay
             SupplementaryMoves = new MoveList();
             MoveStack = new FastList<Move>();
         }
+
+        private MoveList UncoveringMoves { get; set; }
+        private PileList OneRunPiles { get; set; }
+        private PileList Used { get; set; }
+        private PileList Roots { get; set; }
+        private Tableau WorkingTableau { get; set; }
+        private HoldingStack HoldingStack { get; set; }
+        private OffloadInfo Offload { get; set; }
+        private MoveList SupplementaryMoves { get; set; }
+        private FastList<Move> MoveStack { get; set; }
 
         public void Find()
         {

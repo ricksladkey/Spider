@@ -15,16 +15,6 @@ namespace Spider.Engine
 
         public static Move Empty = new Move(-1, -1);
 
-        public MoveType Type { get; set; }
-        public MoveFlags Flags { get; set; }
-        public int From { get; set; }
-        public int FromRow { get; set; }
-        public int To { get; set; }
-        public int ToRow { get; set; }
-        public int HoldingNext { get; set; }
-        public int Next { get; set; }
-        public double Score { get; set; }
-
         public Move(MoveType type)
             : this(type, -1, -1, -1, -1, -1, -1)
         {
@@ -113,6 +103,16 @@ namespace Spider.Engine
             Next = next;
             Score = 0;
         }
+
+        public MoveType Type { get; set; }
+        public MoveFlags Flags { get; set; }
+        public int From { get; set; }
+        public int FromRow { get; set; }
+        public int To { get; set; }
+        public int ToRow { get; set; }
+        public int HoldingNext { get; set; }
+        public int Next { get; set; }
+        public double Score { get; set; }
 
         public bool IsEmpty
         {

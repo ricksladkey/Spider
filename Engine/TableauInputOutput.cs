@@ -13,12 +13,12 @@ namespace Spider.Engine
         public static char PrimarySeparator = '|';
         public static char SecondarySeparator = '-';
 
-        public Tableau Tableau { get; set; }
-
         public TableauInputOutput(Tableau tableau)
         {
             Tableau = tableau;
         }
+
+        public Tableau Tableau { get; set; }
 
         public string ToAsciiString()
         {

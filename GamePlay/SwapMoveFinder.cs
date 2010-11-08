@@ -10,15 +10,15 @@ namespace Spider.GamePlay
 {
     public class SwapMoveFinder : GameAdapter
     {
-        private CardMap CardMap { get; set; }
-        private FastList<int> Used { get; set; }
-
         public SwapMoveFinder(Game game)
             : base(game)
         {
             CardMap = new CardMap();
             Used = new FastList<int>();
         }
+
+        private CardMap CardMap { get; set; }
+        private FastList<int> Used { get; set; }
 
         public void Find()
         {

@@ -11,6 +11,13 @@ namespace Spider.GamePlay
 {
     public struct ScoreInfo
     {
+        public ScoreInfo(double[] coefficients, int coefficient0)
+            : this()
+        {
+            Coefficients = coefficients;
+            Coefficient0 = coefficient0;
+        }
+        
         public const int CreatesSpaceScore = 1000;
         public const int BaseScore = 0;
         public const int UsesSpaceScore = -1000;
@@ -73,13 +80,6 @@ namespace Spider.GamePlay
 
                 return score;
             }
-        }
-
-        public ScoreInfo(double[] coefficients, int coefficient0)
-            : this()
-        {
-            Coefficients = coefficients;
-            Coefficient0 = coefficient0;
         }
     }
 }

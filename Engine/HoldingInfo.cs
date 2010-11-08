@@ -11,13 +11,6 @@ namespace Spider.Engine
     {
         public static HoldingInfo Empty = new HoldingInfo(-1, -1, -1, 0, 0);
 
-        public int From { get; set; }
-        public int FromRow { get; set; }
-        public int To { get; set; }
-        public int Suits { get; set; }
-        public int Length { get; set; }
-        public int Next { get; set; }
-
         public HoldingInfo(int from, int fromRow, int to, int suits, int length)
             : this()
         {
@@ -28,6 +21,13 @@ namespace Spider.Engine
             Length = length;
             Next = -1;
         }
+
+        public int From { get; set; }
+        public int FromRow { get; set; }
+        public int To { get; set; }
+        public int Suits { get; set; }
+        public int Length { get; set; }
+        public int Next { get; set; }
 
         public override string ToString()
         {

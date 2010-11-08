@@ -9,10 +9,6 @@ namespace Spider.Engine
 {
     public class ComplexMove
     {
-        public Move ScoreMove { get; set; }
-        public MoveList SupplementaryMoves { get; set; }
-        public MoveList HoldingList { get; set; }
-
         public ComplexMove(int index, MoveList moves, MoveList supplementaryList)
         {
             Move scoreMove = moves[index];
@@ -28,5 +24,9 @@ namespace Spider.Engine
                 HoldingList.Add(supplementaryList[next]);
             }
         }
+
+        public Move ScoreMove { get; set; }
+        public MoveList SupplementaryMoves { get; set; }
+        public MoveList HoldingList { get; set; }
     }
 }
