@@ -188,7 +188,7 @@ namespace Spider.GamePlay
                         // Column is empty.
                         continue;
                     }
-                    int nextFromRow = nextFromPile.Count - RunFinder.GetRunLengthAnySuit(nextFrom);
+                    int nextFromRow = nextFromPile.Count - RunFinder.GetRunUpAnySuit(nextFrom);
                     if (!nextFromPile[nextFromRow].IsSourceFor(exposedCard))
                     {
                         // Not the card we need.

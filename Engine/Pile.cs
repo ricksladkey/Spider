@@ -75,6 +75,11 @@ namespace Spider.Engine
             return runLength;
         }
 
+        public int GetRunUpAnySuit()
+        {
+            return GetRunUpAnySuit(Count);
+        }
+
         public int GetRunUpAnySuit(int row)
         {
             Debug.Assert(row >= 0 && row <= Count);

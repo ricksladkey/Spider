@@ -8,12 +8,17 @@ using Spider.Collections;
 
 namespace Spider.Engine
 {
-    public class RunFinder : Core
+    /// <summary>
+    /// A run finder performs one pass through the piles of a tableau
+    /// and reduces all subsequent run length calculations to constant
+    /// time operations.
+    /// </summary>
+    public class RunFinder : Core, IRunFinder
     {
         private class PileInfo
         {
             public int Count;
-            public int RunLengthAnySuit;
+            public int RunUpAnySuit;
             public RunInfo[] RunInfoArray;
         }
 
@@ -63,12 +68,12 @@ namespace Spider.Engine
                 pileInfo.RunInfoArray[m] = new RunInfo(m, m, 0);
                 if (m == 0)
                 {
-                    pileInfo.RunLengthAnySuit = 0;
+                    pileInfo.RunUpAnySuit = 0;
                     continue;
                 }
                 if (m == 1)
                 {
-                    pileInfo.RunLengthAnySuit = 1;
+                    pileInfo.RunUpAnySuit = 1;
                     pileInfo.RunInfoArray[0] = new RunInfo(0, 1, 1);
                     continue;
                 }
@@ -109,13 +114,13 @@ namespace Spider.Engine
                         runInfoArray[row] = runInfo;
                     }
                 }
-                pileInfo.RunLengthAnySuit = m - startRow;
+                pileInfo.RunUpAnySuit = m - startRow;
             }
         }
 
-        public int GetRunLengthAnySuit(int column)
+        public int GetRunUpAnySuit(int column)
         {
-            return pileInfoArray[column].RunLengthAnySuit;
+            return pileInfoArray[column].RunUpAnySuit;
         }
 
         public int GetRunUp(int column, int row)

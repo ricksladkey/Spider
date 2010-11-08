@@ -61,7 +61,7 @@ namespace Spider.GamePlay
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
-                int fromRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
+                int fromRow = fromPile.Count - RunFinder.GetRunUpAnySuit(from);
                 if (fromRow == 0)
                 {
                     continue;
@@ -95,7 +95,7 @@ namespace Spider.GamePlay
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 int upCount = FindTableau[column].Count;
-                if (upCount != 0 && upCount == RunFinder.GetRunLengthAnySuit(column))
+                if (upCount != 0 && upCount == RunFinder.GetRunUpAnySuit(column))
                 {
                     OneRunPiles.Add(column);
                 }

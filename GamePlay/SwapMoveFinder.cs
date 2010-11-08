@@ -27,7 +27,7 @@ namespace Spider.GamePlay
             for (int from = 0; from < NumberOfPiles; from++)
             {
                 Pile fromPile = FindTableau[from];
-                int splitRow = fromPile.Count - RunFinder.GetRunLengthAnySuit(from);
+                int splitRow = fromPile.Count - RunFinder.GetRunUpAnySuit(from);
                 int extraSuits = 0;
                 HoldingStack holdingStack = HoldingStacks[from];
                 for (int fromRow = fromPile.Count - 1; fromRow >= splitRow; fromRow--)
@@ -81,7 +81,7 @@ namespace Spider.GamePlay
                 {
                     continue;
                 }
-                int splitRow = toPile.Count - RunFinder.GetRunLengthAnySuit(to);
+                int splitRow = toPile.Count - RunFinder.GetRunUpAnySuit(to);
                 int toRow = -1;
                 if (inSequence)
                 {

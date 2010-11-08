@@ -10,7 +10,7 @@ namespace Spider.Engine
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class Tableau : Core, IEnumerable<Pile>, IGetCard
+    public class Tableau : Core, IEnumerable<Pile>, IRunFinder, IGetCard
     {
         static Tableau()
         {
@@ -160,6 +160,11 @@ namespace Spider.Engine
         public int GetRunUp(int column, int row)
         {
             return upPiles[column].GetRunUp(row);
+        }
+
+        public int GetRunUpAnySuit(int column)
+        {
+            return upPiles[column].GetRunUpAnySuit();
         }
 
         public int GetRunUpAnySuit(int column, int row)

@@ -77,7 +77,7 @@ namespace Spider.GamePlay
             Variation = Variation.Spider2;
             AlgorithmType = AlgorithmType.Study;
             Seed = 0;
-            NumberOfThreads = -1;
+            NumberOfThreads = 0;
 
             gameQueue = new ConcurrentQueue<Game>();
         }
