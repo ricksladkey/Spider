@@ -1,0 +1,10 @@
+﻿<Window x:Class="Spider.Solitaire.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid Background="DarkGreen">
+        <Rectangle Height="160" HorizontalAlignment="Left" Margin="68,41,0,0" Name="rectangle1" Stroke="Black" VerticalAlignment="Top" Width="130" RadiusX="15" RadiusY="15" Fill="White" />
+        <TextBlock Height="19" HorizontalAlignment="Left" Margin="84,53,0,0" Name="textBlock1" Text="A ♥" VerticalAlignment="Top" Width="24" Foreground="DarkRed" />
+        <TextBlock Height="48" HorizontalAlignment="Left" Margin="115,93,0,0" Name="textBlock2" Text="♥" VerticalAlignment="Top" Foreground="DarkRed" FontSize="40" Width="34" />
+    </Grid>
+</Window>
