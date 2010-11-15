@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\Unit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTests", "SpiderTests\SpiderTests.csproj", "{8AF8065B-5844-4BD7-9848-A12CA4338AFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solitaire", "Solitaire\Solitaire.csproj", "{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Spider.vsmdi
@@ -34,6 +36,10 @@ Global
 		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|x86.ActiveCfg = Release|x86
 		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|x86.Build.0 = Release|x86
+		{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}.Debug|x86.ActiveCfg = Debug|x86
+		{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}.Debug|x86.Build.0 = Debug|x86
+		{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}.Release|x86.ActiveCfg = Release|x86
+		{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
