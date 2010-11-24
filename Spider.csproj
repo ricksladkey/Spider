@@ -107,6 +107,7 @@
     <Compile Include="Engine\Card.cs" />
     <Compile Include="Engine\ComplexMove.cs" />
     <Compile Include="Engine\IRunFinder.cs" />
+    <Compile Include="Engine\SuitColor.cs" />
     <Compile Include="GamePlay\AlgorithmType.cs" />
     <Compile Include="GamePlay\IAlgorithm.cs" />
     <Compile Include="GamePlay\BasicMoveFinder.cs" />

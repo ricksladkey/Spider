@@ -18,6 +18,20 @@ namespace Spider.Engine
 
     public static class SuitExtensions
     {
+        public static SuitColor GetColor(this Suit suit)
+        {
+            switch (suit)
+            {
+                case Suit.Spades:
+                case Suit.Clubs:
+                    return SuitColor.Black;
+                case Suit.Hearts:
+                case Suit.Diamonds:
+                    return SuitColor.Red;
+            }
+            return SuitColor.Empty;
+        }
+
         public static string ToAsciiString(this Suit suit)
         {
             switch (suit)

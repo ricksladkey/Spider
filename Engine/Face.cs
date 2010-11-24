@@ -71,6 +71,15 @@ namespace Spider.Engine
             return "-";
         }
 
+        public static string ToLabel(this Face face)
+        {
+            if (face == Face.Ten)
+            {
+                return "10";
+            }
+            return ToAsciiString(face);
+        }
+
         public static string ToPrettyString(this Face face)
         {
             return ToAsciiString(face);
