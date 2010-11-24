@@ -31,27 +31,30 @@ namespace Spider.Solitaire
         private double xOffset;
         private double yOffset;
 
-        private void canvas1_MouseDown(object sender, MouseButtonEventArgs e)
+        private void element_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            var element = (UIElement)sender;
             var position = e.GetPosition(mainCanvas);
             mouseDown = true;
-            xOffset = position.X - Canvas.GetLeft(canvas1);
-            yOffset = position.Y - Canvas.GetTop(canvas1);
-            Mouse.Capture(canvas1);
+            xOffset = position.X - Canvas.GetLeft(element);
+            yOffset = position.Y - Canvas.GetTop(element);
+            Mouse.Capture(element);
         }
 
-        private void canvas1_MouseMove(object sender, MouseEventArgs e)
+        private void element_MouseMove(object sender, MouseEventArgs e)
         {
+            var element = (UIElement)sender;
             if (mouseDown)
             {
                 var position = e.GetPosition(mainCanvas);
-                Canvas.SetLeft(canvas1, position.X - xOffset);
-                Canvas.SetTop(canvas1, position.Y - yOffset);
+                Canvas.SetLeft(element, position.X - xOffset);
+                Canvas.SetTop(element, position.Y - yOffset);
             }
         }
 
-        private void canvas1_MouseUp(object sender, MouseButtonEventArgs e)
+        private void element_MouseUp(object sender, MouseButtonEventArgs e)
         {
+            var element = (UIElement)sender;
             Mouse.Capture(null);
             mouseDown = false;
         }
