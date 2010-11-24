@@ -5,15 +5,20 @@
         Title="MainWindow" Height="350" Width="525">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:CardViewModel}">
+            <DataTemplate.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding Path=Color}"/>
+                </Style>
+            </DataTemplate.Resources>
             <Canvas Height="163" Name="canvas1" Width="134">
                 <Rectangle Height="160" Canvas.Left="0" Canvas.Top="0" Name="rectangle1" Stroke="Black" Width="130" RadiusX="15" RadiusY="15" Fill="White">
                     <Rectangle.BitmapEffect>
                         <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
                     </Rectangle.BitmapEffect>
                 </Rectangle>
-                <TextBlock Height="19" Name="textBlock1" Text="{Binding Path=Face}" Width="26" Foreground="{Binding Path=Color}" Canvas.Left="6" Canvas.Top="6" />
-                <TextBlock Height="19" Name="textBlock2" Text="{Binding Path=Suit}" Width="13" Foreground="{Binding Path=Color}" Canvas.Left="107" Canvas.Top="6" />
-                <TextBlock Height="48" Name="textBlock3" Text="{Binding Path=Suit}" Foreground="{Binding Path=Color}" FontSize="40" Width="34" Canvas.Left="47" Canvas.Top="45" />
+                <TextBlock Height="19" Name="textBlock1" Text="{Binding Path=Face}" Width="26" Canvas.Left="6" Canvas.Top="6" />
+                <TextBlock Height="19" Name="textBlock2" Text="{Binding Path=Suit}" Width="13" Canvas.Left="107" Canvas.Top="6" />
+                <TextBlock Height="48" Name="textBlock3" Text="{Binding Path=Suit}" FontSize="40" Width="34" Canvas.Left="47" Canvas.Top="45" />
             </Canvas>
         </DataTemplate>
     </Window.Resources>
