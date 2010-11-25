@@ -1,0 +1,14 @@
+﻿<Window x:Class="Spider.Solitaire.TestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TestWindow" Height="223" Width="221">
+    <Grid>
+        <TextBlock Text="ABC" TextAlignment="Center" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock.LayoutTransform>
+                <ScaleTransform ScaleX="1" ScaleY="-1" CenterX=".5" CenterY=".5" />
+            </TextBlock.LayoutTransform>
+        </TextBlock>
+        <Rectangle Name="rectangle1" Stroke="Black" />
+        <TextBlock Margin="26,12,0,0" Name="textBlock1" Text="TextBlock" HorizontalAlignment="Left" VerticalAlignment="Top" />
+    </Grid>
+</Window>
