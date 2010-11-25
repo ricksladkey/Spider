@@ -6,7 +6,7 @@ using Spider.Engine;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class CardViewModel
+    public class CardViewModel : ViewModelBase
     {
         public CardViewModel(Card card)
         {

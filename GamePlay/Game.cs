@@ -543,6 +543,7 @@ namespace Spider.GamePlay
         {
             Initialize();
             TableauInputOutput.FromAsciiString(s);
+            Variation = Tableau.Variation;
             Algorithm.PrepareToPlay();
         }
 
@@ -550,6 +551,7 @@ namespace Spider.GamePlay
         {
             Initialize();
             TableauInputOutput.FromTableau(other.Tableau);
+            Variation = Tableau.Variation;
             Algorithm.PrepareToPlay();
         }
 
@@ -557,6 +559,7 @@ namespace Spider.GamePlay
         {
             Initialize();
             TableauInputOutput.FromTableau(tableau);
+            Variation = Tableau.Variation;
             Algorithm.PrepareToPlay();
         }
 

@@ -58,9 +58,12 @@
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewModel\BackViewModel.cs" />
+    <Compile Include="ViewModel\CardBackViewModel.cs" />
+    <Compile Include="ViewModel\CardFrontViewModel.cs" />
     <Compile Include="ViewModel\CardViewModel.cs" />
+    <Compile Include="ViewModel\PileViewModel.cs" />
     <Compile Include="ViewModel\SpiderViewModel.cs" />
+    <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\OverlapPanel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

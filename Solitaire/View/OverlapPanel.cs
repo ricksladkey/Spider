@@ -4,17 +4,32 @@ using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows;
+using Spider.Solitaire.ViewModel;
 
 namespace Spider.Solitaire.View
 {
     public class OverlapPanel : Panel
     {
+        public static readonly DependencyProperty BackOffsetProperty =
+              DependencyProperty.Register("BackOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+
         public static readonly DependencyProperty OffsetProperty =
-              DependencyProperty.Register("Overlap", typeof(double), typeof(OverlapPanel)); 
-        
+              DependencyProperty.Register("Offset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+
         public OverlapPanel()
         {
-            Offset = 0;
+        }
+
+        public double BackOffset
+        {
+            get
+            {
+                return (double)GetValue(BackOffsetProperty);
+            }
+            set
+            {
+                SetValue(BackOffsetProperty, value);
+            }
         }
 
         public double Offset
@@ -39,7 +54,7 @@ namespace Spider.Solitaire.View
                 child.Measure(availableSize);
                 resultSize.Width = Math.Max(resultSize.Width, child.DesiredSize.Width);
                 resultSize.Height = Math.Max(resultSize.Width, totalOffset + child.DesiredSize.Height);
-                totalOffset += Offset;
+                totalOffset += GetOffset(child);
             }
 
             resultSize.Width = double.IsPositiveInfinity(availableSize.Width) ?
@@ -57,10 +72,20 @@ namespace Spider.Solitaire.View
             foreach (UIElement child in Children)
             {
                 child.Arrange(new Rect(new Point(0, totalOffset), child.DesiredSize));
-                totalOffset += Offset;
+                totalOffset += GetOffset(child);
             }
 
             return finalSize;
+        }
+
+        private double GetOffset(UIElement element)
+        {
+            var contentPresenter = element as ContentPresenter;
+            if (contentPresenter != null && contentPresenter.DataContext is CardBackViewModel)
+            {
+                return BackOffset;
+            }
+            return Offset;
         }
     }
 }

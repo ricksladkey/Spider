@@ -5,7 +5,7 @@
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
         Title="MainWindow" Height="500" Width="1000">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:CardViewModel}">
+        <DataTemplate DataType="{x:Type vm:CardFrontViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="Foreground" Value="{Binding Path=Color}" />
@@ -27,7 +27,7 @@
                 <TextBlock Name="textBlock5" Text="{Binding Path=Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:BackViewModel}">
+        <DataTemplate DataType="{x:Type vm:CardBackViewModel}">
             <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
                 <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="DarkGoldenrod">
                     <Rectangle.BitmapEffect>
@@ -36,25 +36,31 @@
                 </Rectangle>
             </Grid>
         </DataTemplate>
+        <DataTemplate x:Key="pileTemplate">
+            <ItemsControl ItemsSource="{Binding}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <vw:OverlapPanel BackOffset="5" Offset="25"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </DataTemplate>
     </Window.Resources>
     <Canvas Background="DarkGreen" Name="mainCanvas">
-        <ItemsControl ItemsSource="{Binding Path=Piles}">
+        <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding Path=DiscardPiles}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <StackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <ItemsControl ItemsSource="{Binding}" MouseDown="element_MouseDown" MouseMove="element_MouseMove" MouseUp="element_MouseUp">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <vw:OverlapPanel Offset="25"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Path=Piles}" ItemTemplate="{StaticResource ResourceKey=pileTemplate}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding Path=StockPile}" ContentTemplate="{StaticResource ResourceKey=pileTemplate}"/>
     </Canvas>
 </Window>

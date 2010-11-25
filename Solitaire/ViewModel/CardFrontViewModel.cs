@@ -6,13 +6,11 @@ using Spider.Engine;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class BackViewModel
+    public class CardFrontViewModel : CardViewModel
     {
-        public BackViewModel(Card card)
+        public CardFrontViewModel(Card card)
+            : base(card)
         {
-            Card = card;
         }
-
-        public Card Card { get; private set; }
     }
 }
