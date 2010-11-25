@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="TestWindow" Height="223" Width="221">
     <Grid>
-        <TextBlock Text="ABC" TextAlignment="Center" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <TextBlock Text="ABC" TextAlignment="Center" FontWeight="Normal" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Tahoma" Foreground="#FFDD0000">
             <TextBlock.LayoutTransform>
                 <ScaleTransform ScaleX="1" ScaleY="-1" CenterX=".5" CenterY=".5" />
             </TextBlock.LayoutTransform>

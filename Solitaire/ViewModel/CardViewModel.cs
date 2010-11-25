@@ -35,7 +35,7 @@ namespace Spider.Solitaire.ViewModel
         {
             get
             {
-                return Card.Suit.GetColor() == SuitColor.Red ? "DarkRed" : "Black";
+                return Card.Suit.GetColor() == SuitColor.Red ? "#FFDD0000" : "Black";
             }
         }
     }

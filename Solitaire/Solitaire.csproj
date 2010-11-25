@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="ViewModel\CardViewModel.cs" />
     <Compile Include="ViewModel\SpiderViewModel.cs" />
+    <Compile Include="View\OverlapPanel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
