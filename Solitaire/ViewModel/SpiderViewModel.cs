@@ -26,10 +26,24 @@ namespace Spider.Solitaire.ViewModel
             {
                 Pile.Add(new CardViewModel(card));
             }
+            Piles = new ObservableCollection<ObservableCollection<object>>();
+            for (int row = 0; row < Game.Tableau.NumberOfPiles; row++)
+            {
+                Piles.Add(new ObservableCollection<object>());
+                foreach (var card in Game.Tableau.DownPiles[row])
+                {
+                    Piles[row].Add(new BackViewModel(card));
+                }
+                foreach (var card in Game.Tableau.UpPiles[row])
+                {
+                    Piles[row].Add(new CardViewModel(card));
+                }
+            }
         }
 
         public CardViewModel AceOfHearts { get; private set; }
         public Game Game { get; private set; }
         public ObservableCollection<CardViewModel> Pile { get; private set; }
+        public ObservableCollection<ObservableCollection<object>> Piles { get; private set; }
     }
 }

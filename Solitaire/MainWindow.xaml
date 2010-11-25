@@ -3,18 +3,18 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="500" Width="1000">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:CardViewModel}"> 
+        <DataTemplate DataType="{x:Type vm:CardViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="Foreground" Value="{Binding Path=Color}" />
                     <Setter Property="FontWeight" Value="Normal" />
-                    <Setter Property="FontFamily" Value="Arial Black" />
+                    <Setter Property="FontFamily" Value="Segoe UI Semibold" />
                 </Style>
                 <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
             </DataTemplate.Resources>
-            <Grid Height="120" Name="grid1" Width="90">
+            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
                 <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="White">
                     <Rectangle.BitmapEffect>
                         <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
@@ -27,15 +27,34 @@
                 <TextBlock Name="textBlock5" Text="{Binding Path=Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BackViewModel}">
+            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
+                <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="DarkGoldenrod">
+                    <Rectangle.BitmapEffect>
+                        <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
+                    </Rectangle.BitmapEffect>
+                </Rectangle>
+            </Grid>
+        </DataTemplate>
     </Window.Resources>
     <Canvas Background="DarkGreen" Name="mainCanvas">
-        <ContentControl Canvas.Top="10" Canvas.Left="10" Content="{Binding Path=AceOfHearts}" MouseDown="element_MouseDown" MouseMove="element_MouseMove" MouseUp="element_MouseUp" />
-        <ItemsControl Canvas.Top="10" Canvas.Left="120" ItemsSource="{Binding Path=Pile}" MouseDown="element_MouseDown" MouseMove="element_MouseMove" MouseUp="element_MouseUp">
+        <ItemsControl ItemsSource="{Binding Path=Piles}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <vw:OverlapPanel Offset="25"/>
+                    <StackPanel Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <ItemsControl ItemsSource="{Binding}" MouseDown="element_MouseDown" MouseMove="element_MouseMove" MouseUp="element_MouseUp">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <vw:OverlapPanel Offset="25"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Canvas>
 </Window>
