@@ -36,6 +36,11 @@
                 </Rectangle>
             </Grid>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
+            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
+                <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5"/>
+            </Grid>
+        </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
             <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemsPanel>
@@ -46,14 +51,25 @@
             </ItemsControl>
         </DataTemplate>
     </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Modifiers="Control" Key="N" Command="{Binding NewCommand}"/>
+        <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding ExitCommand}"/>
+        <KeyBinding Modifiers="Control" Key="Z" Command="{Binding UndoCommand}"/>
+        <KeyBinding Modifiers="Control" Key="D" Command="{Binding DealCommand}"/>
+        <KeyBinding Modifiers="Control" Key="M" Command="{Binding MoveCommand}"/>
+    </Window.InputBindings>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="New" Command="{Binding Path=NewCommand}"/>
-                <MenuItem Header="E_xit" Command="{Binding Path=ExitCommand}"/>
+                <MenuItem Header="_New" Command="{Binding Path=NewCommand}" InputGestureText="Ctrl+N"/>
+                <MenuItem Header="E_xit" Command="{Binding Path=ExitCommand}" InputGestureText="Alt+F4"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="{Binding Path=UndoCommand}" InputGestureText="Ctrl+Z"/>
             </MenuItem>
             <MenuItem Header="_Game">
-                <MenuItem Header="Deal" Command="{Binding Path=DealCommand}"/>
+                <MenuItem Header="_Deal" Command="{Binding Path=DealCommand}" InputGestureText="Ctrl+D"/>
+                <MenuItem Header="_Move" Command="{Binding Path=MoveCommand}" InputGestureText="Ctrl+M"/>
             </MenuItem>
         </Menu>
         <Canvas Background="DarkGreen" Name="mainCanvas" ClipToBounds="True">

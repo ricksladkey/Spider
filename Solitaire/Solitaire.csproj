@@ -59,6 +59,7 @@
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\DownCardViewModel.cs" />
+    <Compile Include="ViewModel\EmptySpaceViewModel.cs" />
     <Compile Include="ViewModel\UpCardViewModel.cs" />
     <Compile Include="ViewModel\CardViewModel.cs" />
     <Compile Include="ViewModel\PileViewModel.cs" />

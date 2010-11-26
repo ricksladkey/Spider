@@ -142,6 +142,11 @@ namespace Spider.Engine
             spaces.Clear();
         }
 
+        public bool IsSpace(int column)
+        {
+            return downPiles[column].Count == 0 && upPiles[column].Count == 0;
+        }
+
         public int GetDownCount(int column)
         {
             return downPiles[column].Count;
