@@ -23,10 +23,9 @@ namespace Spider.Solitaire
         public MainWindow()
         {
             InitializeComponent();
-
-            DataContext = new SpiderViewModel();
         }
 
+#if false
         private bool mouseDown;
         private double xOffset;
         private double yOffset;
@@ -58,5 +57,6 @@ namespace Spider.Solitaire
             Mouse.Capture(null);
             mouseDown = false;
         }
+#endif
     }
 }

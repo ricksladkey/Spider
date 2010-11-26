@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
-        Title="MainWindow" Height="500" Width="1000">
+        Title="Spider" Height="500" Width="1000">
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:CardFrontViewModel}">
+        <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
                     <Setter Property="Foreground" Value="{Binding Path=Color}" />
@@ -27,7 +27,7 @@
                 <TextBlock Name="textBlock5" Text="{Binding Path=Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:CardBackViewModel}">
+        <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
             <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
                 <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="DarkGoldenrod">
                     <Rectangle.BitmapEffect>
@@ -36,31 +36,42 @@
                 </Rectangle>
             </Grid>
         </DataTemplate>
-        <DataTemplate x:Key="pileTemplate">
+        <DataTemplate x:Key="PileTemplate">
             <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <vw:OverlapPanel BackOffset="5" Offset="25"/>
+                        <vw:OverlapPanel DownOffset="5" UpOffset="25"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
         </DataTemplate>
     </Window.Resources>
-    <Canvas Background="DarkGreen" Name="mainCanvas">
-        <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding Path=DiscardPiles}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
-        <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Path=Piles}" ItemTemplate="{StaticResource ResourceKey=pileTemplate}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-        </ItemsControl>
-        <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding Path=StockPile}" ContentTemplate="{StaticResource ResourceKey=pileTemplate}"/>
-    </Canvas>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="New" Command="{Binding Path=NewCommand}"/>
+                <MenuItem Header="E_xit" Command="{Binding Path=ExitCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Game">
+                <MenuItem Header="Deal" Command="{Binding Path=DealCommand}"/>
+            </MenuItem>
+        </Menu>
+        <Canvas Background="DarkGreen" Name="mainCanvas" ClipToBounds="True">
+            <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding Path=DiscardPiles}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Path=Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+            <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding Path=StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+        </Canvas>
+    </DockPanel>
 </Window>

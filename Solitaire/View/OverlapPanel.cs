@@ -10,37 +10,37 @@ namespace Spider.Solitaire.View
 {
     public class OverlapPanel : Panel
     {
-        public static readonly DependencyProperty BackOffsetProperty =
-              DependencyProperty.Register("BackOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty DownOffsetProperty =
+              DependencyProperty.Register("DownOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
 
-        public static readonly DependencyProperty OffsetProperty =
-              DependencyProperty.Register("Offset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty UpOffsetProperty =
+              DependencyProperty.Register("UpOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
 
         public OverlapPanel()
         {
         }
 
-        public double BackOffset
+        public double DownOffset
         {
             get
             {
-                return (double)GetValue(BackOffsetProperty);
+                return (double)GetValue(DownOffsetProperty);
             }
             set
             {
-                SetValue(BackOffsetProperty, value);
+                SetValue(DownOffsetProperty, value);
             }
         }
 
-        public double Offset
+        public double UpOffset
         {
             get
             {
-                return (double)GetValue(OffsetProperty);
+                return (double)GetValue(UpOffsetProperty);
             }
             set
             {
-                SetValue(OffsetProperty, value);
+                SetValue(UpOffsetProperty, value);
             }
         }
 
@@ -81,11 +81,11 @@ namespace Spider.Solitaire.View
         private double GetOffset(UIElement element)
         {
             var contentPresenter = element as ContentPresenter;
-            if (contentPresenter != null && contentPresenter.DataContext is CardBackViewModel)
+            if (contentPresenter != null && contentPresenter.DataContext is DownCardViewModel)
             {
-                return BackOffset;
+                return DownOffset;
             }
-            return Offset;
+            return UpOffset;
         }
     }
 }

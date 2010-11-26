@@ -5,6 +5,7 @@ using System.Text;
 using Spider.Engine;
 using Spider.GamePlay;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace Spider.Solitaire.ViewModel
 {
@@ -24,7 +25,7 @@ namespace Spider.Solitaire.ViewModel
             for (int i = 0; i < Game.Tableau.DiscardPiles.Count; i++)
             {
                 Pile pile = Game.Tableau.DiscardPiles[i];
-                DiscardPiles.Add(new CardFrontViewModel(pile[pile.Count - 1]));
+                DiscardPiles.Add(new UpCardViewModel(pile[pile.Count - 1]));
             }
 
             Piles = new ObservableCollection<PileViewModel>();
@@ -33,11 +34,11 @@ namespace Spider.Solitaire.ViewModel
                 Piles.Add(new PileViewModel());
                 foreach (var card in Game.Tableau.DownPiles[row])
                 {
-                    Piles[row].Add(new CardBackViewModel(card));
+                    Piles[row].Add(new DownCardViewModel(card));
                 }
                 foreach (var card in Game.Tableau.UpPiles[row])
                 {
-                    Piles[row].Add(new CardFrontViewModel(card));
+                    Piles[row].Add(new UpCardViewModel(card));
                 }
             }
 
@@ -45,13 +46,46 @@ namespace Spider.Solitaire.ViewModel
             StockPile = new PileViewModel();
             for (int i = 0; i < stockPile.Count; i += Game.NumberOfPiles)
             {
-                StockPile.Add(new CardBackViewModel(stockPile[i]));
+                StockPile.Add(new DownCardViewModel(stockPile[i]));
             }
+
+            NewCommand = new RelayCommand(param => New());
+            ExitCommand = new RelayCommand(param => Exit());
+            DealCommand = new RelayCommand(param => Deal());
         }
 
         public Game Game { get; private set; }
         public PileViewModel DiscardPiles { get; private set; }
         public ObservableCollection<PileViewModel> Piles { get; private set; }
         public PileViewModel StockPile { get; private set; }
+        public ICommand NewCommand { get; private set; }
+        public ICommand ExitCommand { get; private set; }
+        public ICommand DealCommand { get; private set; }
+
+        /// <summary>
+        /// Raised when this workspace should be removed from the UI.
+        /// </summary>
+        public event EventHandler RequestClose;
+
+        void OnRequestClose()
+        {
+            EventHandler handler = this.RequestClose;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
+        }
+
+        private void New()
+        {
+        }
+
+        private void Exit()
+        {
+            OnRequestClose();
+        }
+
+        private void Deal()
+        {
+            Game.Tableau.Deal();
+        }
     }
 }
