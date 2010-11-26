@@ -1,4 +1,4 @@
-- data binding an observable collection: http://stackoverflow.com/questions/953743/wpf-table
+- add support for redo
 - idea for card flipping: http://www.codeproject.com/KB/WPF/ContentControl3D.aspx
 
 - score interior search nodes as the best descendant score and take best path until a card is turned over

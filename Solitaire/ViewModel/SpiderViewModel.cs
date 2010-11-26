@@ -6,15 +6,20 @@ using Spider.Engine;
 using Spider.GamePlay;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using System.Windows;
 
 namespace Spider.Solitaire.ViewModel
 {
     public class SpiderViewModel : ViewModelBase
     {
+        private AlgorithmType algorithmType;
         private List<int> checkPoints;
+
+        private DependencyObject obj;
 
         public SpiderViewModel()
         {
+            algorithmType = AlgorithmType.Study;
             checkPoints = new List<int>();
 
             NewCommand = new RelayCommand(param => New());
@@ -33,7 +38,7 @@ namespace Spider.Solitaire.ViewModel
                 Ts-2h-Kh-2s|9hTsAs9h3sQsJs5sTh4s8s3sQh9h8h2s5hQsAhTh3s4s5s2h
                 8sAh7h6h6s4h4h8hQh5sQsTsAs7sKh2h6hKs8s4hQhJs6s3h6h7h@
             ";
-            Game = new Game(data, AlgorithmType.Search);
+            Game = new Game(data, algorithmType);
             Refresh();
         }
 
@@ -64,7 +69,7 @@ namespace Spider.Solitaire.ViewModel
 
         private void New()
         {
-            Game = new Game(Variation.Spider2, AlgorithmType.Search);
+            Game = new Game(Variation.Spider2, algorithmType);
             checkPoints.Clear();
             Game.Start();
             Refresh();
