@@ -5,6 +5,23 @@
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
         Title="Spider" Height="500" Width="1000">
     <Window.Resources>
+        <Style TargetType="Grid" x:Key="CardGridStyle">
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Width" Value="90"/>
+            <Setter Property="Margin" Value="3,3,3,3"/>
+        </Style>
+        <Style TargetType="Rectangle" x:Key="CardRectangleStyle">
+            <Setter Property="Stroke" Value="Black"/>
+            <Setter Property="RadiusX" Value="5"/>
+            <Setter Property="RadiusY" Value="5"/>
+        </Style>
+        <Style TargetType="Rectangle" BasedOn="{StaticResource CardRectangleStyle}" x:Key="ShadowCardRectangleStyle">
+            <Setter Property="BitmapEffect">
+                <Setter.Value>
+                    <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
+                </Setter.Value>
+            </Setter>
+        </Style>
         <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
@@ -14,12 +31,8 @@
                 </Style>
                 <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
             </DataTemplate.Resources>
-            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
-                <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="White">
-                    <Rectangle.BitmapEffect>
-                        <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
-                    </Rectangle.BitmapEffect>
-                </Rectangle>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
                 <TextBlock Name="textBlock1" Text="{Binding Path=Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 <TextBlock Name="textBlock2" Text="{Binding Path=Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
                 <TextBlock Name="textBlock3" Text="{Binding Path=Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
@@ -28,17 +41,13 @@
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
-                <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5" Fill="DarkGoldenrod">
-                    <Rectangle.BitmapEffect>
-                        <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
-                    </Rectangle.BitmapEffect>
-                </Rectangle>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <Grid Height="120" Name="grid1" Width="90" Margin="3,3,3,3">
-                <Rectangle Name="rectangle1" Stroke="Black" RadiusX="5" RadiusY="5"/>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">

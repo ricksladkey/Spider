@@ -15,8 +15,6 @@ namespace Spider.Solitaire.ViewModel
         private AlgorithmType algorithmType;
         private List<int> checkPoints;
 
-        private DependencyObject obj;
-
         public SpiderViewModel()
         {
             algorithmType = AlgorithmType.Study;
