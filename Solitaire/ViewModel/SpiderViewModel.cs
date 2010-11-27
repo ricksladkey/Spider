@@ -162,12 +162,7 @@ namespace Spider.Solitaire.ViewModel
 
         private void Refresh()
         {
-            DiscardPiles.Clear();
-            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
-            {
-                Pile pile = Tableau.DiscardPiles[i];
-                DiscardPiles.Add(new UpCardViewModel { Card = pile[pile.Count - 1] });
-            }
+            Refresh(DiscardPiles, GetDiscardCards());
 
             while (Piles.Count > Game.NumberOfPiles)
             {
@@ -179,29 +174,67 @@ namespace Spider.Solitaire.ViewModel
             }
             for (int column = 0; column < Game.NumberOfPiles; column++)
             {
-                Piles[column].Clear();
-                for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
-                {
-                    Card card = Tableau.DownPiles[column][row];
-                    Piles[column].Add(new DownCardViewModel { Card = card });
-                }
-                for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
-                {
-                    Card card = Tableau.UpPiles[column][row];
-                    Piles[column].Add(new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true });
-                }
-                if (Tableau.IsSpace(column))
-                {
-                    Piles[column].Add(new EmptySpaceViewModel { Column = column, IsSelectable = true });
-                }
+                Refresh(Piles[column], GetPileCards(column));
             }
 
+            Refresh(StockPile, GetStockCards());
+        }
+
+        private void Refresh(ObservableCollection<CardViewModel> collection, IEnumerable<CardViewModel> cards)
+        {
+            int i = 0;
+            foreach (var card in cards)
+            {
+                if (i == collection.Count)
+                {
+                    collection.Add(card);
+                }
+                else if (!collection[i].Equals(card))
+                {
+                    collection[i] = card;
+                }
+                ++i;
+            }
+            while (i < collection.Count)
+            {
+                collection.RemoveAt(collection.Count - 1);
+            }
+        }
+
+        private IEnumerable<CardViewModel> GetDiscardCards()
+        {
+            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
+            {
+                Pile pile = Tableau.DiscardPiles[i];
+                yield return new UpCardViewModel { Card = pile[pile.Count - 1] };
+            }
+        }
+
+        private IEnumerable<CardViewModel> GetPileCards(int column)
+        {
+            for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
+            {
+                Card card = Tableau.DownPiles[column][row];
+                yield return new DownCardViewModel { Card = card };
+            }
+            for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
+            {
+                Card card = Tableau.UpPiles[column][row];
+                yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+            }
+            if (Tableau.IsSpace(column))
+            {
+                yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
+            }
+        }
+
+        private IEnumerable<CardViewModel> GetStockCards()
+        {
             Pile stockPile = Tableau.StockPile;
-            StockPile.Clear();
             for (int i = 0; i < stockPile.Count; i += Game.NumberOfPiles)
             {
                 bool isSelectable = i + Game.NumberOfPiles >= stockPile.Count;
-                StockPile.Add(new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1, IsSelectable = isSelectable });
+                yield return new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1, IsSelectable = isSelectable };
             }
         }
     }

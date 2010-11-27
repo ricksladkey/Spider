@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class CardViewModel
+    public class CardViewModel : IEquatable<CardViewModel>
     {
         public Card Card { get; set; }
         public int Column { get; set; }
@@ -37,5 +37,14 @@ namespace Spider.Solitaire.ViewModel
                 return Card.Suit.GetColor() == SuitColor.Red ? "#FFDD0000" : "Black";
             }
         }
+
+        #region IEquatable<CardViewModel> Members
+
+        public bool Equals(CardViewModel other)
+        {
+            return Card == other.Card && Column == other.Column && Row == other.Row && IsSelectable == other.IsSelectable;
+        }
+
+        #endregion
     }
 }

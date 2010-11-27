@@ -9,11 +9,11 @@ namespace Spider.Engine
 {
     public enum Suit : byte
     {
-        Empty = 0,
-        Spades = 1,
-        Hearts = 2,
-        Clubs = 3,
-        Diamonds = 4,
+        Empty = 0 * 14,
+        Spades = 1 * 14,
+        Hearts = 2 * 14,
+        Clubs = 3 * 14,
+        Diamonds = 4 * 14,
     }
 
     public static class SuitExtensions

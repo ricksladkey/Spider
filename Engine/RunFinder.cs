@@ -18,7 +18,8 @@ namespace Spider.Engine
         private class PileInfo
         {
             public int Count;
-            public int RunUpAnySuit;
+            public int RunUpAnySuitStart;
+            public int RunUpAnySuitLength;
             public RunInfo[] RunInfoArray;
         }
 
@@ -68,12 +69,14 @@ namespace Spider.Engine
                 pileInfo.RunInfoArray[m] = new RunInfo(m, m, 0);
                 if (m == 0)
                 {
-                    pileInfo.RunUpAnySuit = 0;
+                    pileInfo.RunUpAnySuitStart = 0;
+                    pileInfo.RunUpAnySuitLength = 0;
                     continue;
                 }
                 if (m == 1)
                 {
-                    pileInfo.RunUpAnySuit = 1;
+                    pileInfo.RunUpAnySuitStart = 0;
+                    pileInfo.RunUpAnySuitLength = 1;
                     pileInfo.RunInfoArray[0] = new RunInfo(0, 1, 1);
                     continue;
                 }
@@ -114,13 +117,14 @@ namespace Spider.Engine
                         runInfoArray[row] = runInfo;
                     }
                 }
-                pileInfo.RunUpAnySuit = m - startRow;
+                pileInfo.RunUpAnySuitStart = startRow;
+                pileInfo.RunUpAnySuitLength = m - startRow;
             }
         }
 
         public int GetRunUpAnySuit(int column)
         {
-            return pileInfoArray[column].RunUpAnySuit;
+            return pileInfoArray[column].RunUpAnySuitLength;
         }
 
         public int GetRunUp(int column, int row)
@@ -129,14 +133,24 @@ namespace Spider.Engine
             {
                 return 0;
             }
-            int result = row - pileInfoArray[column].RunInfoArray[row - 1].StartRow;
+            PileInfo pileInfo = pileInfoArray[column];
+            if (row <= pileInfo.RunUpAnySuitStart)
+            {
+                return tableau.GetRunUp(column, row);
+            }
+            int result = row - pileInfo.RunInfoArray[row - 1].StartRow;
             Debug.Assert(result == tableau.GetRunUp(column, row));
             return result;
         }
 
         public int GetRunDown(int column, int row)
         {
-            int result = pileInfoArray[column].RunInfoArray[row].EndRow - row;
+            PileInfo pileInfo = pileInfoArray[column];
+            if (row < pileInfo.RunUpAnySuitStart)
+            {
+                return tableau.GetRunDown(column, row);
+            }
+            int result = pileInfo.RunInfoArray[row].EndRow - row;
             Debug.Assert(result == tableau.GetRunDown(column, row));
             return result;
         }
@@ -150,7 +164,12 @@ namespace Spider.Engine
 
         public int CountSuits(int column, int row)
         {
-            int result = pileInfoArray[column].RunInfoArray[row].Suits;
+            PileInfo pileInfo = pileInfoArray[column];
+            if (row < pileInfo.RunUpAnySuitStart)
+            {
+                return tableau.CountSuits(column, row);
+            }
+            int result = pileInfo.RunInfoArray[row].Suits;
             Debug.Assert(result == tableau.CountSuits(column, row));
             return result;
         }

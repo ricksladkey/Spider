@@ -9,6 +9,16 @@ namespace Spider.Engine
 {
     public struct Card : IEquatable<Card>
     {
+        public static bool operator ==(Card lhs, Card rhs)
+        {
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(Card lhs, Card rhs)
+        {
+            return !lhs.Equals(rhs);
+        }
+
         public static Card Empty = new Card();
 
         public static Card Parse(string s)
@@ -47,7 +57,7 @@ namespace Spider.Engine
         {
             get
             {
-                return (int)Face + 14 * (int)Suit;
+                return (int)Face + (int)Suit;
             }
         }
 
@@ -64,6 +74,16 @@ namespace Spider.Engine
         public override string ToString()
         {
             return ToPrettyString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Card && Equals((Card)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashKey;
         }
 
         #region IEquatable<Card> Members
