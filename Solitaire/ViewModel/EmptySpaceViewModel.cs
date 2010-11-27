@@ -9,8 +9,8 @@ namespace Spider.Solitaire.ViewModel
     public class EmptySpaceViewModel : CardViewModel
     {
         public EmptySpaceViewModel()
-            : base(Card.Empty)
         {
+            Card = Card.Empty;
         }
     }
 }

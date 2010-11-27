@@ -8,7 +8,7 @@
                 <ScaleTransform ScaleX="1" ScaleY="-1" CenterX=".5" CenterY=".5" />
             </TextBlock.LayoutTransform>
         </TextBlock>
-        <Rectangle Name="rectangle1" Stroke="Black" />
+        <Rectangle Name="rectangle1" Stroke="Black" HorizontalAlignment="Left" Width="91" Margin="0,0,0,124" />
         <TextBlock Margin="26,12,0,0" Name="textBlock1" Text="TextBlock" HorizontalAlignment="Left" VerticalAlignment="Top" />
     </Grid>
 </Window>

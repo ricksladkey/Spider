@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Spider.Engine;
+using System.Windows.Input;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class CardViewModel : ViewModelBase
+    public class CardViewModel
     {
-        public CardViewModel(Card card)
-        {
-            Card = card;
-        }
-
         public Card Card { get; set; }
+        public int Column { get; set; }
+        public int Row { get; set; }
 
         public string Face
         {

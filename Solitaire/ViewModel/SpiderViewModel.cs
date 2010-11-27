@@ -25,6 +25,7 @@ namespace Spider.Solitaire.ViewModel
             UndoCommand = new RelayCommand(param => Undo(), param => CanUndo());
             DealCommand = new RelayCommand(param => Deal(), param => CanDeal());
             MoveCommand = new RelayCommand(param => Move(), param => CanMove());
+            SelectCommand = new RelayCommand(param => Select((CardViewModel)param), param => CanSelect((CardViewModel)param));
 
             DiscardPiles = new PileViewModel();
             Piles = new ObservableCollection<PileViewModel>();
@@ -45,6 +46,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand UndoCommand { get; private set; }
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
+        public ICommand SelectCommand { get; private set; }
 
         public Game Game { get; private set; }
         public PileViewModel DiscardPiles { get; private set; }
@@ -117,13 +119,23 @@ namespace Spider.Solitaire.ViewModel
             return true;
         }
 
+        private void Select(CardViewModel card)
+        {
+            Console.WriteLine("Card selected: column = {0}, row = {1}", card.Column, card.Row);
+        }
+
+        private bool CanSelect(CardViewModel card)
+        {
+            return true;
+        }
+
         private void Refresh()
         {
             DiscardPiles.Clear();
             for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
             {
                 Pile pile = Tableau.DiscardPiles[i];
-                DiscardPiles.Add(new UpCardViewModel(pile[pile.Count - 1]));
+                DiscardPiles.Add(new UpCardViewModel { Card = pile[pile.Count - 1] });
             }
 
             while (Piles.Count > Game.NumberOfPiles)
@@ -134,20 +146,22 @@ namespace Spider.Solitaire.ViewModel
             {
                 Piles.Add(new PileViewModel());
             }
-            for (int row = 0; row < Game.NumberOfPiles; row++)
+            for (int column = 0; column < Game.NumberOfPiles; column++)
             {
-                Piles[row].Clear();
-                foreach (var card in Tableau.DownPiles[row])
+                Piles[column].Clear();
+                for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
                 {
-                    Piles[row].Add(new DownCardViewModel(card));
+                    Card card = Tableau.DownPiles[column][row];
+                    Piles[column].Add(new DownCardViewModel { Card = card, Column = column, Row = row });
                 }
-                foreach (var card in Tableau.UpPiles[row])
+                for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
                 {
-                    Piles[row].Add(new UpCardViewModel(card));
+                    Card card = Tableau.UpPiles[column][row];
+                    Piles[column].Add(new UpCardViewModel { Card = card, Column = column, Row = row });
                 }
-                if (Tableau.IsSpace(row))
+                if (Tableau.IsSpace(column))
                 {
-                    Piles[row].Add(new EmptySpaceViewModel());
+                    Piles[column].Add(new EmptySpaceViewModel { Column = 0 });
                 }
             }
 
@@ -155,7 +169,7 @@ namespace Spider.Solitaire.ViewModel
             StockPile.Clear();
             for (int i = 0; i < stockPile.Count; i += Game.NumberOfPiles)
             {
-                StockPile.Add(new DownCardViewModel(stockPile[i]));
+                StockPile.Add(new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1 });
             }
         }
     }

@@ -8,9 +8,5 @@ namespace Spider.Solitaire.ViewModel
 {
     public class DownCardViewModel : CardViewModel
     {
-        public DownCardViewModel(Card card)
-            : base(card)
-        {
-        }
     }
 }

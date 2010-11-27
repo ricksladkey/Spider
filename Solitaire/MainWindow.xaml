@@ -3,8 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
-        Title="Spider" Height="500" Width="1000">
+        Title="Spider" Height="500" Width="1000" Name="window">
     <Window.Resources>
+        <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
         <Style TargetType="Grid" x:Key="CardGridStyle">
             <Setter Property="Height" Value="120"/>
             <Setter Property="Width" Value="90"/>
@@ -15,40 +16,79 @@
             <Setter Property="RadiusX" Value="5"/>
             <Setter Property="RadiusY" Value="5"/>
         </Style>
-        <Style TargetType="Rectangle" BasedOn="{StaticResource CardRectangleStyle}" x:Key="ShadowCardRectangleStyle">
-            <Setter Property="BitmapEffect">
+        <Style TargetType="Rectangle" BasedOn="{StaticResource CardRectangleStyle}" x:Key="SelectableCardRectangleStyle">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" Color="LightBlue" BlurRadius="30" Opacity="1"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style TargetType="Rectangle" BasedOn="{StaticResource SelectableCardRectangleStyle}" x:Key="ShadowCardRectangleStyle">
+            <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowBitmapEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
+                    <DropShadowEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" Color="LightBlue" BlurRadius="30" Opacity="1"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
-            <DataTemplate.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="Foreground" Value="{Binding Path=Color}" />
-                    <Setter Property="FontWeight" Value="Normal" />
-                    <Setter Property="FontFamily" Value="Segoe UI Semibold" />
-                </Style>
-                <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
-            </DataTemplate.Resources>
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
-                <TextBlock Name="textBlock1" Text="{Binding Path=Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                <TextBlock Name="textBlock2" Text="{Binding Path=Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
-                <TextBlock Name="textBlock3" Text="{Binding Path=Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
-                <TextBlock Name="textBlock4" Text="{Binding Path=Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
-                <TextBlock Name="textBlock5" Text="{Binding Path=Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Grid>
+            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
+                <ToggleButton.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{Binding Color}" />
+                        <Setter Property="FontWeight" Value="Normal" />
+                        <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+                        <Setter Property="IsHitTestVisible" Value="False"/>
+                    </Style>
+                    <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
+                </ToggleButton.Resources>
+                <ToggleButton.Template>
+                    <ControlTemplate>
+                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                            <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
+                            <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                            <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                            <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+                            <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+                            <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
-            </Grid>
+            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
+                <ToggleButton.Template>
+                    <ControlTemplate>
+                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                            <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
+                        </Grid>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}"/>
-            </Grid>
+            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
+                <ToggleButton.Template>
+                    <ControlTemplate>
+                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                            <Rectangle Name="rectangle1" Style="{StaticResource SelectableCardRectangleStyle}" Fill="Green"/>
+                        </Grid>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
             <ItemsControl ItemsSource="{Binding}">
@@ -70,33 +110,33 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_New" Command="{Binding Path=NewCommand}" InputGestureText="Ctrl+N"/>
-                <MenuItem Header="E_xit" Command="{Binding Path=ExitCommand}" InputGestureText="Alt+F4"/>
+                <MenuItem Header="_New" Command="{Binding NewCommand}" InputGestureText="Ctrl+N"/>
+                <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"/>
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="_Undo" Command="{Binding Path=UndoCommand}" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
             </MenuItem>
             <MenuItem Header="_Game">
-                <MenuItem Header="_Deal" Command="{Binding Path=DealCommand}" InputGestureText="Ctrl+D"/>
-                <MenuItem Header="_Move" Command="{Binding Path=MoveCommand}" InputGestureText="Ctrl+M"/>
+                <MenuItem Header="_Deal" Command="{Binding DealCommand}" InputGestureText="Ctrl+D"/>
+                <MenuItem Header="_Move" Command="{Binding MoveCommand}" InputGestureText="Ctrl+M"/>
             </MenuItem>
         </Menu>
-        <Canvas Background="DarkGreen" Name="mainCanvas" ClipToBounds="True">
-            <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding Path=DiscardPiles}">
+        <Canvas Background="{StaticResource GamePlayBackground}" Name="mainCanvas" ClipToBounds="True">
+            <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding DiscardPiles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Path=Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}">
+            <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding Path=StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+            <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
         </Canvas>
     </DockPanel>
 </Window>
