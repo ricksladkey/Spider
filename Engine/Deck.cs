@@ -14,33 +14,35 @@ namespace Spider.Engine
         {
         }
 
-        public Deck(int decks)
-            : this(decks, 4)
+        public Deck(int numberOfDecks)
+            : this(numberOfDecks, 4)
         {
         }
 
-        public Deck(int decks, int suits)
+        public Deck(int numberOfDecks, int numberOfSuits)
         {
             int reps = 0;
-            if (suits == 1)
+            if (numberOfSuits == 1)
             {
                 reps = 4;
             }
-            else if (suits == 2)
+            else if (numberOfSuits == 2)
             {
                 reps = 2;
             }
-            else if (suits == 4)
+            else if (numberOfSuits == 4)
             {
                 reps = 1;
             }
-            for (int i = 0; i < decks; i++)
+            Suit[] suits = { Suit.Spades, Suit.Hearts, Suit.Clubs, Suit.Diamonds };
+            for (int i = 0; i < numberOfDecks; i++)
             {
                 for (Face face = Face.Ace; face <= Face.King; face++)
                 {
-                    for (Suit suit = (Suit)1; suit <= (Suit)suits; suit++)
+                    for (int j = 0; j < numberOfSuits; j++)
                     {
-                        for (int j = 0; j < reps; j++)
+                        Suit suit = suits[j];
+                        for (int k = 0; k < reps; k++)
                         {
                             Add(new Card(face, suit));
                         }

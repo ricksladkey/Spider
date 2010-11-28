@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Windows;
 
 namespace Spider.Solitaire.ViewModel
 {
@@ -120,5 +121,31 @@ namespace Spider.Solitaire.ViewModel
 #endif
 
         #endregion // IDisposable Members
+
+        private bool? _isInDesignMode;
+
+        public bool IsInDesignMode
+        {
+            get
+            {
+                if (!_isInDesignMode.HasValue)
+                {
+                    var prop = DesignerProperties.IsInDesignModeProperty;
+                    _isInDesignMode
+                        = (bool)DependencyPropertyDescriptor
+                        .FromProperty(prop, typeof(FrameworkElement))
+                        .Metadata.DefaultValue;
+
+                    // Just to be sure
+                    if (!_isInDesignMode.Value
+                        && Process.GetCurrentProcess().ProcessName.StartsWith("devenv", StringComparison.Ordinal))
+                    {
+                        _isInDesignMode = true;
+                    }
+                }
+
+                return _isInDesignMode.Value;
+            }
+        }
     }
 }

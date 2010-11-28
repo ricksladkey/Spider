@@ -12,12 +12,13 @@ namespace Spider.Solitaire.ViewModel
 {
     public class SpiderViewModel : ViewModelBase
     {
-        private AlgorithmType algorithmType;
         private List<int> checkPoints;
 
         public SpiderViewModel()
         {
-            algorithmType = AlgorithmType.Study;
+            Variation = Variation.Spider2;
+            AlgorithmType = AlgorithmType.Study;
+
             checkPoints = new List<int>();
 
             NewCommand = new RelayCommand(param => New());
@@ -31,13 +32,20 @@ namespace Spider.Solitaire.ViewModel
             Piles = new ObservableCollection<PileViewModel>();
             StockPile = new PileViewModel();
 
-            string data = @"
+            if (IsInDesignMode)
+            {
+                string data = @"
                 @2||KhTh3s5h9s-Ah-5hKsAs7sKs-Jh-7sKs8s8h-9hJh--6s3hQh-7s9s8h
                 Jh-9s3hJh4s|7h6h5h4h3h2hAh-2s-7h6s5s4s-KhQsJsTs9s-2sAs-Th-Js
                 Ts-2h-Kh-2s|9hTsAs9h3sQsJs5sTh4s8s3sQh9h8h2s5hQsAhTh3s4s5s2h
                 8sAh7h6h6s4h4h8hQh5sQsTsAs7sKh2h6hKs8s4hQhJs6s3h6h7h@
             ";
-            Game = new Game(data, algorithmType);
+                Game = new Game(data, AlgorithmType);
+            }
+            else
+            {
+                Game = new Game(Variation, AlgorithmType);
+            }
             Refresh();
         }
 
@@ -57,6 +65,9 @@ namespace Spider.Solitaire.ViewModel
 
         public Tableau Tableau { get { return Game.Tableau; } }
 
+        private Variation Variation { get; set; }
+        private AlgorithmType AlgorithmType { get; set; }
+
         /// <summary>
         /// Raised when this workspace should be removed from the UI.
         /// </summary>
@@ -71,7 +82,7 @@ namespace Spider.Solitaire.ViewModel
 
         private void New()
         {
-            Game = new Game(Variation.Spider2, algorithmType);
+            Game = new Game(Variation, AlgorithmType);
             checkPoints.Clear();
             Game.Start();
             Refresh();
