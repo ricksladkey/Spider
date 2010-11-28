@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
-        Title="Spider" Height="500" Width="1000" Name="window">
+        Title="Spider" Height="500" Width="1000" Name="window" DataContext="{DynamicResource SpiderViewModelDataSource}">
     <Window.Resources>
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
         <Style TargetType="Grid" x:Key="CardGridStyle">
