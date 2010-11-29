@@ -59,36 +59,18 @@
                 <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
                 <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
                 <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <!--<Button Margin="10,10,0,0" Height="20" Width="50"  Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">Select</Button>-->
+                <!--<Button Height="20" Width="50"  Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">Select</Button>-->
             </Grid>
-            <!--<ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
-                <ToggleButton.Template>
-                    <ControlTemplate>
-                    </ControlTemplate>
-                </ToggleButton.Template>
-            </ToggleButton>-->
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
-                <ToggleButton.Template>
-                    <ControlTemplate>
-                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                            <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
-                        </Grid>
-                    </ControlTemplate>
-                </ToggleButton.Template>
-            </ToggleButton>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
+            </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
-                <ToggleButton.Template>
-                    <ControlTemplate>
-                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                            <Rectangle Name="rectangle1" Style="{StaticResource SelectableCardRectangleStyle}" Fill="Green"/>
-                        </Grid>
-                    </ControlTemplate>
-                </ToggleButton.Template>
-            </ToggleButton>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <Rectangle Name="rectangle1" Style="{StaticResource SelectableCardRectangleStyle}" Fill="Green"/>
+            </Grid>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
             <ItemsControl ItemsSource="{Binding}" Margin="3,3,3,3">
@@ -136,8 +118,14 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False"/>
-            <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False" Opacity="0.5"/>
+            <Button Command="{Binding DealCommand}" Canvas.Left="450" Canvas.Top="400">
+                <Button.Template>
+                    <ControlTemplate>
+                        <ContentControl Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </Canvas>
     </DockPanel>
 </Window>
