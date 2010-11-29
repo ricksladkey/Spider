@@ -31,6 +31,7 @@ namespace Spider.Solitaire.ViewModel
             DiscardPiles = new PileViewModel();
             Piles = new ObservableCollection<PileViewModel>();
             StockPile = new PileViewModel();
+            MovePile = new PileViewModel();
 
             if (IsInDesignMode)
             {
@@ -60,6 +61,7 @@ namespace Spider.Solitaire.ViewModel
         public PileViewModel DiscardPiles { get; private set; }
         public ObservableCollection<PileViewModel> Piles { get; private set; }
         public PileViewModel StockPile { get; private set; }
+        public PileViewModel MovePile { get; private set; }
         public CardViewModel FromCard { get; private set; }
         public CardViewModel ToCard { get; private set; }
 
@@ -138,32 +140,41 @@ namespace Spider.Solitaire.ViewModel
             {
                 checkPoints.Add(Tableau.CheckPoint);
                 Deal();
-                Refresh();
-                FromCard = null;
-                ToCard = null;
+                ResetMoveAndRefresh();
                 return;
             }
+
             if (FromCard == null)
             {
                 FromCard = card;
+                Refresh();
                 return;
             }
+
             ToCard = card;
             if (FromCard.Column == ToCard.Column)
             {
-                FromCard = null;
-                ToCard = null;
+                ResetMoveAndRefresh();
                 return;
             }
+
             Move move = new Move(FromCard.Column, FromCard.Row, ToCard.Column);
             if (Tableau.MoveIsValid(move))
             {
                 checkPoints.Add(Tableau.CheckPoint);
                 Tableau.Move(move);
-                Refresh();
+                ResetMoveAndRefresh();
+                return;
             }
+
+            ResetMoveAndRefresh();
+        }
+
+        private void ResetMoveAndRefresh()
+        {
             FromCard = null;
             ToCard = null;
+            Refresh();
         }
 
         private bool CanSelect(CardViewModel card)
@@ -189,6 +200,7 @@ namespace Spider.Solitaire.ViewModel
             }
 
             Refresh(StockPile, GetStockCards());
+            Refresh(MovePile, GetMoveCards());
         }
 
         private void Refresh(ObservableCollection<CardViewModel> collection, IEnumerable<CardViewModel> cards)
@@ -200,7 +212,7 @@ namespace Spider.Solitaire.ViewModel
                 {
                     collection.Add(card);
                 }
-                else if (!collection[i].Equals(card))
+                else if (collection[i].GetType() != card.GetType() || !collection[i].Equals(card))
                 {
                     collection[i] = card;
                 }
@@ -223,19 +235,36 @@ namespace Spider.Solitaire.ViewModel
 
         private IEnumerable<CardViewModel> GetPileCards(int column)
         {
-            for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
+            if (FromCard != null && FromCard.Column == column)
             {
-                Card card = Tableau.DownPiles[column][row];
-                yield return new DownCardViewModel { Card = card };
+                for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
+                {
+                    Card card = Tableau.DownPiles[column][row];
+                    bool isSelectable = FromCard.Row == 0 && row == Tableau.DownPiles[column].Count - 1;
+                    yield return new DownCardViewModel { Card = card, Column = column, IsSelectable = isSelectable };
+                }
+                for (int row = 0; row < FromCard.Row; row++)
+                {
+                    Card card = Tableau.UpPiles[column][row];
+                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+                }
             }
-            for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
+            else
             {
-                Card card = Tableau.UpPiles[column][row];
-                yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
-            }
-            if (Tableau.IsSpace(column))
-            {
-                yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
+                for (int row = 0; row < Tableau.DownPiles[column].Count; row++)
+                {
+                    Card card = Tableau.DownPiles[column][row];
+                    yield return new DownCardViewModel { Card = card };
+                }
+                for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
+                {
+                    Card card = Tableau.UpPiles[column][row];
+                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+                }
+                if (Tableau.IsSpace(column))
+                {
+                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
+                }
             }
         }
 
@@ -246,6 +275,18 @@ namespace Spider.Solitaire.ViewModel
             {
                 bool isSelectable = i + Game.NumberOfPiles >= stockPile.Count;
                 yield return new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1, IsSelectable = isSelectable };
+            }
+        }
+
+        private IEnumerable<CardViewModel> GetMoveCards()
+        {
+            if (FromCard != null)
+            {
+                Pile fromPile = Tableau.UpPiles[FromCard.Column];
+                for (int row = FromCard.Row; row < fromPile.Count; row++)
+                {
+                    yield return new UpCardViewModel { Card = fromPile[row] };
+                }
             }
         }
     }

@@ -9,7 +9,6 @@
         <Style TargetType="Grid" x:Key="CardGridStyle">
             <Setter Property="Height" Value="120"/>
             <Setter Property="Width" Value="90"/>
-            <Setter Property="Margin" Value="3,3,3,3"/>
         </Style>
         <Style TargetType="Rectangle" x:Key="CardRectangleStyle">
             <Setter Property="Stroke" Value="Black"/>
@@ -18,17 +17,17 @@
         </Style>
         <Style TargetType="Rectangle" BasedOn="{StaticResource CardRectangleStyle}" x:Key="SelectableCardRectangleStyle">
             <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
+                <!--<Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Effect">
                         <Setter.Value>
                             <DropShadowEffect ShadowDepth="0" Color="LightBlue" BlurRadius="30" Opacity="1"/>
                         </Setter.Value>
                     </Setter>
-                </Trigger>
+                </Trigger>-->
             </Style.Triggers>
         </Style>
         <Style TargetType="Rectangle" BasedOn="{StaticResource SelectableCardRectangleStyle}" x:Key="ShadowCardRectangleStyle">
-            <Setter Property="Effect">
+            <!--<Setter Property="Effect">
                 <Setter.Value>
                     <DropShadowEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
                 </Setter.Value>
@@ -41,32 +40,33 @@
                         </Setter.Value>
                     </Setter>
                 </Trigger>
-            </Style.Triggers>
+            </Style.Triggers>-->
         </Style>
         <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
-            <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
-                <ToggleButton.Resources>
-                    <Style TargetType="TextBlock">
-                        <Setter Property="Foreground" Value="{Binding Color}" />
-                        <Setter Property="FontWeight" Value="Normal" />
-                        <Setter Property="FontFamily" Value="Segoe UI Semibold" />
-                        <Setter Property="IsHitTestVisible" Value="False"/>
-                    </Style>
-                    <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
-                </ToggleButton.Resources>
+            <DataTemplate.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding Color}" />
+                    <Setter Property="FontWeight" Value="Normal" />
+                    <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+                    <Setter Property="IsHitTestVisible" Value="False"/>
+                </Style>
+                <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
+            </DataTemplate.Resources>
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
+                <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
+                <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+                <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+                <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <!--<Button Margin="10,10,0,0" Height="20" Width="50"  Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">Select</Button>-->
+            </Grid>
+            <!--<ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
                 <ToggleButton.Template>
                     <ControlTemplate>
-                        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-                            <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
-                            <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
-                            <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
-                            <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
-                            <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
-                            <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Grid>
                     </ControlTemplate>
                 </ToggleButton.Template>
-            </ToggleButton>
+            </ToggleButton>-->
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
             <ToggleButton Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">
@@ -91,7 +91,7 @@
             </ToggleButton>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
-            <ItemsControl ItemsSource="{Binding}">
+            <ItemsControl ItemsSource="{Binding}" Margin="3,3,3,3">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <vw:OverlapPanel DownOffset="5" UpOffset="25"/>
@@ -136,6 +136,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp"/>
             <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
         </Canvas>
     </DockPanel>
