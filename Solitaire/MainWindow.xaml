@@ -136,7 +136,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp"/>
+            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False"/>
             <ContentControl Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
         </Canvas>
     </DockPanel>

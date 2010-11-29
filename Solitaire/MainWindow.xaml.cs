@@ -25,37 +25,44 @@ namespace Spider.Solitaire
             InitializeComponent();
         }
 
-#if true
         private bool mouseDown;
-        private double xOffset;
-        private double yOffset;
+        private bool mouseDrag;
+        private Point startPosition;
+        private Vector offset;
 
         private void element_MouseDown(object sender, MouseButtonEventArgs e)
         {
             mouseDown = true;
+            mouseDrag = false;
             var element = (FrameworkElement)sender;
-            var position = e.GetPosition(mainCanvas);
+            startPosition = e.GetPosition(mainCanvas);
             GeneralTransform gt = element.TransformToVisual(mainCanvas);
-            Point point = gt.Transform(new Point(0, 0));
-            point.X -= 3;
-            point.Y -= 3;
+            Vector margin = new Vector(3, 3);
+            Point point = gt.Transform(new Point(0, 0)) - margin;
             Canvas.SetLeft(movePile, point.X);
             Canvas.SetTop(movePile, point.Y);
-            xOffset = position.X - point.X;
-            yOffset = position.Y - point.Y;
+            offset = startPosition - point;
             (DataContext as SpiderViewModel).SelectCommand.Execute(element.DataContext);
             Mouse.Capture(movePile);
-            Console.WriteLine("MouseDown");
         }
 
         private void element_MouseMove(object sender, MouseEventArgs e)
         {
+            var element = sender as FrameworkElement;
             if (mouseDown)
             {
                 var position = e.GetPosition(mainCanvas);
-                Canvas.SetLeft(movePile, position.X - xOffset);
-                Canvas.SetTop(movePile, position.Y - yOffset);
-                Console.WriteLine("MouseMove");
+                Canvas.SetLeft(element, position.X - offset.X);
+                Canvas.SetTop(element, position.Y - offset.Y);
+                if (!mouseDrag)
+                {
+                    Vector drag = startPosition - position;
+                    if (Math.Abs(drag.X) >= SystemParameters.MinimumHorizontalDragDistance ||
+                        Math.Abs(drag.Y) >= SystemParameters.MinimumVerticalDragDistance)
+                    {
+                        mouseDrag = true;
+                    }
+                }
             }
         }
 
@@ -63,40 +70,11 @@ namespace Spider.Solitaire
         {
             Mouse.Capture(null);
             mouseDown = false;
-            Console.WriteLine("MouseUp");
-        }
-#else
-        private bool mouseDown;
-        private double xOffset;
-        private double yOffset;
-
-        private void element_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var element = (UIElement)sender;
-            var position = e.GetPosition(mainCanvas);
-            mouseDown = true;
-            xOffset = position.X - Canvas.GetLeft(element);
-            yOffset = position.Y - Canvas.GetTop(element);
-            Mouse.Capture(element);
-        }
-
-        private void element_MouseMove(object sender, MouseEventArgs e)
-        {
-            var element = (UIElement)sender;
-            if (mouseDown)
+            if (mouseDrag)
             {
-                var position = e.GetPosition(mainCanvas);
-                Canvas.SetLeft(element, position.X - xOffset);
-                Canvas.SetTop(element, position.Y - yOffset);
+                var element = Mouse.DirectlyOver as FrameworkElement;
+                (DataContext as SpiderViewModel).SelectCommand.Execute(element.DataContext as CardViewModel);
             }
         }
-
-        private void element_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            var element = (UIElement)sender;
-            Mouse.Capture(null);
-            mouseDown = false;
-        }
-#endif
     }
 }

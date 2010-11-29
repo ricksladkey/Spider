@@ -136,6 +136,12 @@ namespace Spider.Solitaire.ViewModel
 
         private void Select(CardViewModel card)
         {
+            if (card == null)
+            {
+                ResetMoveAndRefresh();
+                return;
+            }
+
             if (card.Column == -1 && card.Row == -1)
             {
                 checkPoints.Add(Tableau.CheckPoint);
@@ -247,6 +253,10 @@ namespace Spider.Solitaire.ViewModel
                 {
                     Card card = Tableau.UpPiles[column][row];
                     yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+                }
+                if (Tableau.DownPiles[column].Count == 0 && FromCard.Row == 0)
+                {
+                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
                 }
             }
             else
