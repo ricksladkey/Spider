@@ -18,8 +18,8 @@ namespace Spider.Solitaire.ViewModel
     {
         #region Fields
 
-        readonly Action<object> _execute;
-        readonly Predicate<object> _canExecute;
+        readonly Action _execute;
+        readonly Func<bool> _canExecute;
 
         #endregion // Fields
 
@@ -29,7 +29,7 @@ namespace Spider.Solitaire.ViewModel
         /// Creates a new command that can always execute.
         /// </summary>
         /// <param name="execute">The execution logic.</param>
-        public RelayCommand(Action<object> execute)
+        public RelayCommand(Action execute)
             : this(execute, null)
         {
         }
@@ -39,7 +39,7 @@ namespace Spider.Solitaire.ViewModel
         /// </summary>
         /// <param name="execute">The execution logic.</param>
         /// <param name="canExecute">The execution status logic.</param>
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
+        public RelayCommand(Action execute, Func<bool> canExecute)
         {
             if (execute == null)
                 throw new ArgumentNullException("execute");
@@ -55,7 +55,7 @@ namespace Spider.Solitaire.ViewModel
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute(parameter);
+            return _canExecute == null ? true : _canExecute();
         }
 
         public event EventHandler CanExecuteChanged
@@ -66,7 +66,65 @@ namespace Spider.Solitaire.ViewModel
 
         public void Execute(object parameter)
         {
-            _execute(parameter);
+            _execute();
+        }
+
+        #endregion // ICommand Members
+    }
+
+    public class RelayCommand<T> : ICommand
+    {
+        #region Fields
+
+        readonly Action<T> _execute;
+        readonly Func<T, bool> _canExecute;
+
+        #endregion // Fields
+
+        #region Constructors
+
+        /// <summary>
+        /// Creates a new command that can always execute.
+        /// </summary>
+        /// <param name="execute">The execution logic.</param>
+        public RelayCommand(Action<T> execute)
+            : this(execute, null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new command.
+        /// </summary>
+        /// <param name="execute">The execution logic.</param>
+        /// <param name="canExecute">The execution status logic.</param>
+        public RelayCommand(Action<T> execute, Func<T, bool> canExecute)
+        {
+            if (execute == null)
+                throw new ArgumentNullException("execute");
+
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        #endregion // Constructors
+
+        #region ICommand Members
+
+        [DebuggerStepThrough]
+        public bool CanExecute(object parameter)
+        {
+            return _canExecute == null ? true : _canExecute((T)parameter);
+        }
+
+        public event EventHandler CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public void Execute(object parameter)
+        {
+            _execute((T)parameter);
         }
 
         #endregion // ICommand Members

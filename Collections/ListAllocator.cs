@@ -7,18 +7,6 @@ namespace Spider.Collections
 {
     public class ListAllocator<T>
     {
-        public struct Allocation
-        {
-            public Allocation(T[] array, int offset)
-            {
-                Array = array;
-                Offset = offset;
-            }
-
-            public T[] Array;
-            public int Offset;
-        }
-
         private bool clearEntries;
         private List<T[]> arrays;
         private int current;

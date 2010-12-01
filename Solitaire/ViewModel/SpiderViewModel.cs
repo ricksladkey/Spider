@@ -21,12 +21,14 @@ namespace Spider.Solitaire.ViewModel
 
             checkPoints = new List<int>();
 
-            NewCommand = new RelayCommand(param => New());
-            ExitCommand = new RelayCommand(param => Exit());
-            UndoCommand = new RelayCommand(param => Undo(), param => CanUndo());
-            DealCommand = new RelayCommand(param => Deal(), param => CanDeal());
-            MoveCommand = new RelayCommand(param => Move(), param => CanMove());
-            SelectCommand = new RelayCommand(param => Select((CardViewModel)param), param => CanSelect((CardViewModel)param));
+            NewCommand = new RelayCommand(New);
+            ExitCommand = new RelayCommand(Exit);
+            CopyCommand = new RelayCommand(Copy, CanCopy);
+            PasteCommand = new RelayCommand(Paste, CanPaste);
+            UndoCommand = new RelayCommand(Undo, CanUndo);
+            DealCommand = new RelayCommand(Deal, CanDeal);
+            MoveCommand = new RelayCommand(Move, CanMove);
+            SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
 
             DiscardPiles = new PileViewModel();
             Piles = new ObservableCollection<PileViewModel>();
@@ -47,11 +49,13 @@ namespace Spider.Solitaire.ViewModel
             {
                 Game = new Game(Variation, AlgorithmType);
             }
-            Refresh();
+            ResetUndoAndRefresh();
         }
 
         public ICommand NewCommand { get; private set; }
         public ICommand ExitCommand { get; private set; }
+        public ICommand CopyCommand { get; private set; }
+        public ICommand PasteCommand { get; private set; }
         public ICommand UndoCommand { get; private set; }
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
@@ -85,14 +89,35 @@ namespace Spider.Solitaire.ViewModel
         private void New()
         {
             Game = new Game(Variation, AlgorithmType);
-            checkPoints.Clear();
             Game.Start();
-            Refresh();
+            ResetUndoAndRefresh();
         }
 
         private void Exit()
         {
             OnRequestClose();
+        }
+
+        private void Copy()
+        {
+            Clipboard.SetData(DataFormats.Text, Game.ToAsciiString());
+        }
+
+        private bool CanCopy()
+        {
+            return true;
+        }
+
+        private void Paste()
+        {
+            var data = Clipboard.GetData(DataFormats.Text) as string;
+            Game = new Game(data, AlgorithmType);
+            ResetUndoAndRefresh();
+        }
+
+        private bool CanPaste()
+        {
+            return true;
         }
 
         private void Undo()
@@ -174,6 +199,12 @@ namespace Spider.Solitaire.ViewModel
             }
 
             ResetMoveAndRefresh();
+        }
+
+        private void ResetUndoAndRefresh()
+        {
+            checkPoints.Clear();
+            Refresh();
         }
 
         private void ResetMoveAndRefresh()

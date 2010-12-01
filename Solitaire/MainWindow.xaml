@@ -85,6 +85,8 @@
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="N" Command="{Binding NewCommand}"/>
         <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding ExitCommand}"/>
+        <KeyBinding Modifiers="Control" Key="C" Command="{Binding CopyCommand}"/>
+        <KeyBinding Modifiers="Control" Key="V" Command="{Binding PasteCommand}"/>
         <KeyBinding Modifiers="Control" Key="Z" Command="{Binding UndoCommand}"/>
         <KeyBinding Modifiers="Control" Key="D" Command="{Binding DealCommand}"/>
         <KeyBinding Modifiers="Control" Key="M" Command="{Binding MoveCommand}"/>
@@ -96,6 +98,8 @@
                 <MenuItem Header="E_xit" Command="{Binding ExitCommand}" InputGestureText="Alt+F4"/>
             </MenuItem>
             <MenuItem Header="_Edit">
+                <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGestureText="Ctrl+C"/>
+                <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGestureText="Ctrl+V"/>
                 <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
             </MenuItem>
             <MenuItem Header="_Game">

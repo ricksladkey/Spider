@@ -1,4 +1,10 @@
 - add support for redo
+- put undo/redo buttons on screen
+- fix second move click on empty space
+- add better indicator of move group than opacity
+- detect win
+- add mouse-over visual state for stock
+- add double-click to move pile to empty space
 - idea for card flipping: http://www.codeproject.com/KB/WPF/ContentControl3D.aspx
 
 - score interior search nodes as the best descendant score and take best path until a card is turned over
