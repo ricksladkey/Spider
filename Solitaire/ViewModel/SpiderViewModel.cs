@@ -12,6 +12,7 @@ namespace Spider.Solitaire.ViewModel
 {
     public class SpiderViewModel : ViewModelBase
     {
+        private int current;
         private List<int> checkPoints;
 
         public SpiderViewModel()
@@ -26,6 +27,7 @@ namespace Spider.Solitaire.ViewModel
             CopyCommand = new RelayCommand(Copy, CanCopy);
             PasteCommand = new RelayCommand(Paste, CanPaste);
             UndoCommand = new RelayCommand(Undo, CanUndo);
+            RedoCommand = new RelayCommand(Redo, CanRedo);
             DealCommand = new RelayCommand(Deal, CanDeal);
             MoveCommand = new RelayCommand(Move, CanMove);
             SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
@@ -57,6 +59,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand CopyCommand { get; private set; }
         public ICommand PasteCommand { get; private set; }
         public ICommand UndoCommand { get; private set; }
+        public ICommand RedoCommand { get; private set; }
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
         public ICommand SelectCommand { get; private set; }
@@ -122,20 +125,34 @@ namespace Spider.Solitaire.ViewModel
 
         private void Undo()
         {
-            Tableau.Revert(checkPoints[checkPoints.Count - 1]);
-            checkPoints.RemoveAt(checkPoints.Count - 1);
+            current--;
+            Console.WriteLine("Undo: checkPoints[{0}] = {1}", current, checkPoints[current]);
+            Tableau.Revert(checkPoints[current]);
             Refresh();
         }
 
         private bool CanUndo()
         {
-            return checkPoints.Count > 0;
+            return current > 0;
+        }
+
+        private void Redo()
+        {
+            current++;
+            Console.WriteLine("Redo: checkPoints[{0}] = {1}", current, checkPoints[current]);
+            Tableau.Revert(checkPoints[current]);
+            Refresh();
+        }
+
+        private bool CanRedo()
+        {
+            return current < checkPoints.Count - 1;
         }
 
         private void Deal()
         {
-            checkPoints.Add(Tableau.CheckPoint);
             Tableau.Deal();
+            AddCheckPoint();
             Refresh();
         }
 
@@ -146,11 +163,11 @@ namespace Spider.Solitaire.ViewModel
 
         private void Move()
         {
-            checkPoints.Add(Tableau.CheckPoint);
             if (!Game.MakeMove() && Tableau.StockPile.Count > 0)
             {
                 Tableau.Deal();
             }
+            AddCheckPoint();
             Refresh();
         }
 
@@ -169,8 +186,8 @@ namespace Spider.Solitaire.ViewModel
 
             if (card.Column == -1 && card.Row == -1)
             {
-                checkPoints.Add(Tableau.CheckPoint);
                 Deal();
+                AddCheckPoint();
                 ResetMoveAndRefresh();
                 return;
             }
@@ -192,8 +209,8 @@ namespace Spider.Solitaire.ViewModel
             Move move = new Move(FromCard.Column, FromCard.Row, ToCard.Column);
             if (Tableau.MoveIsValid(move))
             {
-                checkPoints.Add(Tableau.CheckPoint);
                 Tableau.Move(move);
+                AddCheckPoint();
                 ResetMoveAndRefresh();
                 return;
             }
@@ -201,9 +218,18 @@ namespace Spider.Solitaire.ViewModel
             ResetMoveAndRefresh();
         }
 
+        private void AddCheckPoint()
+        {
+            current++;
+            checkPoints.RemoveRange(current, checkPoints.Count - current);
+            checkPoints.Add(Tableau.CheckPoint);
+        }
+
         private void ResetUndoAndRefresh()
         {
+            current = 0;
             checkPoints.Clear();
+            checkPoints.Add(Tableau.CheckPoint);
             Refresh();
         }
 

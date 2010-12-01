@@ -9,7 +9,6 @@ using Spider.Collections;
 namespace Spider.Engine
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
-    [DebuggerTypeProxy(typeof(EnumerableDebugView))]
     public class Tableau : Core, IEnumerable<Pile>, IRunFinder, IGetCard
     {
         static Tableau()
@@ -33,6 +32,7 @@ namespace Spider.Engine
         public int NumberOfPiles { get; private set; }
         public int NumberOfSpaces { get; private set; }
         public MoveList Moves { get; private set; }
+        public int CheckPoint { get; private set; }
 
         private Pile[] downPiles;
         private Pile[] upPiles;
@@ -128,6 +128,7 @@ namespace Spider.Engine
         public void Clear()
         {
             Moves.Clear();
+            CheckPoint = 0;
             if (NumberOfPiles != Variation.NumberOfPiles)
             {
                 Initialize();
@@ -402,48 +403,32 @@ namespace Spider.Engine
             return true;
         }
 
-#if true
-        public void Move(int from, int fromRow, int to)
-        {
-            Move(new Move(MoveType.Basic, from, fromRow, to));
-        }
-
-        public void Move(int from, int fromRow, int to, int toRow)
-        {
-            Move(new Move(MoveType.Swap, from, fromRow, to, toRow));
-        }
-
-        public bool MoveIsValid(int from, int fromRow, int to)
-        {
-            return IsValid(new Move(from, fromRow, to));
-        }
-#endif
-
         public void Move(Move move)
         {
             if (move.Type == MoveType.Basic)
             {
-                DoMove(move);
+                move = Normalize(move);
+                DoMove(move.From, move.FromRow, move.To);
             }
             else if (move.Type == MoveType.Swap)
             {
-                DoSwap(move);
+                DoSwap(move.From, move.FromRow, move.To, move.ToRow);
             }
+            else
+            {
+                throw new InvalidMoveException("unsupported move type");
+            }
+
+            AddMove(move);
+            OnPileChanged(move.From);
+            OnPileChanged(move.To);
         }
 
-        private void DoMove(Move move)
+        private void DoMove(int from, int fromRow, int to)
         {
-            int from = move.From;
-            int fromRow = move.FromRow;
-            int to = move.To;
-
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
 
-            if (fromRow < 0)
-            {
-                fromRow += fromPile.Count;
-            }
             int fromCount = fromPile.Count - fromRow;
             int toRow = toPile.Count;
 
@@ -452,36 +437,10 @@ namespace Spider.Engine
 
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
-
-            move.FromRow = fromRow;
-            move.ToRow = toRow;
-            Moves.Add(move);
-
-            OnPileChanged(from);
-            OnPileChanged(to);
         }
 
-        public void UndoMove(int from, int fromRow, int to)
+        public void DoSwap(int from, int fromRow, int to, int toRow)
         {
-            Pile fromPile = upPiles[from];
-            Pile toPile = upPiles[to];
-
-            int fromCount = fromPile.Count - fromRow;
-
-            toPile.AddRange(fromPile, fromRow, fromCount);
-            fromPile.RemoveRange(fromRow, fromCount);
-
-            OnPileChanged(from);
-            OnPileChanged(to);
-        }
-
-        public void DoSwap(Move move)
-        {
-            int from = move.From;
-            int fromRow = move.FromRow;
-            int to = move.To;
-            int toRow = move.ToRow;
-
             Pile fromPile = upPiles[from];
             Pile toPile = upPiles[to];
             int fromCount = fromPile.Count - fromRow;
@@ -493,28 +452,6 @@ namespace Spider.Engine
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
             fromPile.AddRange(scratchPile, 0, toCount);
-
-            Moves.Add(move);
-
-            OnPileChanged(from);
-            OnPileChanged(to);
-        }
-
-        public void UndoSwap(int from, int fromRow, int to, int toRow)
-        {
-            Pile fromPile = upPiles[from];
-            Pile toPile = upPiles[to];
-            int fromCount = fromPile.Count - fromRow;
-            int toCount = toPile.Count - toRow;
-            scratchPile.Clear();
-            scratchPile.AddRange(toPile, toRow, toCount);
-            toPile.RemoveRange(toRow, toCount);
-            toPile.AddRange(fromPile, fromRow, fromCount);
-            fromPile.RemoveRange(fromRow, fromCount);
-            fromPile.AddRange(scratchPile, 0, toCount);
-
-            OnPileChanged(from);
-            OnPileChanged(to);
         }
 
         public void PrepareLayout(Pile shuffled)
@@ -533,11 +470,16 @@ namespace Spider.Engine
 
         public void Deal()
         {
+            DoDeal();
+        }
+
+        private void DoDeal()
+        {
             if (stockPile.Count == 0)
             {
                 throw new Exception("no stock left to deal");
             }
-            Moves.Add(new Move(MoveType.Deal));
+            AddMove(new Move(MoveType.Deal));
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 if (stockPile.Count == 0)
@@ -602,6 +544,12 @@ namespace Spider.Engine
 
         private void Discard(int column)
         {
+            DoDiscard(column);
+            AddMove(new Move(MoveType.Discard, column));
+        }
+
+        private void DoDiscard(int column)
+        {
             Pile pile = upPiles[column];
             int row = pile.Count - 13;
             Pile sequence = discardPileStock[discardPiles.Count];
@@ -609,7 +557,6 @@ namespace Spider.Engine
             sequence.AddRange(pile, row, 13);
             pile.RemoveRange(row, 13);
             discardPiles.Add(sequence);
-            Moves.Add(new Move(MoveType.Discard, column));
         }
 
         private void UndoDiscard(int column)
@@ -629,10 +576,15 @@ namespace Spider.Engine
 
         private void TurnOverCard(int column)
         {
+            DoTurnOverCard(column);
+            AddMove(new Move(MoveType.TurnOverCard, column));
+        }
+
+        private void DoTurnOverCard(int column)
+        {
             Pile upPile = upPiles[column];
             Pile downPile = downPiles[column];
             upPile.Push(downPile.Pop());
-            Moves.Add(new Move(MoveType.TurnOverCard, column));
         }
 
         private void UndoTurnOverCard(int column)
@@ -652,33 +604,38 @@ namespace Spider.Engine
             }
         }
 
-        public int CheckPoint
+        private void AddMove(Move move)
         {
-            get
-            {
-                return Moves.Count;
-            }
+            Moves.RemoveRange(CheckPoint, Moves.Count - CheckPoint);
+            Moves.Add(move);
+            CheckPoint++;
         }
 
         public void Revert(int checkPoint)
         {
             while (CheckPoint > checkPoint)
             {
-                Undo();
+                CheckPoint--;
+                Undo(CheckPoint);
+            }
+            while (CheckPoint < checkPoint)
+            {
+                Redo(CheckPoint);
+                CheckPoint++;
             }
         }
 
-        public void Undo()
+        private void Undo(int index)
         {
-            Move move = Moves[Moves.Count - 1];
+            Move move = Moves[index];
             switch (move.Type)
             {
                 case MoveType.Basic:
-                    UndoMove(move.To, move.ToRow, move.From);
+                    DoMove(move.To, move.ToRow, move.From);
                     break;
 
                 case MoveType.Swap:
-                    UndoSwap(move.From, move.FromRow, move.To, move.ToRow);
+                    DoSwap(move.From, move.FromRow, move.To, move.ToRow);
                     break;
 
                 case MoveType.Deal:
@@ -693,7 +650,33 @@ namespace Spider.Engine
                     UndoTurnOverCard(move.From);
                     break;
             }
-            Moves.Pop();
+        }
+
+        private void Redo(int index)
+        {
+            Move move = Moves[index];
+            switch (move.Type)
+            {
+                case MoveType.Basic:
+                    DoMove(move.From, move.FromRow, move.To);
+                    break;
+
+                case MoveType.Swap:
+                    DoSwap(move.From, move.FromRow, move.To, move.ToRow);
+                    break;
+
+                case MoveType.Deal:
+                    DoDeal();
+                    break;
+
+                case MoveType.Discard:
+                    DoDiscard(move.From);
+                    break;
+
+                case MoveType.TurnOverCard:
+                    DoTurnOverCard(move.From);
+                    break;
+            }
         }
 
         public int GetHashKey()

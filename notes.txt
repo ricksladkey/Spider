@@ -1,5 +1,3 @@
-- add support for redo
-- put undo/redo buttons on screen
 - fix second move click on empty space
 - add better indicator of move group than opacity
 - detect win

@@ -88,6 +88,7 @@
         <KeyBinding Modifiers="Control" Key="C" Command="{Binding CopyCommand}"/>
         <KeyBinding Modifiers="Control" Key="V" Command="{Binding PasteCommand}"/>
         <KeyBinding Modifiers="Control" Key="Z" Command="{Binding UndoCommand}"/>
+        <KeyBinding Modifiers="Control" Key="Y" Command="{Binding RedoCommand}"/>
         <KeyBinding Modifiers="Control" Key="D" Command="{Binding DealCommand}"/>
         <KeyBinding Modifiers="Control" Key="M" Command="{Binding MoveCommand}"/>
     </Window.InputBindings>
@@ -101,6 +102,7 @@
                 <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGestureText="Ctrl+C"/>
                 <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGestureText="Ctrl+V"/>
                 <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
+                <MenuItem Header="_Redo" Command="{Binding RedoCommand}" InputGestureText="Ctrl+Y"/>
             </MenuItem>
             <MenuItem Header="_Game">
                 <MenuItem Header="_Deal" Command="{Binding DealCommand}" InputGestureText="Ctrl+D"/>
@@ -130,6 +132,8 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
+            <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding UndoCommand}">Undo</Button>
+            <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding RedoCommand}">Redo</Button>
         </Canvas>
     </DockPanel>
 </Window>
