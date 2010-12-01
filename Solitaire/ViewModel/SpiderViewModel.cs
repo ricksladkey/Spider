@@ -126,7 +126,6 @@ namespace Spider.Solitaire.ViewModel
         private void Undo()
         {
             current--;
-            Console.WriteLine("Undo: checkPoints[{0}] = {1}", current, checkPoints[current]);
             Tableau.Revert(checkPoints[current]);
             Refresh();
         }
@@ -139,7 +138,6 @@ namespace Spider.Solitaire.ViewModel
         private void Redo()
         {
             current++;
-            Console.WriteLine("Redo: checkPoints[{0}] = {1}", current, checkPoints[current]);
             Tableau.Revert(checkPoints[current]);
             Refresh();
         }

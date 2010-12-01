@@ -30,10 +30,10 @@ namespace Spider.Engine
 
         public Variation Variation { get; set; }
         public int NumberOfPiles { get; private set; }
-        public int NumberOfSpaces { get; private set; }
         public MoveList Moves { get; private set; }
         public int CheckPoint { get; private set; }
 
+        private int numberOfSpaces;
         private Pile[] downPiles;
         private Pile[] upPiles;
         private bool[] spaceFlags;
@@ -65,6 +65,28 @@ namespace Spider.Engine
                 upPiles[row] = new Pile();
             }
             scratchPile = new Pile();
+        }
+
+        public int NumberOfSpaces
+        {
+            get
+            {
+                Debug.Assert(numberOfSpaces == SlowNumberOfSpaces);
+                return numberOfSpaces;
+            }
+        }
+
+        private int SlowNumberOfSpaces
+        {
+            get
+            {
+                int count = 0;
+                for (int column = 0; column < NumberOfPiles; column++)
+                {
+                    count += upPiles[column].Count == 0 ? 1 : 0;
+                }
+                return count;
+            }
         }
 
         public Pile this[int index]
@@ -119,6 +141,23 @@ namespace Spider.Engine
                         {
                             spaces.Add(column);
                         }
+                    }
+                }
+                Debug.Assert((spaces as System.Collections.IStructuralEquatable).Equals(SlowSpaces, EqualityComparer<int>.Default));
+                return spaces;
+            }
+        }
+
+        private IList<int> SlowSpaces
+        {
+            get
+            {
+                List<int> spaces = new List<int>();
+                for (int column = 0; column < NumberOfPiles; column++)
+                {
+                    if (upPiles[column].Count == 0)
+                    {
+                        spaces.Add(column);
                     }
                 }
                 return spaces;
@@ -238,7 +277,8 @@ namespace Spider.Engine
                 spaceFlags[column] = isEmpty;
                 currentNumberOfSpaces += isEmpty ? 1 : 0;
             }
-            NumberOfSpaces = currentNumberOfSpaces;
+            numberOfSpaces = currentNumberOfSpaces;
+            spaces.Clear();
         }
 
         public void Adjust()
@@ -563,7 +603,6 @@ namespace Spider.Engine
         {
             Pile discardPile = discardPiles.Pop();
             upPiles[column].AddRange(discardPile);
-            CheckSpace(column);
         }
 
         private void CheckTurnOverCard(int column)
@@ -590,7 +629,6 @@ namespace Spider.Engine
         private void UndoTurnOverCard(int column)
         {
             downPiles[column].Push(upPiles[column].Pop());
-            CheckSpace(column);
         }
 
         private void CheckSpace(int column)
@@ -598,7 +636,7 @@ namespace Spider.Engine
             bool isSpace = upPiles[column].Count == 0;
             if (isSpace != spaceFlags[column])
             {
-                NumberOfSpaces += (isSpace ? 1 : 0) - (spaceFlags[column] ? 1 : 0);
+                numberOfSpaces += (isSpace ? 1 : 0) - (spaceFlags[column] ? 1 : 0);
                 spaceFlags[column] = isSpace;
                 spaces.Clear();
             }
@@ -632,22 +670,29 @@ namespace Spider.Engine
             {
                 case MoveType.Basic:
                     DoMove(move.To, move.ToRow, move.From);
+                    CheckSpace(move.From);
+                    CheckSpace(move.To);
                     break;
 
                 case MoveType.Swap:
                     DoSwap(move.From, move.FromRow, move.To, move.ToRow);
+                    CheckSpace(move.From);
+                    CheckSpace(move.To);
                     break;
 
                 case MoveType.Deal:
                     UndoDeal();
+                    Refresh();
                     break;
 
                 case MoveType.Discard:
                     UndoDiscard(move.From);
+                    CheckSpace(move.From);
                     break;
 
                 case MoveType.TurnOverCard:
                     UndoTurnOverCard(move.From);
+                    CheckSpace(move.From);
                     break;
             }
         }
@@ -659,22 +704,29 @@ namespace Spider.Engine
             {
                 case MoveType.Basic:
                     DoMove(move.From, move.FromRow, move.To);
+                    CheckSpace(move.From);
+                    CheckSpace(move.To);
                     break;
 
                 case MoveType.Swap:
                     DoSwap(move.From, move.FromRow, move.To, move.ToRow);
+                    CheckSpace(move.From);
+                    CheckSpace(move.To);
                     break;
 
                 case MoveType.Deal:
                     DoDeal();
+                    Refresh();
                     break;
 
                 case MoveType.Discard:
                     DoDiscard(move.From);
+                    CheckSpace(move.From);
                     break;
 
                 case MoveType.TurnOverCard:
                     DoTurnOverCard(move.From);
+                    CheckSpace(move.From);
                     break;
             }
         }

@@ -1,5 +1,7 @@
+- animate moves
+- switch to using border instead of rectangle
 - fix second move click on empty space
-- add better indicator of move group than opacity
+- add better indicator of move pile than opacity
 - detect win
 - add mouse-over visual state for stock
 - add double-click to move pile to empty space
