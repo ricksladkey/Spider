@@ -1,11 +1,14 @@
-- animate moves
-- switch to using border instead of rectangle
-- fix second move click on empty space
-- add better indicator of move pile than opacity
-- detect win
 - add mouse-over visual state for stock
 - add double-click to move pile to empty space
+- fix second move click on empty space
+- support swap by selecting from card and to card
+- stretch/compress card label to a fixed width
+- animate moves
+- switch to using border instead of rectangle
+- add better indicator of move pile than opacity
+- detect win
 - idea for card flipping: http://www.codeproject.com/KB/WPF/ContentControl3D.aspx
+- card clip art: http://www.openclipart.org/tags/cards
 
 - score interior search nodes as the best descendant score and take best path until a card is turned over
 - find out why using non-viable moves while searching leads to infinite loops

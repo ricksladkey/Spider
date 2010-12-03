@@ -445,6 +445,8 @@ namespace Spider.Engine
 
         public void Move(Move move)
         {
+            Debug.Assert(IsValid(move));
+
             if (move.Type == MoveType.Basic)
             {
                 move = Normalize(move);
@@ -471,9 +473,6 @@ namespace Spider.Engine
 
             int fromCount = fromPile.Count - fromRow;
             int toRow = toPile.Count;
-
-            Debug.Assert(fromRow >= 0 && fromRow < fromPile.Count);
-            Debug.Assert(toPile.Count == 0 || fromPile[fromRow].IsSourceFor(toPile[toPile.Count - 1]));
 
             toPile.AddRange(fromPile, fromRow, fromCount);
             fromPile.RemoveRange(fromRow, fromCount);
@@ -511,6 +510,7 @@ namespace Spider.Engine
         public void Deal()
         {
             DoDeal();
+            AddMove(new Move(MoveType.Deal));
         }
 
         private void DoDeal()
@@ -519,7 +519,6 @@ namespace Spider.Engine
             {
                 throw new Exception("no stock left to deal");
             }
-            AddMove(new Move(MoveType.Deal));
             for (int column = 0; column < NumberOfPiles; column++)
             {
                 if (stockPile.Count == 0)
