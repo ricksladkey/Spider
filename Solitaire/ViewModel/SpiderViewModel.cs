@@ -23,6 +23,16 @@ namespace Spider.Solitaire.ViewModel
 
         public SpiderViewModel()
         {
+            Variations = new Variation[]
+            {
+                Variation.Spider1,
+                Variation.Spider2,
+                Variation.Spider4,
+                Variation.Spiderette1,
+                Variation.Spiderette2,
+                Variation.Spiderette4,
+            }.Select(variation => new VariationViewModel(variation)).ToArray();
+
             Variation = Variation.Spider2;
             AlgorithmType = AlgorithmType.Study;
 
@@ -37,6 +47,7 @@ namespace Spider.Solitaire.ViewModel
             DealCommand = new RelayCommand(Deal, CanDeal);
             MoveCommand = new RelayCommand(Move, CanMove);
             SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
+            SetVariationCommand = new RelayCommand<VariationViewModel>(SetVariation);
 
             DiscardPiles = new PileViewModel();
             Piles = new ObservableCollection<PileViewModel>();
@@ -63,6 +74,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
         public ICommand SelectCommand { get; private set; }
+        public ICommand SetVariationCommand { get; private set; }
 
         public Game Game { get; private set; }
         public PileViewModel DiscardPiles { get; private set; }
@@ -74,8 +86,10 @@ namespace Spider.Solitaire.ViewModel
 
         public Tableau Tableau { get { return Game.Tableau; } }
 
-        private Variation Variation { get; set; }
-        private AlgorithmType AlgorithmType { get; set; }
+        public Variation Variation { get; private set; }
+        public AlgorithmType AlgorithmType { get; private set; }
+
+        public IEnumerable<VariationViewModel> Variations { get; private set; }
 
         /// <summary>
         /// Raised when this workspace should be removed from the UI.
@@ -221,6 +235,13 @@ namespace Spider.Solitaire.ViewModel
             }
 
             ResetMoveAndRefresh();
+        }
+
+        private void SetVariation(VariationViewModel variation)
+        {
+            Variation = variation.Variation;
+            Game = new Game(Variation, AlgorithmType);
+            ResetUndoAndRefresh();
         }
 
         private void AddCheckPoint()

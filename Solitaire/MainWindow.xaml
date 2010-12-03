@@ -104,6 +104,15 @@
                 <MenuItem Header="_Undo" Command="{Binding UndoCommand}" InputGestureText="Ctrl+Z"/>
                 <MenuItem Header="_Redo" Command="{Binding RedoCommand}" InputGestureText="Ctrl+Y"/>
             </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="_Variation" ItemsSource="{Binding Variations}">
+                    <MenuItem.ItemTemplate>
+                        <DataTemplate>
+                            <MenuItem Header="{Binding Name}" IsChecked="{Binding IsChecked}" Command="{Binding ElementName=window, Path=DataContext.SetVariationCommand}" CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                    </MenuItem.ItemTemplate>
+                </MenuItem>
+            </MenuItem>
             <MenuItem Header="_Game">
                 <MenuItem Header="_Deal" Command="{Binding DealCommand}" InputGestureText="Ctrl+D"/>
                 <MenuItem Header="_Move" Command="{Binding MoveCommand}" InputGestureText="Ctrl+M"/>
