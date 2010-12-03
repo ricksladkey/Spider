@@ -320,7 +320,7 @@ namespace Spider.GamePlay
                     {
                         // Try using holding piles.
                         suits -= FindHolding(WorkingTableau, HoldingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
-                        if (suits > maxExtraSuits)
+                        if (suits > maxExtraSuitsOnePile)
                         {
                             // Still not enough spaces.
                             return;

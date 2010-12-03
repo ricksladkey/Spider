@@ -12,6 +12,12 @@ namespace Spider.Solitaire.ViewModel
 {
     public class SpiderViewModel : ViewModelBase
     {
+        private readonly string sampleData = @"
+            @2|AhAh|Ah9hJsQh3s--3h6s2s4s--6sTs6h8s|3s2sAs3s2hKs-KsQsJsTs
+            9s8s7s6s5h-Jh-4h8h7h-KhQhJhKsQsJsTs9s8h7s6h5s4s3s2sAsTh9s8s7
+            sAh--2h4h-Kh7h-2sAs-KsQsJsTs9s8s7s6s5s|3h5hQs5s9h4s5sAsTh4s@
+        ";
+
         private int current;
         private List<int> checkPoints;
 
@@ -39,13 +45,7 @@ namespace Spider.Solitaire.ViewModel
 
             if (IsInDesignMode)
             {
-                string data = @"
-                @2||KhTh3s5h9s-Ah-5hKsAs7sKs-Jh-7sKs8s8h-9hJh--6s3hQh-7s9s8h
-                Jh-9s3hJh4s|7h6h5h4h3h2hAh-2s-7h6s5s4s-KhQsJsTs9s-2sAs-Th-Js
-                Ts-2h-Kh-2s|9hTsAs9h3sQsJs5sTh4s8s3sQh9h8h2s5hQsAhTh3s4s5s2h
-                8sAh7h6h6s4h4h8hQh5sQsTsAs7sKh2h6hKs8s4hQhJs6s3h6h7h@
-            ";
-                Game = new Game(data, AlgorithmType);
+                Game = new Game(sampleData, AlgorithmType);
             }
             else
             {
@@ -114,7 +114,14 @@ namespace Spider.Solitaire.ViewModel
         private void Paste()
         {
             var data = Clipboard.GetData(DataFormats.Text) as string;
-            Game = new Game(data, AlgorithmType);
+            try
+            {
+                Game = new Game(data, AlgorithmType);
+            }
+            catch (Exception e)
+            {
+                Utils.WriteLine("Exception: {0}", e.Message);
+            }
             ResetUndoAndRefresh();
         }
 

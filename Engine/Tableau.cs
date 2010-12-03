@@ -152,7 +152,7 @@ namespace Spider.Engine
         {
             get
             {
-                List<int> spaces = new List<int>();
+                var spaces = new FastList<int>();
                 for (int column = 0; column < NumberOfPiles; column++)
                 {
                     if (upPiles[column].Count == 0)

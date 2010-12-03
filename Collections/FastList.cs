@@ -8,7 +8,7 @@ namespace Spider.Collections
 {
     [DebuggerDisplay("Count = {count}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]
-    public class FastList<T> : IList<T>, IStack<T>, IReadOnlyList<T>
+    public class FastList<T> : IList<T>, IStack<T>, IReadOnlyList<T>, System.Collections.IStructuralEquatable
     {
         protected int capacity;
         protected int count;
@@ -197,7 +197,6 @@ namespace Spider.Collections
 
         public void CopyTo(T[] array, int index)
         {
-            //this.array.CopyTo(array, index);
             for (int i = 0; i < count; i++)
             {
                 array[index + i] = this.array[i];
@@ -308,5 +307,40 @@ namespace Spider.Collections
             capacity = newCapacity;
             array = newArray;
         }
+
+        #region IStructuralEquatable Members
+
+        bool System.Collections.IStructuralEquatable.Equals(object other, System.Collections.IEqualityComparer comparer)
+        {
+            if (other == null || !(other is FastList<T>))
+            {
+                return false;
+            }
+            var otherList = other as FastList<T>;
+            if (count != otherList.count)
+            {
+                return false;
+            }
+            for (int i = 0; i < count; i++)
+            {
+                if (!comparer.Equals(array[i], otherList.array[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        int System.Collections.IStructuralEquatable.GetHashCode(System.Collections.IEqualityComparer comparer)
+        {
+            int hashCode = 0;
+            for (int i = 0; i < count; i++)
+            {
+                hashCode ^= comparer.GetHashCode(array[i]);
+            }
+            return hashCode;
+        }
+
+        #endregion
     }
 }

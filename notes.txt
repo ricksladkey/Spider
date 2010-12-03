@@ -9,6 +9,7 @@
 - detect win
 - idea for card flipping: http://www.codeproject.com/KB/WPF/ContentControl3D.aspx
 - card clip art: http://www.openclipart.org/tags/cards
+- card clip art: http://commons.wikimedia.org/wiki/Category:Playing_cards
 
 - score interior search nodes as the best descendant score and take best path until a card is turned over
 - find out why using non-viable moves while searching leads to infinite loops
