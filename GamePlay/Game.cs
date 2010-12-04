@@ -19,7 +19,6 @@ namespace Spider.GamePlay
 
         public Game()
         {
-            variation = Variation.Spider4;
             Seed = -1;
             TraceStartFinish = false;
             TraceDeals = false;
@@ -43,6 +42,9 @@ namespace Spider.GamePlay
 
             TableauInputOutput = new TableauInputOutput(Tableau);
             MoveProcessor = new MoveProcessor(this);
+
+            Variation = Variation.Spider4;
+            AlgorithmType = AlgorithmType.Study;
         }
 
         public Game(Variation variation)
@@ -243,21 +245,21 @@ namespace Spider.GamePlay
                 Start();
                 if (TraceStartFinish)
                 {
-                    PrintGame();
+                    Print();
                 }
                 while (true)
                 {
                     if (Interactive)
                     {
                         Console.Clear();
-                        PrintGames();
+                        PrintBeforeAndAfter();
                         Console.ReadKey();
                     }
                     if (Tableau.Moves.Count >= MaximumMoves)
                     {
                         if (TraceStartFinish)
                         {
-                            PrintGame();
+                            Print();
                             Utils.WriteLine("maximum moves exceeded");
                         }
                         throw new Exception("maximum moves exceeded");
@@ -270,7 +272,7 @@ namespace Spider.GamePlay
                             Algorithm.PrepareToDeal();
                             if (TraceDeals)
                             {
-                                PrintGame();
+                                Print();
                                 Utils.WriteLine("dealing");
                             }
                             Tableau.Deal();
@@ -279,7 +281,7 @@ namespace Spider.GamePlay
                         }
                         if (TraceStartFinish)
                         {
-                            PrintGame();
+                            Print();
                             Utils.WriteLine("lost - no moves");
                         }
                         break;
@@ -288,7 +290,7 @@ namespace Spider.GamePlay
                     {
                         if (TraceStartFinish)
                         {
-                            PrintGame();
+                            Print();
                             Utils.WriteLine("won");
                         }
                         break;
@@ -464,12 +466,12 @@ namespace Spider.GamePlay
             MoveProcessor.Process(move);
         }
 
-        public void PrintGame()
+        public void Print()
         {
-            PrintGame(this);
+            Print(this);
         }
 
-        public static void PrintGame(Game game)
+        public static void Print(Game game)
         {
             if (game == null)
             {
@@ -478,14 +480,14 @@ namespace Spider.GamePlay
             Utils.ColorizeToConsole(game.ToString());
         }
 
-        public void PrintGames()
+        public void PrintBeforeAndAfter()
         {
             if (LastGame == null)
             {
-                PrintGame();
+                Print();
                 return;
             }
-            PrintGamesSideBySide(LastGame, Tableau);
+            PrintSideBySide(LastGame, Tableau);
         }
 
         public void PrintMoves()
@@ -568,14 +570,14 @@ namespace Spider.GamePlay
             return TableauInputOutput.ToPrettyString();
         }
 
-        public static void PrintGamesSideBySide(Game game1, Game game2)
+        public static void PrintSideBySide(Game game1, Game game2)
         {
-            TableauInputOutput.PrintGamesSideBySide(game1.Tableau, game2.Tableau);
+            Utils.PrintSideBySide(game1.Tableau, game2.Tableau);
         }
 
-        public static void PrintGamesSideBySide(Tableau game1, Tableau game2)
+        public static void PrintSideBySide(Tableau game1, Tableau game2)
         {
-            TableauInputOutput.PrintGamesSideBySide(game1, game2);
+            Utils.PrintSideBySide(game1, game2);
         }
 
         public override string ToString()

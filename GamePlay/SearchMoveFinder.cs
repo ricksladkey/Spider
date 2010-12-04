@@ -111,7 +111,7 @@ namespace Spider.GamePlay
 
             if (TraceSearch)
             {
-                PrintGame();
+                Print();
                 Utils.WriteLine("search: score = {0}", Score);
                 for (int i = 0; i < Moves.Count; i++)
                 {

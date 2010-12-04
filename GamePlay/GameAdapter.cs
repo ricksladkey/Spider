@@ -85,19 +85,19 @@ namespace Spider.GamePlay
             return game.FindHolding(map, holdingStack, inclusive, fromPile, from, fromStart, fromEnd, to, maxExtraSuits);
         }
 
-        public void PrintGame()
+        public void Print()
         {
-            game.PrintGame();
+            game.Print();
         }
 
-        public static void PrintGame(Game other)
+        public static void Print(Game other)
         {
-            Game.PrintGame(other);
+            Game.Print(other);
         }
 
-        public void PrintGames()
+        public void PrintBeforeAndAfter()
         {
-            game.PrintGames();
+            game.PrintBeforeAndAfter();
         }
 
         public void PrintMoves()

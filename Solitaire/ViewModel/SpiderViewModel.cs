@@ -226,7 +226,7 @@ namespace Spider.Solitaire.ViewModel
             }
 
             Move move = new Move(FromCard.Column, FromCard.Row, ToCard.Column);
-            if (Tableau.MoveIsValid(move))
+            if (Tableau.IsValid(move))
             {
                 Tableau.Move(move);
                 AddCheckPoint();

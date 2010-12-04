@@ -29,8 +29,8 @@ namespace Spider.GamePlay
         int AddHolding(HoldingSet holdingSet1, HoldingSet holdingSet2);
         int AddSupplementary(MoveList supplementaryMoves);
         int FindHolding(IGetCard map, HoldingStack holdingStack, bool inclusive, Pile fromPile, int from, int fromStart, int fromEnd, int to, int maxExtraSuits);
-        void PrintGame();
-        void PrintGames();
+        void Print();
+        void PrintBeforeAndAfter();
         void PrintMoves();
         void PrintMoves(MoveList moves);
         void PrintCandidates();

@@ -292,13 +292,41 @@ namespace Spider.Engine
 
         public Move Normalize(Move move)
         {
-            if (move.FromRow < 0)
+            if (move.Type == MoveType.Basic)
             {
-                move.FromRow += upPiles[move.From].Count;
+                if (move.FromRow < 0)
+                {
+                    move.FromRow += upPiles[move.From].Count;
+                }
+                if (move.ToRow == -1)
+                {
+                    move.ToRow = upPiles[move.To].Count;
+                }
             }
-            if (move.ToRow == -1)
+            else if (move.Type == MoveType.Swap)
             {
-                move.ToRow = upPiles[move.To].Count;
+                if (move.FromRow < 0)
+                {
+                    move.FromRow += upPiles[move.From].Count;
+                }
+                if (move.ToRow < 0)
+                {
+                    move.ToRow += upPiles[move.To].Count;
+                }
+                if (move.FromRow == upPiles[move.From].Count)
+                {
+                    move.Type = MoveType.Basic;
+                    int from = move.From;
+                    int fromRow = move.FromRow;
+                    move.From = move.To;
+                    move.FromRow = move.ToRow;
+                    move.To = from;
+                    move.ToRow = fromRow;
+                }
+                if (move.ToRow == upPiles[move.To].Count)
+                {
+                    move.Type = MoveType.Basic;
+                }
             }
             return move;
         }
@@ -316,7 +344,7 @@ namespace Spider.Engine
             return false;
         }
 
-        public bool MoveIsValid(Move move)
+        private bool MoveIsValid(Move move)
         {
             int from = move.From;
             int fromRow = move.FromRow;
@@ -371,7 +399,7 @@ namespace Spider.Engine
             return true;
         }
 
-        public bool SwapIsValid(Move move)
+        private bool SwapIsValid(Move move)
         {
             int from = move.From;
             int fromRow = move.FromRow;
@@ -416,12 +444,10 @@ namespace Spider.Engine
             }
             int numberOfSpaces = NumberOfSpaces;
             int maxExtraSuits = ExtraSuits(numberOfSpaces);
-#if false
             if (fromSuits + toSuits - 1 > maxExtraSuits)
             {
                 return false;
             }
-#endif
             if (toRow != 0 && !fromPile[fromRow].IsSourceFor(toPile[toRow - 1]))
             {
                 return false;
@@ -445,11 +471,15 @@ namespace Spider.Engine
 
         public void Move(Move move)
         {
-            Debug.Assert(IsValid(move));
+            Debug.Assert(IsValid(Normalize(move)));
+            UncheckedMove(move);
+        }
 
+        public void UncheckedMove(Move move)
+        {
+            move = Normalize(move);
             if (move.Type == MoveType.Basic)
             {
-                move = Normalize(move);
                 DoMove(move.From, move.FromRow, move.To);
             }
             else if (move.Type == MoveType.Swap)
@@ -516,6 +546,10 @@ namespace Spider.Engine
             int columns = Math.Min(NumberOfPiles, stockPile.Count);
             DoDeal(columns);
             AddMove(new Move(MoveType.Deal, columns));
+            for (int column = 0; column < columns; column++)
+            {
+                OnPileChanged(column);
+            }
         }
 
         private void DoDeal(int columns)
@@ -526,7 +560,7 @@ namespace Spider.Engine
                 {
                     break;
                 }
-                Push(column, stockPile.Pop());
+                upPiles[column].Push(stockPile.Pop());
             }
         }
 
@@ -534,21 +568,8 @@ namespace Spider.Engine
         {
             for (int column = columns - 1; column >= 0; column--)
             {
-                stockPile.Push(Pop(column));
+                stockPile.Push(upPiles[column].Pop());
             }
-        }
-
-        private void Push(int column, Card card)
-        {
-            upPiles[column].Push(card);
-            OnPileChanged(column);
-        }
-
-        private Card Pop(int column)
-        {
-            Card card = upPiles[column].Pop();
-            OnPileChanged(column);
-            return card;
         }
 
         private void OnPileChanged(int column)

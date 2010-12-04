@@ -122,7 +122,7 @@ namespace Spider.GamePlay
 
             if (Diagnostics)
             {
-                PrintGame();
+                Print();
                 PrintViableCandidates();
                 Utils.WriteLine("Moves.Count = {0}", Tableau.Moves.Count);
             }

@@ -52,18 +52,12 @@ namespace Spider.GamePlay
 
         private void Check(int from, int fromRow, int extraSuits, int maxExtraSuits)
         {
-#if false
-            if (extraSuits + 1 > maxExtraSuits + HoldingStack.Suits)
-            {
-                // Need at least one space or a holding pile to swap.
-                return;
-            }
-#endif
             if (fromRow == 0 && FindTableau.GetDownCount(from) != 0)
             {
                 // Would turn over a card.
                 return;
             }
+
             Pile fromPile = FindTableau[from];
             Card fromCard = fromPile[fromRow];
             Card fromCardParent = Card.Empty;

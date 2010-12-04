@@ -320,7 +320,7 @@ namespace Spider.GamePlay
                     {
                         // Try using holding piles.
                         suits -= FindHolding(WorkingTableau, HoldingStack, false, fromPile, from, rootRow, rootRow + runLength, to, maxExtraSuits);
-                        if (suits > maxExtraSuitsOnePile)
+                        if (suits > maxExtraSuits)
                         {
                             // Still not enough spaces.
                             return;
@@ -554,7 +554,7 @@ namespace Spider.GamePlay
             }
 
             // Add the primary move.
-            WorkingTableau.Move(new Move(move.From, move.FromRow, move.To));
+            WorkingTableau.UncheckedMove(new Move(move.From, move.FromRow, move.To));
             SupplementaryMoves.Add(move);
 
             if (undoHolding)

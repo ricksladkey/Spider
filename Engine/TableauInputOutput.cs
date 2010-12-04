@@ -311,24 +311,5 @@ namespace Spider.Engine
             }
             return s + Environment.NewLine;
         }
-
-        public static void PrintGamesSideBySide(Tableau tableau1, Tableau tableau2)
-        {
-            string[] v1 = ToPrettyString(tableau1).Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            string[] v2 = ToPrettyString(tableau2).Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
-            int max = 0;
-            for (int i = 0; i < v1.Length; i++)
-            {
-                max = Math.Max(max, v1[i].Length);
-            }
-            string text = "";
-            for (int i = 0; i < v1.Length || i < v2.Length; i++)
-            {
-                string s1 = i < v1.Length ? v1[i] : "";
-                string s2 = i < v2.Length ? v2[i] : "";
-                text += s1.PadRight(max + 1) + s2 + Environment.NewLine;
-            }
-            Utils.ColorizeToConsole(text);
-        }
     }
 }
