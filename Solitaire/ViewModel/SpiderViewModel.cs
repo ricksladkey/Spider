@@ -18,9 +18,9 @@ namespace Spider.Solitaire.ViewModel
             sAh--2h4h-Kh7h-2sAs-KsQsJsTs9s8s7s6s5s|3h5hQs5s9h4s5sAsTh4s@
         ";
 
+        private Variation[] supportedVariations;
         private int current;
         private List<int> checkPoints;
-        private Variation[] supportedVariations;
 
         public SpiderViewModel()
         {
@@ -228,6 +228,11 @@ namespace Spider.Solitaire.ViewModel
             ResetMoveAndRefresh();
         }
 
+        private bool CanSelect(CardViewModel card)
+        {
+            return card != null && card.IsSelectable;
+        }
+
         private void SetVariation(VariationViewModel variation)
         {
             Variation = variation.Variation;
@@ -256,11 +261,6 @@ namespace Spider.Solitaire.ViewModel
             Tableau.FromCard = null;
             Tableau.ToCard = null;
             Refresh();
-        }
-
-        private bool CanSelect(CardViewModel card)
-        {
-            return card != null && card.IsSelectable;
         }
 
         private void Refresh()

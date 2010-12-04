@@ -106,11 +106,14 @@
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Variation" ItemsSource="{Binding Variations}">
-                    <MenuItem.ItemTemplate>
-                        <DataTemplate>
-                            <MenuItem Header="{Binding Name}" IsChecked="{Binding IsChecked}" Command="{Binding ElementName=window, Path=DataContext.SetVariationCommand}" CommandParameter="{Binding}"/>
-                        </DataTemplate>
-                    </MenuItem.ItemTemplate>
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding Name}"/>
+                            <Setter Property="IsChecked" Value="{Binding IsChecked}"/>
+                            <Setter Property="Command" Value="{Binding ElementName=window, Path=DataContext.SetVariationCommand}"/>
+                            <Setter Property="CommandParameter"  Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Game">
