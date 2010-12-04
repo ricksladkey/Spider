@@ -1,3 +1,4 @@
+- support holding piles for interactive moves
 - add mouse-over visual state for stock
 - add double-click to move pile to empty space
 - fix second move click on empty space

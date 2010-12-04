@@ -152,15 +152,15 @@
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
             <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False" Opacity="0.5"/>
-            <Button Command="{Binding DealCommand}" Canvas.Left="450" Canvas.Top="400">
+            <Button Command="{Binding ElementName=window, Path=DataContext.DealCommand}" Canvas.Left="450" Canvas.Top="400">
                 <Button.Template>
                     <ControlTemplate>
                         <ContentControl Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding UndoCommand}">Undo</Button>
-            <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding RedoCommand}">Redo</Button>
+            <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding ElementName=window, Path=DataContext.UndoCommand}">Undo</Button>
+            <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding ElementName=window, Path=DataContext.RedoCommand}">Redo</Button>
         </Canvas>
     </DockPanel>
 </Window>

@@ -82,10 +82,10 @@ namespace Spider.Tests
         [TestMethod()]
         public void SetVariationCommandTest()
         {
-            Variation originalVariation = Variation.Spider2;
-            Variation newVariation = Variation.Spiderette4;
+            var originalVariation = Variation.Spider2;
+            var newVariation = Variation.Spiderette4;
 
-            SpiderViewModel target = new SpiderViewModel();
+            var target = new SpiderViewModel();
 
             Assert.AreEqual(originalVariation, target.Variation);
             foreach (var variation in target.Variations)
@@ -110,10 +110,10 @@ namespace Spider.Tests
         [TestMethod()]
         public void SetAlgorithmCommandTest()
         {
-            AlgorithmType originalAlgorithm = AlgorithmType.Study;
-            AlgorithmType newAlgorithm = AlgorithmType.Search;
+            var originalAlgorithm = AlgorithmType.Study;
+            var newAlgorithm = AlgorithmType.Search;
 
-            SpiderViewModel target = new SpiderViewModel();
+            var target = new SpiderViewModel();
 
             Assert.AreEqual(originalAlgorithm, target.AlgorithmType);
             foreach (var variation in target.Algorithms)
