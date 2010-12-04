@@ -118,7 +118,7 @@
                 <MenuItem Header="_Move" Command="{Binding MoveCommand}" InputGestureText="Ctrl+M"/>
             </MenuItem>
         </Menu>
-        <Canvas Background="{StaticResource GamePlayBackground}" Name="mainCanvas" ClipToBounds="True">
+        <Canvas Background="{StaticResource GamePlayBackground}" Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
             <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding DiscardPiles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

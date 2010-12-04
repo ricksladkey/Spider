@@ -24,7 +24,7 @@
 - merge the multiple different places that space algorithms are implemented
 
 - undo holding piles if it increases the order
-- try to reuse TryToAddOneRunMove for CheckOffload
+- try to reuse TryAddOneRunMove for CheckOffload
 
 - promote one run delta to a full-fledged scoring feature
 - consider length of to pile down count when scoring

@@ -72,7 +72,7 @@ namespace Spider.GamePlay
             // Lastly move from the holding piles, if we still can.
             while (HoldingMoveStack.Count > 0)
             {
-                TryToMakeMoveUsingSpaces(HoldingMoveStack.Pop());
+                TryMakeMoveUsingSpaces(HoldingMoveStack.Pop());
             }
         }
 
@@ -256,11 +256,11 @@ namespace Spider.GamePlay
                 }
                 else if (move.Flags.UndoHolding())
                 {
-                    TryToMakeMoveUsingSpaces(move);
+                    TryMakeMoveUsingSpaces(move);
                 }
                 else
                 {
-                    if (!TryToMakeMoveUsingSpaces(move))
+                    if (!TryMakeMoveUsingSpaces(move))
                     {
                         // Things got messed up due to a discard.  There might
                         // be another pile with the same target.
@@ -284,7 +284,7 @@ namespace Spider.GamePlay
                                 {
                                     continue;
                                 }
-                                if (TryToMakeMoveUsingSpaces(new Move(move.From, move.FromRow, to)))
+                                if (TryMakeMoveUsingSpaces(new Move(move.From, move.FromRow, to)))
                                 {
                                     foundAlternative = true;
                                 }
@@ -306,7 +306,7 @@ namespace Spider.GamePlay
             }
         }
 
-        private bool TryToMakeMoveUsingSpaces(Move move)
+        private bool TryMakeMoveUsingSpaces(Move move)
         {
             if (Diagnostics)
             {

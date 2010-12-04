@@ -459,7 +459,7 @@ namespace Spider.Engine
             return true;
         }
 
-        public bool TryToMove(Move move)
+        public bool TryMove(Move move)
         {
             if (!IsValid(move))
             {

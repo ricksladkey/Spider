@@ -476,13 +476,13 @@ namespace Spider.GamePlay
         private bool CheckOneRun(int to, int oneRun)
         {
             // Check whether the one run pile matches from pile.
-            if (TryToAddOneRunMove(oneRun, from))
+            if (TryAddOneRunMove(oneRun, from))
             {
                 return true;
             }
 
             // Check whether the one run pile matches to pile.
-            if (TryToAddOneRunMove(oneRun, to))
+            if (TryAddOneRunMove(oneRun, to))
             {
                 return true;
             }
@@ -491,7 +491,7 @@ namespace Spider.GamePlay
             return false;
         }
 
-        private bool TryToAddOneRunMove(int oneRun, int target)
+        private bool TryAddOneRunMove(int oneRun, int target)
         {
             Pile oneRunPile = WorkingTableau[oneRun];
             if (oneRunPile.Count == 0)
@@ -564,7 +564,7 @@ namespace Spider.GamePlay
                 {
                     HoldingInfo holding = holdingSet[i];
                     Move holdingMove = new Move(MoveType.Basic, MoveFlags.UndoHolding, holding.To, -holding.Length, move.To);
-                    if (!WorkingTableau.TryToMove(holdingMove))
+                    if (!WorkingTableau.TryMove(holdingMove))
                     {
                         break;
                     }
