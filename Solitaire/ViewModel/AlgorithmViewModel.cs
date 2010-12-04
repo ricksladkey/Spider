@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spider.Engine;
+using Spider.GamePlay;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class VariationViewModel : CheckableViewModel<Variation>
+    public class AlgorithmViewModel : CheckableViewModel<AlgorithmType>
     {
-        public VariationViewModel(Variation variation, bool isChecked)
-            : base(variation)
+        public AlgorithmViewModel(AlgorithmType algorithmType, bool isChecked)
+            : base(algorithmType)
         {
             Name = Value.ToString();
             IsChecked = isChecked;

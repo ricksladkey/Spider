@@ -19,6 +19,7 @@ namespace Spider.Solitaire.ViewModel
         ";
 
         private Variation[] supportedVariations;
+        private AlgorithmType[] supportedAlgorithms;
         private int current;
         private List<int> checkPoints;
 
@@ -33,10 +34,17 @@ namespace Spider.Solitaire.ViewModel
                 Variation.Spiderette2,
                 Variation.Spiderette4,
             };
+            supportedAlgorithms = new AlgorithmType[]
+            {
+                AlgorithmType.Study,
+                AlgorithmType.Search,
+            };
             
             Variation = Variation.Spider2;
-            AlgorithmType = AlgorithmType.Study;
             Variations = new ObservableCollection<VariationViewModel>();
+
+            AlgorithmType = AlgorithmType.Study;
+            Algorithms = new ObservableCollection<AlgorithmViewModel>();
 
             checkPoints = new List<int>();
 
@@ -50,6 +58,7 @@ namespace Spider.Solitaire.ViewModel
             MoveCommand = new RelayCommand(Move, CanMove);
             SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
             SetVariationCommand = new RelayCommand<VariationViewModel>(SetVariation);
+            SetAlgorithmCommand = new RelayCommand<AlgorithmViewModel>(SetAlgorithm);
 
             if (IsInDesignMode)
             {
@@ -63,6 +72,7 @@ namespace Spider.Solitaire.ViewModel
             Tableau = new TableauViewModel(this);
 
             RefreshVariations();
+            RefreshAlgorithms();
             ResetUndoAndRefresh();
         }
 
@@ -76,6 +86,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand MoveCommand { get; private set; }
         public ICommand SelectCommand { get; private set; }
         public ICommand SetVariationCommand { get; private set; }
+        public ICommand SetAlgorithmCommand { get; private set; }
 
         public Game Game { get; private set; }
         public TableauViewModel Tableau { get; private set; }
@@ -83,6 +94,7 @@ namespace Spider.Solitaire.ViewModel
         public AlgorithmType AlgorithmType { get; private set; }
 
         public ObservableCollection<VariationViewModel> Variations { get; private set; }
+        public ObservableCollection<AlgorithmViewModel> Algorithms { get; private set; }
 
         /// <summary>
         /// Raised when this workspace should be removed from the UI.
@@ -235,9 +247,17 @@ namespace Spider.Solitaire.ViewModel
 
         private void SetVariation(VariationViewModel variation)
         {
-            Variation = variation.Variation;
+            Variation = variation.Value;
             Game = new Game(Variation, AlgorithmType);
             RefreshVariations();
+            ResetUndoAndRefresh();
+        }
+
+        private void SetAlgorithm(AlgorithmViewModel algorithm)
+        {
+            AlgorithmType = algorithm.Value;
+            Game = new Game(Variation, AlgorithmType);
+            RefreshAlgorithms();
             ResetUndoAndRefresh();
         }
 
@@ -271,12 +291,21 @@ namespace Spider.Solitaire.ViewModel
         private void RefreshVariations()
         {
             Variations.Clear();
-            foreach (Variation variation in supportedVariations)
+            foreach (var variation in supportedVariations)
             {
                 bool isChecked = variation == Variation;
                 Variations.Add(new VariationViewModel(variation, isChecked));
             }
         }
 
+        private void RefreshAlgorithms()
+        {
+            Algorithms.Clear();
+            foreach (var algorithm in supportedAlgorithms)
+            {
+                bool isChecked = algorithm == AlgorithmType;
+                Algorithms.Add(new AlgorithmViewModel(algorithm, isChecked));
+            }
+        }
     }
 }

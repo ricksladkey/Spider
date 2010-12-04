@@ -115,6 +115,16 @@
                         </Style>
                     </MenuItem.ItemContainerStyle>
                 </MenuItem>
+                <MenuItem Header="_Algorithm" ItemsSource="{Binding Algorithms}">
+                    <MenuItem.ItemContainerStyle>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding Name}"/>
+                            <Setter Property="IsChecked" Value="{Binding IsChecked}"/>
+                            <Setter Property="Command" Value="{Binding ElementName=window, Path=DataContext.SetAlgorithmCommand}"/>
+                            <Setter Property="CommandParameter"  Value="{Binding}"/>
+                        </Style>
+                    </MenuItem.ItemContainerStyle>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Game">
                 <MenuItem Header="_Deal" Command="{Binding DealCommand}" InputGestureText="Ctrl+D"/>

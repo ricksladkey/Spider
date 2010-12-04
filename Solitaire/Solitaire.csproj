@@ -58,6 +58,8 @@
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\AlgorithmViewModel.cs" />
+    <Compile Include="ViewModel\CheckableViewModel.cs" />
     <Compile Include="ViewModel\DownCardViewModel.cs" />
     <Compile Include="ViewModel\EmptySpaceViewModel.cs" />
     <Compile Include="ViewModel\TableauViewModel.cs" />

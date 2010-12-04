@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Windows.Input;
 using Spider.Engine;
+using Spider.GamePlay;
 
 namespace Spider.Tests
 {
@@ -89,7 +90,7 @@ namespace Spider.Tests
             Assert.AreEqual(originalVariation, target.Variation);
             foreach (var variation in target.Variations)
             {
-                Assert.AreEqual(originalVariation == variation.Variation, variation.IsChecked);
+                Assert.AreEqual(originalVariation == variation.Value, variation.IsChecked);
             }
             Assert.AreEqual(originalVariation.NumberOfPiles, target.Game.NumberOfPiles);
 
@@ -98,9 +99,35 @@ namespace Spider.Tests
             Assert.AreEqual(newVariation, target.Variation);
             foreach (var variation in target.Variations)
             {
-                Assert.AreEqual(newVariation == variation.Variation, variation.IsChecked);
+                Assert.AreEqual(newVariation == variation.Value, variation.IsChecked);
             }
             Assert.AreEqual(newVariation.NumberOfPiles, target.Game.NumberOfPiles);
+        }
+
+        /// <summary>
+        ///A test for SetAlgorithmCommand
+        ///</summary>
+        [TestMethod()]
+        public void SetAlgorithmCommandTest()
+        {
+            AlgorithmType originalAlgorithm = AlgorithmType.Study;
+            AlgorithmType newAlgorithm = AlgorithmType.Search;
+
+            SpiderViewModel target = new SpiderViewModel();
+
+            Assert.AreEqual(originalAlgorithm, target.AlgorithmType);
+            foreach (var variation in target.Algorithms)
+            {
+                Assert.AreEqual(originalAlgorithm == variation.Value, variation.IsChecked);
+            }
+
+            target.SetAlgorithmCommand.Execute(new AlgorithmViewModel(newAlgorithm, false));
+
+            Assert.AreEqual(newAlgorithm, target.AlgorithmType);
+            foreach (var variation in target.Algorithms)
+            {
+                Assert.AreEqual(newAlgorithm == variation.Value, variation.IsChecked);
+            }
         }
     }
 }

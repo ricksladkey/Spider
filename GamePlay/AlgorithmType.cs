@@ -52,6 +52,11 @@ namespace Spider.GamePlay
             return (int)value;
         }
 
+        public override string ToString()
+        {
+            return value.ToString();
+        }
+
         #region IEquatable<AlgorithmType> Members
 
         public bool Equals(AlgorithmType other)
