@@ -509,17 +509,18 @@ namespace Spider.Engine
 
         public void Deal()
         {
-            DoDeal();
-            AddMove(new Move(MoveType.Deal));
-        }
-
-        private void DoDeal()
-        {
             if (stockPile.Count == 0)
             {
                 throw new Exception("no stock left to deal");
             }
-            for (int column = 0; column < NumberOfPiles; column++)
+            int columns = Math.Min(NumberOfPiles, stockPile.Count);
+            DoDeal(columns);
+            AddMove(new Move(MoveType.Deal, columns));
+        }
+
+        private void DoDeal(int columns)
+        {
+            for (int column = 0; column < columns; column++)
             {
                 if (stockPile.Count == 0)
                 {
@@ -529,9 +530,9 @@ namespace Spider.Engine
             }
         }
 
-        private void UndoDeal()
+        private void UndoDeal(int columns)
         {
-            for (int column = NumberOfPiles - 1; column >= 0; column--)
+            for (int column = columns - 1; column >= 0; column--)
             {
                 stockPile.Push(Pop(column));
             }
@@ -680,7 +681,7 @@ namespace Spider.Engine
                     break;
 
                 case MoveType.Deal:
-                    UndoDeal();
+                    UndoDeal(move.From);
                     Refresh();
                     break;
 
@@ -714,7 +715,7 @@ namespace Spider.Engine
                     break;
 
                 case MoveType.Deal:
-                    DoDeal();
+                    DoDeal(move.From);
                     Refresh();
                     break;
 
