@@ -20,10 +20,11 @@ namespace Spider.Solitaire.ViewModel
 
         private int current;
         private List<int> checkPoints;
+        private Variation[] supportedVariations;
 
         public SpiderViewModel()
         {
-            Variations = new Variation[]
+            supportedVariations = new Variation[]
             {
                 Variation.Spider1,
                 Variation.Spider2,
@@ -31,10 +32,11 @@ namespace Spider.Solitaire.ViewModel
                 Variation.Spiderette1,
                 Variation.Spiderette2,
                 Variation.Spiderette4,
-            }.Select(variation => new VariationViewModel(variation)).ToArray();
-
+            };
+            
             Variation = Variation.Spider2;
             AlgorithmType = AlgorithmType.Study;
+            Variations = new ObservableCollection<VariationViewModel>();
 
             checkPoints = new List<int>();
 
@@ -62,6 +64,8 @@ namespace Spider.Solitaire.ViewModel
             {
                 Game = new Game(Variation, AlgorithmType);
             }
+
+            RefreshVariations();
             ResetUndoAndRefresh();
         }
 
@@ -89,7 +93,7 @@ namespace Spider.Solitaire.ViewModel
         public Variation Variation { get; private set; }
         public AlgorithmType AlgorithmType { get; private set; }
 
-        public IEnumerable<VariationViewModel> Variations { get; private set; }
+        public ObservableCollection<VariationViewModel> Variations { get; private set; }
 
         /// <summary>
         /// Raised when this workspace should be removed from the UI.
@@ -241,6 +245,7 @@ namespace Spider.Solitaire.ViewModel
         {
             Variation = variation.Variation;
             Game = new Game(Variation, AlgorithmType);
+            RefreshVariations();
             ResetUndoAndRefresh();
         }
 
@@ -269,6 +274,16 @@ namespace Spider.Solitaire.ViewModel
         private bool CanSelect(CardViewModel card)
         {
             return card != null && card.IsSelectable;
+        }
+
+        private void RefreshVariations()
+        {
+            Variations.Clear();
+            foreach (Variation variation in supportedVariations)
+            {
+                bool isChecked = variation == Variation;
+                Variations.Add(new VariationViewModel(variation, isChecked));
+            }
         }
 
         private void Refresh()

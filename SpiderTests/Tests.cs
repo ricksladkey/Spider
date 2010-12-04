@@ -227,7 +227,6 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [DebugTestMethod]
         [TestMethod]
         public void SwapTest13()
         {

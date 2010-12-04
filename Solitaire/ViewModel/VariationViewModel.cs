@@ -8,11 +8,11 @@ namespace Spider.Solitaire.ViewModel
 {
     public class VariationViewModel
     {
-        public VariationViewModel(Variation variation)
+        public VariationViewModel(Variation variation, bool isChecked)
         {
             Variation = variation;
             Name = Variation.ToString();
-            IsChecked = Variation == Variation.Spiderette2;
+            IsChecked = isChecked;
         }
 
         public Variation Variation { get; private set; }
