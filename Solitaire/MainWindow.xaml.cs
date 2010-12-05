@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Spider.Solitaire.ViewModel;
+using Spider.Engine;
 
 namespace Spider.Solitaire
 {
@@ -29,9 +30,16 @@ namespace Spider.Solitaire
         private bool mouseDrag;
         private Point startPosition;
         private Vector offset;
+        private object initialDataContext;
 
         private void element_MouseDown(object sender, MouseButtonEventArgs e)
         {
+            Utils.WriteLine("MouseDown: ClickCount = {0}", e.ClickCount);
+            if (e.ClickCount == 2)
+            {
+                (DataContext as SpiderViewModel).AutoSelectCommand.Execute(initialDataContext);
+                return;
+            }
             mouseDown = true;
             mouseDrag = false;
             var element = (FrameworkElement)sender;
@@ -42,7 +50,8 @@ namespace Spider.Solitaire
             Canvas.SetLeft(movePile, point.X);
             Canvas.SetTop(movePile, point.Y);
             offset = startPosition - point;
-            (DataContext as SpiderViewModel).SelectCommand.Execute(element.DataContext);
+            initialDataContext = element.DataContext;
+            (DataContext as SpiderViewModel).SelectCommand.Execute(initialDataContext);
             Mouse.Capture(movePile);
         }
 

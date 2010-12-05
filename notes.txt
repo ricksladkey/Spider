@@ -1,6 +1,6 @@
+- add value converter for red/block colors
 - support holding piles for interactive moves
 - add mouse-over visual state for stock
-- add double-click to move pile to empty space
 - support swap by selecting from card and to card
 - stretch/compress card label to a fixed width
 - animate moves

@@ -67,6 +67,7 @@ namespace Spider.Solitaire.ViewModel
             DealCommand = new RelayCommand(Deal, CanDeal);
             MoveCommand = new RelayCommand(Move, CanMove);
             SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
+            AutoSelectCommand = new RelayCommand<CardViewModel>(AutoSelect, CanAutoSelect);
             SetVariationCommand = new RelayCommand<VariationViewModel>(SetVariation);
             SetAlgorithmCommand = new RelayCommand<AlgorithmViewModel>(SetAlgorithm);
 
@@ -99,6 +100,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
         public ICommand SelectCommand { get; private set; }
+        public ICommand AutoSelectCommand { get; private set; }
         public ICommand SetVariationCommand { get; private set; }
         public ICommand SetAlgorithmCommand { get; private set; }
 
@@ -201,8 +203,12 @@ namespace Spider.Solitaire.ViewModel
 
         private void Move()
         {
-            if (!Game.MakeMove() && Tableau.StockPile.Count > 0)
+            if (!Game.MakeMove())
             {
+                if (Tableau.StockPile.Count == 0)
+                {
+                    return;
+                }
                 Tableau.Deal();
             }
             AddCheckPoint();
@@ -258,6 +264,33 @@ namespace Spider.Solitaire.ViewModel
         private bool CanSelect(CardViewModel card)
         {
             return card != null && card.IsSelectable;
+        }
+
+        private void AutoSelect(CardViewModel card)
+        {
+            Utils.WriteLine("Auto-selecting: {0}", card);
+            Tableau.FromCard = card;
+            int firstSpace = Tableau.FirstSpace;
+            if (firstSpace == -1)
+            {
+                ResetMoveAndRefresh();
+                return;
+            }
+
+            Tableau.ToCard = new EmptySpaceViewModel { Column = firstSpace };
+            if (Tableau.TryMove())
+            {
+                AddCheckPoint();
+                ResetMoveAndRefresh();
+                return;
+            }
+
+            ResetMoveAndRefresh();
+        }
+
+        private bool CanAutoSelect(CardViewModel card)
+        {
+            return true;
         }
 
         private void SetVariation(VariationViewModel variation)
