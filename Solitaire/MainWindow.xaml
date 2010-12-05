@@ -16,33 +16,6 @@
             <Setter Property="RadiusX" Value="5"/>
             <Setter Property="RadiusY" Value="5"/>
         </Style>
-        <Style TargetType="Rectangle" BasedOn="{StaticResource CardRectangleStyle}" x:Key="SelectableCardRectangleStyle">
-            <Style.Triggers>
-                <!--<Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect ShadowDepth="0" Color="LightBlue" BlurRadius="30" Opacity="1"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>-->
-            </Style.Triggers>
-        </Style>
-        <Style TargetType="Rectangle" BasedOn="{StaticResource SelectableCardRectangleStyle}" x:Key="ShadowCardRectangleStyle">
-            <!--<Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect ShadowDepth="15" Direction="320" Opacity="0.5" />
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect ShadowDepth="0" Color="LightBlue" BlurRadius="30" Opacity="1"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>-->
-        </Style>
         <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
@@ -54,23 +27,22 @@
                 <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
             </DataTemplate.Resources>
             <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
-                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="White"/>
+                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="White"/>
                 <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
                 <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
                 <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
                 <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <!--<Button Height="20" Width="50"  Command="{Binding ElementName=window, Path=DataContext.SelectCommand}" CommandParameter="{Binding}">Select</Button>-->
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
             <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
-                <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
+                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
             <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
-                <Rectangle Name="rectangle1" Style="{StaticResource SelectableCardRectangleStyle}" Fill="Green"/>
+                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
@@ -152,11 +124,36 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False" Opacity="0.5"/>
+            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False">
+                <ContentControl.Effect>
+                    <DropShadowEffect ShadowDepth="10"/>
+                </ContentControl.Effect>
+            </ContentControl>
             <Button Command="{Binding ElementName=window, Path=DataContext.DealCommand}" Canvas.Left="450" Canvas.Top="400">
                 <Button.Template>
-                    <ControlTemplate>
-                        <ContentControl Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <ContentControl x:Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
+                        	<ContentControl.Effect>
+                        		<DropShadowEffect ShadowDepth="10" Opacity="0"/>
+                        	</ContentControl.Effect>
+                        	<VisualStateManager.VisualStateGroups>
+                        		<VisualStateGroup x:Name="CommonStates">
+                        			<VisualStateGroup.Transitions>
+                        				<VisualTransition GeneratedDuration="0:0:0.5"/>
+                        			</VisualStateGroup.Transitions>
+                        			<VisualState x:Name="Normal"/>
+                        			<VisualState x:Name="MouseOver">
+                        				<Storyboard>
+                        					<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" Storyboard.TargetName="stockPile">
+                        						<EasingDoubleKeyFrame KeyTime="0" Value="1"/>
+                        					</DoubleAnimationUsingKeyFrames>
+                        				</Storyboard>
+                        			</VisualState>
+                        			<VisualState x:Name="Pressed"/>
+                        			<VisualState x:Name="Disabled"/>
+                        		</VisualStateGroup>
+                        	</VisualStateManager.VisualStateGroups>
+                        </ContentControl>
                     </ControlTemplate>
                 </Button.Template>
             </Button>
