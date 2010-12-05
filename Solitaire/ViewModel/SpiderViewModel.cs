@@ -24,6 +24,16 @@ namespace Spider.Solitaire.ViewModel
         private List<int> checkPoints;
 
         public SpiderViewModel()
+            : this((Game)null)
+        {
+        }
+
+        public SpiderViewModel(string data)
+            : this(new Game(data))
+        {
+        }
+
+        public SpiderViewModel(Game game)
         {
             supportedVariations = new Variation[]
             {
@@ -64,9 +74,13 @@ namespace Spider.Solitaire.ViewModel
             {
                 Game = new Game(sampleData, AlgorithmType);
             }
-            else
+            else if (game == null)
             {
                 Game = new Game(Variation, AlgorithmType);
+            }
+            else
+            {
+                Game = game;
             }
 
             Tableau = new TableauViewModel(this);
