@@ -1,4 +1,3 @@
-- add value converter for red/block colors
 - support holding piles for interactive moves
 - add mouse-over visual state for stock
 - support swap by selecting from card and to card

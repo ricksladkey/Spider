@@ -203,6 +203,10 @@ namespace Spider.Solitaire.ViewModel
 
         private void Move()
         {
+            if (Game.Won)
+            {
+                return;
+            }
             if (!Game.MakeMove())
             {
                 if (Tableau.StockPile.Count == 0)

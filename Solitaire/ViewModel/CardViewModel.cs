@@ -14,29 +14,9 @@ namespace Spider.Solitaire.ViewModel
         public int Row { get; set; }
         public bool IsSelectable { get; set; }
 
-        public string Face
-        {
-            get
-            {
-                return Card.Face.ToLabel();
-            }
-        }
-
-        public string Suit
-        {
-            get
-            {
-                return Card.Suit.ToPrettyString();
-            }
-        }
-
-        public string Color
-        {
-            get
-            {
-                return Card.Suit.GetColor() == SuitColor.Red ? "#FFDD0000" : "Black";
-            }
-        }
+        public string Face { get { return Card.Face.ToLabel(); } }
+        public string Suit { get { return Card.Suit.ToPrettyString(); } }
+        public SuitColor Color { get { return Card.Suit.GetColor(); } }
 
         public override string ToString()
         {

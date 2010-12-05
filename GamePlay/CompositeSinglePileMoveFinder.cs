@@ -197,8 +197,9 @@ namespace Spider.GamePlay
                 for (int next = uncoveringMove.HoldingNext; next != -1; next = SupplementaryList[next].Next)
                 {
                     Move holdingMove = SupplementaryList[next];
-                    SupplementaryMoves.Add(new Move(MoveType.Basic, MoveFlags.Holding, uncoveringMove.From, holdingMove.FromRow, holdingMove.To));
-                    WorkingTableau.Move(holdingMove);
+                    Move forwardMove = new Move(MoveType.Basic, MoveFlags.Holding, holdingMove.From, holdingMove.FromRow, holdingMove.To);
+                    SupplementaryMoves.Add(forwardMove);
+                    WorkingTableau.Move(forwardMove);
                     MoveStack.Push(new Move(MoveType.Basic, MoveFlags.UndoHolding, holdingMove.To, -holdingMove.ToRow, uncoveringMove.To));
                 }
                 SupplementaryMoves.Add(uncoveringMove);

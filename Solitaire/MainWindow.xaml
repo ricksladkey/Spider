@@ -6,6 +6,7 @@
         Title="Spider" Height="500" Width="1000" Name="window" DataContext="{DynamicResource SpiderViewModelDataSource}">
     <Window.Resources>
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
+        <vw:SuitColorToBrushConverter x:Key="ColorConverter" Red="#FFDD0000" Black="Black"/>
         <Style TargetType="Grid" x:Key="CardGridStyle">
             <Setter Property="Height" Value="120"/>
             <Setter Property="Width" Value="90"/>
@@ -45,7 +46,7 @@
         <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
             <DataTemplate.Resources>
                 <Style TargetType="TextBlock">
-                    <Setter Property="Foreground" Value="{Binding Color}" />
+                    <Setter Property="Foreground" Value="{Binding Color, Converter={StaticResource ColorConverter}}" />
                     <Setter Property="FontWeight" Value="Normal" />
                     <Setter Property="FontFamily" Value="Segoe UI Semibold" />
                     <Setter Property="IsHitTestVisible" Value="False"/>
