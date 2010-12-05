@@ -10,6 +10,8 @@ namespace Spider.Engine
 {
     public static class Utils
     {
+        public static bool SuppressConsole { get; set; }
+
         public static void Print(Tableau tableau)
         {
             Utils.ColorizeToConsole(TableauInputOutput.ToPrettyString(tableau));
@@ -88,7 +90,10 @@ namespace Spider.Engine
 
         public static void WriteLine(string format, params object[] args)
         {
-            Console.WriteLine(format, args);
+            if (!SuppressConsole)
+            {
+                Console.WriteLine(format, args);
+            }
             if (Debugger.IsAttached)
             {
                 Trace.WriteLine(string.Format(format, args));

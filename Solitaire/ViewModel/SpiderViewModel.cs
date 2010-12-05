@@ -216,6 +216,7 @@ namespace Spider.Solitaire.ViewModel
 
         private void Select(CardViewModel card)
         {
+            Utils.WriteLine("Selecting: {0}", card);
             if (card == null)
             {
                 ResetMoveAndRefresh();

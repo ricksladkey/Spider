@@ -63,12 +63,12 @@
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
                 <Rectangle Name="rectangle1" Style="{StaticResource ShadowCardRectangleStyle}" Fill="DarkGoldenrod"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
                 <Rectangle Name="rectangle1" Style="{StaticResource SelectableCardRectangleStyle}" Fill="Green"/>
             </Grid>
         </DataTemplate>

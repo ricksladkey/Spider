@@ -5,6 +5,8 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 using Spider.Solitaire.ViewModel;
+using System.Text;
+using Spider.Engine;
 
 namespace Spider.Solitaire
 {
@@ -16,6 +18,8 @@ namespace Spider.Solitaire
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            Utils.SuppressConsole = true;
 
             MainWindow window = new MainWindow();
 

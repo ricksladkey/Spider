@@ -38,6 +38,11 @@ namespace Spider.Solitaire.ViewModel
             }
         }
 
+        public override string ToString()
+        {
+            return string.Format("Card: {0}, Column = {1}, Row = {2}, IsSelectable = {3}", Card, Column, Row, IsSelectable);
+        }
+
         #region IEquatable<CardViewModel> Members
 
         public bool Equals(CardViewModel other)
