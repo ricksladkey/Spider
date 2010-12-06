@@ -153,6 +153,7 @@ namespace Spider.GamePlay
         public int Instance { get; set; }
 
         public bool Won { get; private set; }
+        public bool Started { get; private set; }
 
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
@@ -206,11 +207,17 @@ namespace Spider.GamePlay
             Algorithm.SetCoefficients();
         }
 
-        private void Initialize()
+        public void Clear()
         {
+            Started = false;
             Won = false;
             Shuffled.Clear();
             Tableau.Clear();
+        }
+
+        private void Initialize()
+        {
+            Clear();
             if (Algorithm == null)
             {
                 Algorithm = GetAlgorithm();
@@ -314,6 +321,7 @@ namespace Spider.GamePlay
             Shuffled.Copy(Variation.Deck);
             Shuffled.Shuffle(Seed);
             Tableau.PrepareLayout(Shuffled);
+            Started = true;
         }
 
         private void CopyGame()

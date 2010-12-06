@@ -221,7 +221,7 @@ namespace Spider.Solitaire.ViewModel
 
         private bool CanMove()
         {
-            return true;
+            return Game.Started && !Game.Won;
         }
 
         private void Select(CardViewModel card)
