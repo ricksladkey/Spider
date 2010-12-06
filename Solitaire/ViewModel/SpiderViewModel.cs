@@ -169,7 +169,7 @@ namespace Spider.Solitaire.ViewModel
         {
             current--;
             Tableau.Revert(checkPoints[current]);
-            Refresh();
+            ResetMoveAndRefresh();
         }
 
         private bool CanUndo()
@@ -181,7 +181,7 @@ namespace Spider.Solitaire.ViewModel
         {
             current++;
             Tableau.Revert(checkPoints[current]);
-            Refresh();
+            ResetMoveAndRefresh();
         }
 
         private bool CanRedo()
@@ -193,7 +193,7 @@ namespace Spider.Solitaire.ViewModel
         {
             Tableau.Deal();
             AddCheckPoint();
-            Refresh();
+            ResetMoveAndRefresh();
         }
 
         private bool CanDeal()
@@ -323,7 +323,7 @@ namespace Spider.Solitaire.ViewModel
             current = 0;
             checkPoints.Clear();
             checkPoints.Add(Tableau.CheckPoint);
-            Refresh();
+            ResetMoveAndRefresh();
         }
 
         private void ResetMoveAndRefresh()
