@@ -235,9 +235,7 @@ namespace Spider.Solitaire.ViewModel
 
             if (card.Column == -1 && card.Row == -1)
             {
-                Deal();
-                AddCheckPoint();
-                ResetMoveAndRefresh();
+                // Now handled by a button.
                 return;
             }
 
