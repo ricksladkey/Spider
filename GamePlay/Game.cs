@@ -13,10 +13,6 @@ namespace Spider.GamePlay
     {
         public const int MaximumMoves = 1500;
 
-        static Game()
-        {
-        }
-
         public Game()
         {
             Seed = -1;

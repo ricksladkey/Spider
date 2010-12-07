@@ -8,6 +8,11 @@
     x:Class="Spider.Solitaire.App"
     >
     <Application.Resources>
-    	<vm:SpiderViewModel x:Key="SpiderViewModelDataSource" d:IsDataSource="True"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="CardDictionary.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        	<vm:SpiderViewModel x:Key="SpiderViewModelDataSource" d:IsDataSource="True"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

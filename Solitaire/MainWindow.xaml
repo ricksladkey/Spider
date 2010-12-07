@@ -3,15 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
-        Title="Spider" Height="500" Width="1000" Name="window" DataContext="{DynamicResource SpiderViewModelDataSource}">
+        Title="Spider" Height="500" Width="1080" Name="window" DataContext="{DynamicResource SpiderViewModelDataSource}">
     <Window.Resources>
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
         <vw:SuitColorToBrushConverter x:Key="ColorConverter" Red="#FFDD0000" Black="Black"/>
-        <Style TargetType="Grid" x:Key="CardGridStyle">
-            <Setter Property="Height" Value="120"/>
-            <Setter Property="Width" Value="90"/>
+        <Style TargetType="{x:Type Grid}" x:Key="CardGridStyle">
+            <Setter Property="Height" Value="140"/>
+            <Setter Property="Width" Value="100"/>
         </Style>
-        <Style TargetType="Rectangle" x:Key="CardRectangleStyle">
+        <Style TargetType="{x:Type Rectangle}" x:Key="CardRectangleStyle">
             <Setter Property="Stroke" Value="Black"/>
             <Setter Property="RadiusX" Value="5"/>
             <Setter Property="RadiusY" Value="5"/>
@@ -36,13 +36,13 @@
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
-                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
+            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+                <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
-                <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
+            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+                <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
             </Grid>
         </DataTemplate>
         <DataTemplate x:Key="PileTemplate">
@@ -80,20 +80,20 @@
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Variation" ItemsSource="{Binding Variations}">
                     <MenuItem.ItemContainerStyle>
-                        <Style TargetType="MenuItem">
+                        <Style TargetType="{x:Type MenuItem}">
                             <Setter Property="Header" Value="{Binding Name}"/>
                             <Setter Property="IsChecked" Value="{Binding IsChecked}"/>
-                            <Setter Property="Command" Value="{Binding ElementName=window, Path=DataContext.SetVariationCommand}"/>
+                            <Setter Property="Command" Value="{Binding DataContext.SetVariationCommand, ElementName=window}"/>
                             <Setter Property="CommandParameter"  Value="{Binding}"/>
                         </Style>
                     </MenuItem.ItemContainerStyle>
                 </MenuItem>
                 <MenuItem Header="_Algorithm" ItemsSource="{Binding Algorithms}">
                     <MenuItem.ItemContainerStyle>
-                        <Style TargetType="MenuItem">
+                        <Style TargetType="{x:Type MenuItem}">
                             <Setter Property="Header" Value="{Binding Name}"/>
                             <Setter Property="IsChecked" Value="{Binding IsChecked}"/>
-                            <Setter Property="Command" Value="{Binding ElementName=window, Path=DataContext.SetAlgorithmCommand}"/>
+                            <Setter Property="Command" Value="{Binding DataContext.SetAlgorithmCommand, ElementName=window}"/>
                             <Setter Property="CommandParameter"  Value="{Binding}"/>
                         </Style>
                     </MenuItem.ItemContainerStyle>
@@ -104,8 +104,8 @@
                 <MenuItem Header="_Move" Command="{Binding MoveCommand}" InputGestureText="Ctrl+M"/>
             </MenuItem>
         </Menu>
-        <Canvas Background="{StaticResource GamePlayBackground}" Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
-            <ItemsControl Canvas.Left="45" Canvas.Top="-100" ItemsSource="{Binding DiscardPiles}">
+        <Canvas Background="{StaticResource GamePlayBackground}" x:Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
+            <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />
@@ -124,12 +124,12 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False">
+            <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False">
                 <ContentControl.Effect>
                     <DropShadowEffect ShadowDepth="10"/>
                 </ContentControl.Effect>
             </ContentControl>
-            <Button Command="{Binding ElementName=window, Path=DataContext.DealCommand}" Canvas.Left="450" Canvas.Top="400">
+            <Button Command="{Binding DataContext.DealCommand, ElementName=window}" Canvas.Left="450" Canvas.Top="400">
                 <Button.Template>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <ContentControl x:Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
@@ -157,8 +157,8 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding ElementName=window, Path=DataContext.UndoCommand}">Undo</Button>
-            <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding ElementName=window, Path=DataContext.RedoCommand}">Redo</Button>
+            <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding DataContext.UndoCommand, ElementName=window}" Content="Undo"/>
+            <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding DataContext.RedoCommand, ElementName=window}" Content="Redo"/>
         </Canvas>
     </DockPanel>
 </Window>
