@@ -46,6 +46,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -77,6 +78,7 @@
     <Compile Include="View\CommandBehavior.cs" />
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
+    <Compile Include="View\MovePileBehavior.cs" />
     <Compile Include="View\SuitColorToBrushConverter.cs" />
     <Page Include="CardDictionary.xaml">
       <SubType>Designer</SubType>

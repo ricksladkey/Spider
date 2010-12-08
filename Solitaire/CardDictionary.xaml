@@ -1708,9 +1708,9 @@
     
     <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
         <Grid Width="100" Height="140" Name="TheGrid">
-            <Rectangle Name="TheShadow" Opacity="0.1" Fill="{StaticResource Shadow}">
+            <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
-                    <TranslateTransform X="-2" Y="2"/>
+                    <TranslateTransform X="0" Y="-2"/>
                 </Rectangle.RenderTransform>
             </Rectangle>
             <Grid Name="TheCard" Cursor="Hand">
