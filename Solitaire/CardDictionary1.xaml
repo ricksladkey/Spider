@@ -27,7 +27,7 @@
         </DataTemplate.Resources>
         <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
             <i:Interaction.Behaviors>
-                <vw:MovePileBehavior/>
+                <vw:MoveObjectBehavior/>
             </i:Interaction.Behaviors>
             <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="White"/>
             <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
@@ -40,7 +40,7 @@
     <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
             <i:Interaction.Behaviors>
-                <vw:MovePileBehavior/>
+                <vw:MoveObjectBehavior/>
             </i:Interaction.Behaviors>
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
         </Grid>
@@ -48,7 +48,7 @@
     <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
             <i:Interaction.Behaviors>
-                <vw:MovePileBehavior/>
+                <vw:MoveObjectBehavior/>
             </i:Interaction.Behaviors>
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
         </Grid>

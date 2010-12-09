@@ -10,28 +10,28 @@ using System.Windows.Media;
 
 namespace Spider.Solitaire.View
 {
-    public class MovePileBehavior : Behavior<FrameworkElement>
+    public class MoveObjectBehavior : Behavior<FrameworkElement>
     {
-        public static readonly DependencyProperty IsMovePileProperty =
-            DependencyProperty.Register("IsMovePile", typeof(bool), typeof(MovePileBehavior), new PropertyMetadata(false));
+        public static readonly DependencyProperty IsMoveObjectProperty =
+            DependencyProperty.Register("IsMoveObject", typeof(bool), typeof(MoveObjectBehavior), new PropertyMetadata(false));
         public static readonly DependencyProperty TargetTypeProperty =
-            DependencyProperty.Register("TargetType", typeof(Type), typeof(MovePileBehavior), new PropertyMetadata(null));
+            DependencyProperty.Register("TargetType", typeof(Type), typeof(MoveObjectBehavior), new PropertyMetadata(null));
         public static readonly DependencyProperty SelectCommandProperty =
-            DependencyProperty.Register("SelectCommand", typeof(ICommand), typeof(MovePileBehavior), new PropertyMetadata(null));
+            DependencyProperty.Register("SelectCommand", typeof(ICommand), typeof(MoveObjectBehavior), new PropertyMetadata(null));
         public static readonly DependencyProperty AutoSelectCommandProperty =
-            DependencyProperty.Register("AutoSelectCommand", typeof(ICommand), typeof(MovePileBehavior), new PropertyMetadata(null));
+            DependencyProperty.Register("AutoSelectCommand", typeof(ICommand), typeof(MoveObjectBehavior), new PropertyMetadata(null));
 
-        private static Dictionary<object, MovePileState> StateMap = new Dictionary<object, MovePileState>();
+        private static Dictionary<object, MoveObjectState> StateMap = new Dictionary<object, MoveObjectState>();
 
-        public bool IsMovePile
+        public bool IsMoveObject
         {
             get
             {
-                return (bool)base.GetValue(IsMovePileProperty);
+                return (bool)base.GetValue(IsMoveObjectProperty);
             }
             set
             {
-                base.SetValue(IsMovePileProperty, value);
+                base.SetValue(IsMoveObjectProperty, value);
             }
         }
 
@@ -79,20 +79,20 @@ namespace Spider.Solitaire.View
             var state = StateMap.Values.Where(value => value.Canvas == canvas).FirstOrDefault();
             if (state == null)
             {
-                state = new MovePileState { Canvas = canvas };
+                state = new MoveObjectState { Canvas = canvas };
             }
             StateMap[AssociatedObject] = state;
-            if (IsMovePile)
+            if (IsMoveObject)
             {
-                state.MovePileBehavior = this;
+                state.MoveObjectBehavior = this;
             }
 
             AssociatedObject.MouseLeftButtonDown +=
-                (sender, e) => { if (!IsMovePile) StateMap[sender].element_MouseDown(sender, e); };
+                (sender, e) => { if (!IsMoveObject) StateMap[sender].element_MouseDown(sender, e); };
             AssociatedObject.MouseLeftButtonUp +=
-                (sender, e) => { if (IsMovePile) StateMap[sender].element_MouseUp(sender, e); };
+                (sender, e) => { if (IsMoveObject) StateMap[sender].element_MouseUp(sender, e); };
             AssociatedObject.MouseMove +=
-                (sender, e) => { if (IsMovePile) StateMap[sender].element_MouseMove(sender, e); };
+                (sender, e) => { if (IsMoveObject) StateMap[sender].element_MouseMove(sender, e); };
         }
 
         private T FindParent<T>(DependencyObject element)
@@ -112,7 +112,7 @@ namespace Spider.Solitaire.View
             }
         }
 
-        private class MovePileState
+        private class MoveObjectState
         {
             private bool mouseDown;
             private bool mouseDrag;
@@ -121,15 +121,15 @@ namespace Spider.Solitaire.View
             private object initialDataContext;
 
             public Canvas Canvas { get; set; }
-            public MovePileBehavior MovePileBehavior { get; set; }
+            public MoveObjectBehavior MoveObjectBehavior { get; set; }
 
-            public FrameworkElement MovePile { get { return MovePileBehavior.AssociatedObject; } }
+            public FrameworkElement MoveObject { get { return MoveObjectBehavior.AssociatedObject; } }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
                 if (e.ClickCount == 2)
                 {
-                    MovePileBehavior.AutoSelectCommand.Execute(initialDataContext);
+                    MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
                     return;
                 }
                 mouseDown = true;
@@ -139,12 +139,12 @@ namespace Spider.Solitaire.View
                 var gt = element.TransformToVisual(Canvas);
                 var margin = new Vector(3, 3);
                 var point = gt.Transform(new Point(0, 0)) - margin;
-                Canvas.SetLeft(MovePile, point.X);
-                Canvas.SetTop(MovePile, point.Y);
+                Canvas.SetLeft(MoveObject, point.X);
+                Canvas.SetTop(MoveObject, point.Y);
                 offset = startPosition - point;
                 initialDataContext = element.DataContext;
-                MovePileBehavior.SelectCommand.Execute(initialDataContext);
-                Mouse.Capture(MovePile);
+                MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
+                Mouse.Capture(MoveObject);
             }
 
             public void element_MouseMove(object sender, MouseEventArgs e)
@@ -175,8 +175,8 @@ namespace Spider.Solitaire.View
                 {
                     var element = Mouse.DirectlyOver as FrameworkElement;
                     var dataContext = element != null ? element.DataContext : null;
-                    var isDesiredType = dataContext != null && MovePileBehavior.TargetType.IsAssignableFrom(dataContext.GetType());
-                    MovePileBehavior.SelectCommand.Execute(isDesiredType ? dataContext : null);
+                    var isDesiredType = dataContext != null && MoveObjectBehavior.TargetType.IsAssignableFrom(dataContext.GetType());
+                    MoveObjectBehavior.SelectCommand.Execute(isDesiredType ? dataContext : null);
                 }
             }
         }

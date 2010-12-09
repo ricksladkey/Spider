@@ -77,7 +77,7 @@
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
-    <Compile Include="View\MovePileBehavior.cs" />
+    <Compile Include="View\MoveObjectBehavior.cs" />
     <Compile Include="View\SuitColorToBrushConverter.cs" />
     <Page Include="CardDictionary1.xaml">
       <SubType>Designer</SubType>

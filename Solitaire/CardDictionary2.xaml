@@ -1717,7 +1717,7 @@
             </Rectangle>
             <Grid Name="TheCard" Cursor="Hand">
                 <i:Interaction.Behaviors>
-                    <vw:MovePileBehavior/>
+                    <vw:MoveObjectBehavior/>
                 </i:Interaction.Behaviors>
                 <Viewbox Width="100" Height="140">
                     <Path Fill="#FFFFFF" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
@@ -1899,7 +1899,7 @@
             </Rectangle>
             <Grid Name="TheCard">
                 <i:Interaction.Behaviors>
-                    <vw:MovePileBehavior/>
+                    <vw:MoveObjectBehavior/>
                 </i:Interaction.Behaviors>
                 <Viewbox Width="100" Height="140">
                     <Path Fill="Goldenrod" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
@@ -1922,7 +1922,7 @@
             </Rectangle>
             <Grid Name="TheCard">
                 <i:Interaction.Behaviors>
-                    <vw:MovePileBehavior/>
+                    <vw:MoveObjectBehavior/>
                 </i:Interaction.Behaviors>
                 <Viewbox Width="100" Height="140">
                     <Path Fill="Green" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
