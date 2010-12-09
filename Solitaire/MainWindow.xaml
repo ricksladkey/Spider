@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Spider.Solitaire.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:vw="clr-namespace:Spider.Solitaire.View"
         xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
         Title="Spider" Height="500" Width="1080" Name="window" DataContext="{DynamicResource SpiderViewModelDataSource}">
@@ -26,7 +27,10 @@
                 </Style>
                 <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
             </DataTemplate.Resources>
-            <Grid Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+            <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
                 <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="White"/>
                 <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
                 <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
@@ -36,12 +40,18 @@
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
                 <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
             </Grid>
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}" MouseDown="element_MouseDown">
+            <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
                 <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
             </Grid>
         </DataTemplate>
@@ -124,7 +134,10 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" MouseMove="element_MouseMove" MouseUp="element_MouseUp" IsHitTestVisible="False">
+            <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" IsHitTestVisible="False">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior IsMovePile="True"/>
+                </i:Interaction.Behaviors>
                 <ContentControl.Effect>
                     <DropShadowEffect ShadowDepth="10"/>
                 </ContentControl.Effect>

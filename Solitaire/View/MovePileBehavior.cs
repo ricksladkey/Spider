@@ -43,19 +43,17 @@ namespace Spider.Solitaire.View
                 State = new MovePileState(Application.Current.MainWindow as MainWindow);
             }
 
-            if (!this.IsMovePile)
-            {
-                AssociatedObject.MouseLeftButtonDown += (sender, e) => State.element_MouseDown(sender, e);
-            }
-            else
-            {
-                AssociatedObject.MouseLeftButtonUp += (sender, e) => State.element_MouseUp(sender, e);
-                AssociatedObject.MouseMove += (sender, e) => State.element_MouseMove(sender, e);
-            }
+            AssociatedObject.MouseLeftButtonDown +=
+                (sender, e) => { if (!IsMovePile) State.element_MouseDown(sender, e); };
+            AssociatedObject.MouseLeftButtonUp +=
+                (sender, e) => { if (IsMovePile) State.element_MouseUp(sender, e); };
+            AssociatedObject.MouseMove +=
+                (sender, e) => { if (IsMovePile) State.element_MouseMove(sender, e); };
         }
 
         private class MovePileState
         {
+            private MainWindow mainWindow;
             private Canvas mainCanvas;
             private FrameworkElement movePile;
 
@@ -67,12 +65,12 @@ namespace Spider.Solitaire.View
 
             public MovePileState(MainWindow mainWindow)
             {
-                DataContext = mainWindow.DataContext;
+                this.mainWindow = mainWindow;
                 mainCanvas = mainWindow.mainCanvas;
                 movePile = mainWindow.movePile;
             }
 
-            public object DataContext { get; set; }
+            public object DataContext { get { return mainWindow.DataContext; } }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
