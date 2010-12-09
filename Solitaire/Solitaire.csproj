@@ -80,7 +80,11 @@
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\MovePileBehavior.cs" />
     <Compile Include="View\SuitColorToBrushConverter.cs" />
-    <Page Include="CardDictionary.xaml">
+    <Page Include="CardDictionary1.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CardDictionary2.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -1,0 +1,56 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:vw="clr-namespace:Spider.Solitaire.View"
+    xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
+    >
+    <vw:SuitColorToBrushConverter x:Key="ColorConverter" Red="#FFDD0000" Black="Black"/>
+    <Style TargetType="{x:Type Grid}" x:Key="CardGridStyle">
+        <Setter Property="Height" Value="140"/>
+        <Setter Property="Width" Value="100"/>
+    </Style>
+    <Style TargetType="{x:Type Rectangle}" x:Key="CardRectangleStyle">
+        <Setter Property="Stroke" Value="Black"/>
+        <Setter Property="RadiusX" Value="5"/>
+        <Setter Property="RadiusY" Value="5"/>
+    </Style>
+    <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
+        <DataTemplate.Resources>
+            <Style TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{Binding Color, Converter={StaticResource ColorConverter}}" />
+                <Setter Property="FontWeight" Value="Normal" />
+                <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+                <Setter Property="IsHitTestVisible" Value="False"/>
+            </Style>
+            <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
+        </DataTemplate.Resources>
+        <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
+            <i:Interaction.Behaviors>
+                <vw:MovePileBehavior/>
+            </i:Interaction.Behaviors>
+            <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="White"/>
+            <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
+            <TextBlock Name="textBlock3" Text="{Binding Face}" FontSize="16" Margin="0,2,5,0" HorizontalAlignment="Right" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+            <TextBlock Name="textBlock4" Text="{Binding Suit}" FontSize="20" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" LayoutTransform="{StaticResource ResourceKey=upsideDown}" />
+            <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
+        <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
+            <i:Interaction.Behaviors>
+                <vw:MovePileBehavior/>
+            </i:Interaction.Behaviors>
+            <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
+        <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
+            <i:Interaction.Behaviors>
+                <vw:MovePileBehavior/>
+            </i:Interaction.Behaviors>
+            <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>

@@ -10,7 +10,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="CardDictionary.xaml" />
+                <!--<ResourceDictionary Source="CardDictionary1.xaml" />-->
+                <ResourceDictionary Source="CardDictionary2.xaml" />
             </ResourceDictionary.MergedDictionaries>
         	<vm:SpiderViewModel x:Key="SpiderViewModelDataSource" d:IsDataSource="True"/>
         </ResourceDictionary>

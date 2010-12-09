@@ -1,6 +1,8 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+    xmlns:vw="clr-namespace:Spider.Solitaire.View"
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     >
     <LinearGradientBrush x:Key="CardNormalBrush" StartPoint="0,0" EndPoint="0,1">
@@ -1714,6 +1716,9 @@
                 </Rectangle.RenderTransform>
             </Rectangle>
             <Grid Name="TheCard" Cursor="Hand">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
                 <Viewbox Width="100" Height="140">
                     <Path Fill="#FFFFFF" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
                 </Viewbox>
@@ -1884,5 +1889,51 @@
                 <Setter TargetName="faceRect" Property="Fill" Value="{StaticResource CK}"/>
             </DataTrigger>
         </DataTemplate.Triggers>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
+        <Grid Width="100" Height="140" Name="TheGrid">
+            <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
+                <Rectangle.RenderTransform>
+                    <TranslateTransform X="0" Y="-2"/>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Grid Name="TheCard">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
+                <Viewbox Width="100" Height="140">
+                    <Path Fill="Goldenrod" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
+                </Viewbox>
+                <Viewbox Width="100" Height="140">
+                    <Path Name="TheHighlight" Fill="{StaticResource CardNormalBrush}" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
+                </Viewbox>
+                <Grid.RenderTransform>
+                    <TranslateTransform X="0" Y="0"/>
+                </Grid.RenderTransform>
+            </Grid>
+        </Grid>
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
+        <Grid Width="100" Height="140" Name="TheGrid">
+            <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
+                <Rectangle.RenderTransform>
+                    <TranslateTransform X="0" Y="-2"/>
+                </Rectangle.RenderTransform>
+            </Rectangle>
+            <Grid Name="TheCard">
+                <i:Interaction.Behaviors>
+                    <vw:MovePileBehavior/>
+                </i:Interaction.Behaviors>
+                <Viewbox Width="100" Height="140">
+                    <Path Fill="Green" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
+                </Viewbox>
+                <Viewbox Width="100" Height="140">
+                    <Path Name="TheHighlight" Fill="{StaticResource CardNormalBrush}" Data="M1467.5,1852.5c0,110-90,200-200,200h-1067c-110,0-200-90-200-200v-1652 c0-110,90-200,200-200h1067c110,0,200,90,200,200V1852.5z" />
+                </Viewbox>
+                <Grid.RenderTransform>
+                    <TranslateTransform X="0" Y="0"/>
+                </Grid.RenderTransform>
+            </Grid>
+        </Grid>
     </DataTemplate>
 </ResourceDictionary>
