@@ -90,7 +90,10 @@
             </ItemsControl>
             <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" IsHitTestVisible="False">
                 <i:Interaction.Behaviors>
-                    <vw:MovePileBehavior IsMovePile="True"/>
+                    <vw:MovePileBehavior IsMovePile="True"
+                                         SelectCommand="{Binding DataContext.SelectCommand, ElementName=window}"
+                                         AutoSelectCommand="{Binding DataContext.AutoSelectCommand, ElementName=window}"
+                                         TargetType="vm:CardViewModel"/>
                 </i:Interaction.Behaviors>
                 <ContentControl.Effect>
                     <DropShadowEffect ShadowDepth="10"/>

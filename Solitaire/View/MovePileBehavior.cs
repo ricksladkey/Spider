@@ -7,8 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 using System.Windows.Media;
-using Spider.Engine;
-using Spider.Solitaire.ViewModel;
 
 namespace Spider.Solitaire.View
 {
@@ -16,6 +14,12 @@ namespace Spider.Solitaire.View
     {
         public static readonly DependencyProperty IsMovePileProperty =
             DependencyProperty.Register("IsMovePile", typeof(bool), typeof(MovePileBehavior), new PropertyMetadata(false));
+        public static readonly DependencyProperty TargetTypeProperty =
+            DependencyProperty.Register("TargetType", typeof(Type), typeof(MovePileBehavior), new PropertyMetadata(null));
+        public static readonly DependencyProperty SelectCommandProperty =
+            DependencyProperty.Register("SelectCommand", typeof(ICommand), typeof(MovePileBehavior), new PropertyMetadata(null));
+        public static readonly DependencyProperty AutoSelectCommandProperty =
+            DependencyProperty.Register("AutoSelectCommand", typeof(ICommand), typeof(MovePileBehavior), new PropertyMetadata(null));
 
         private static Dictionary<object, MovePileState> StateMap = new Dictionary<object, MovePileState>();
 
@@ -31,16 +35,57 @@ namespace Spider.Solitaire.View
             }
         }
 
+        public Type TargetType
+        {
+            get
+            {
+                return (Type)base.GetValue(TargetTypeProperty);
+            }
+            set
+            {
+                base.SetValue(TargetTypeProperty, value);
+            }
+        }
+
+        public ICommand SelectCommand
+        {
+            get
+            {
+                return (ICommand)base.GetValue(SelectCommandProperty);
+            }
+            set
+            {
+                base.SetValue(SelectCommandProperty, value);
+            }
+        }
+
+        public ICommand AutoSelectCommand
+        {
+            get
+            {
+                return (ICommand)base.GetValue(AutoSelectCommandProperty);
+            }
+            set
+            {
+                base.SetValue(AutoSelectCommandProperty, value);
+            }
+        }
+
         protected override void OnAttached()
         {
-            Window window = Window.GetWindow(AssociatedObject);
-            MovePileState state =
-                StateMap.Values.Where(value => value.Window == window).FirstOrDefault();
+            base.OnAttached();
+
+            var canvas = FindParent<Canvas>(AssociatedObject);
+            var state = StateMap.Values.Where(value => value.Canvas == canvas).FirstOrDefault();
             if (state == null)
             {
-                state = new MovePileState(window as MainWindow);
+                state = new MovePileState { Canvas = canvas };
             }
             StateMap[AssociatedObject] = state;
+            if (IsMovePile)
+            {
+                state.MovePileBehavior = this;
+            }
 
             AssociatedObject.MouseLeftButtonDown +=
                 (sender, e) => { if (!IsMovePile) StateMap[sender].element_MouseDown(sender, e); };
@@ -50,49 +95,56 @@ namespace Spider.Solitaire.View
                 (sender, e) => { if (IsMovePile) StateMap[sender].element_MouseMove(sender, e); };
         }
 
+        private T FindParent<T>(DependencyObject element)
+            where T : DependencyObject
+        {
+            while (true)
+            {
+                element = VisualTreeHelper.GetParent(element);
+                if (element == null)
+                {
+                    return null;
+                }
+                if (element is T)
+                {
+                    return element as T;
+                }
+            }
+        }
+
         private class MovePileState
         {
-            private MainWindow mainWindow;
-            private Canvas mainCanvas;
-            private FrameworkElement movePile;
-
             private bool mouseDown;
             private bool mouseDrag;
             private Point startPosition;
             private Vector offset;
             private object initialDataContext;
 
-            public MovePileState(MainWindow mainWindow)
-            {
-                this.mainWindow = mainWindow;
-                mainCanvas = mainWindow.mainCanvas;
-                movePile = mainWindow.movePile;
-            }
+            public Canvas Canvas { get; set; }
+            public MovePileBehavior MovePileBehavior { get; set; }
 
-            public Window Window { get { return mainWindow; } }
-            public object DataContext { get { return mainWindow.DataContext; } }
+            public FrameworkElement MovePile { get { return MovePileBehavior.AssociatedObject; } }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
-                Utils.WriteLine("MouseDown: ClickCount = {0}", e.ClickCount);
                 if (e.ClickCount == 2)
                 {
-                    (DataContext as SpiderViewModel).AutoSelectCommand.Execute(initialDataContext);
+                    MovePileBehavior.AutoSelectCommand.Execute(initialDataContext);
                     return;
                 }
                 mouseDown = true;
                 mouseDrag = false;
                 var element = (FrameworkElement)sender;
-                startPosition = e.GetPosition(mainCanvas);
-                GeneralTransform gt = element.TransformToVisual(mainCanvas);
-                Vector margin = new Vector(3, 3);
-                Point point = gt.Transform(new Point(0, 0)) - margin;
-                Canvas.SetLeft(movePile, point.X);
-                Canvas.SetTop(movePile, point.Y);
+                startPosition = e.GetPosition(Canvas);
+                var gt = element.TransformToVisual(Canvas);
+                var margin = new Vector(3, 3);
+                var point = gt.Transform(new Point(0, 0)) - margin;
+                Canvas.SetLeft(MovePile, point.X);
+                Canvas.SetTop(MovePile, point.Y);
                 offset = startPosition - point;
                 initialDataContext = element.DataContext;
-                (DataContext as SpiderViewModel).SelectCommand.Execute(initialDataContext);
-                Mouse.Capture(movePile);
+                MovePileBehavior.SelectCommand.Execute(initialDataContext);
+                Mouse.Capture(MovePile);
             }
 
             public void element_MouseMove(object sender, MouseEventArgs e)
@@ -100,12 +152,12 @@ namespace Spider.Solitaire.View
                 var element = sender as FrameworkElement;
                 if (mouseDown)
                 {
-                    var position = e.GetPosition(mainCanvas);
+                    var position = e.GetPosition(Canvas);
                     Canvas.SetLeft(element, position.X - offset.X);
                     Canvas.SetTop(element, position.Y - offset.Y);
                     if (!mouseDrag)
                     {
-                        Vector drag = startPosition - position;
+                        var drag = startPosition - position;
                         if (Math.Abs(drag.X) >= SystemParameters.MinimumHorizontalDragDistance ||
                             Math.Abs(drag.Y) >= SystemParameters.MinimumVerticalDragDistance)
                         {
@@ -122,7 +174,9 @@ namespace Spider.Solitaire.View
                 if (mouseDrag)
                 {
                     var element = Mouse.DirectlyOver as FrameworkElement;
-                    (DataContext as SpiderViewModel).SelectCommand.Execute(element.DataContext as CardViewModel);
+                    var dataContext = element != null ? element.DataContext : null;
+                    var isDesiredType = dataContext != null && MovePileBehavior.TargetType.IsAssignableFrom(dataContext.GetType());
+                    MovePileBehavior.SelectCommand.Execute(isDesiredType ? dataContext : null);
                 }
             }
         }
