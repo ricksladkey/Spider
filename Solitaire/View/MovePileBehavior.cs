@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interactivity;
 using System.Windows.Media;
-using System.Windows.Input;
-using Spider.Solitaire.ViewModel;
 using Spider.Engine;
-using System.Windows.Controls;
+using Spider.Solitaire.ViewModel;
 
 namespace Spider.Solitaire.View
 {
     public class MovePileBehavior : Behavior<FrameworkElement>
     {
         public static readonly DependencyProperty IsMovePileProperty =
-            DependencyProperty.Register("IsMovePile", typeof(bool), typeof(MovePileBehavior), new PropertyMetadata(false, new PropertyChangedCallback(MovePileBehavior.OnIsMovePileChanged)));
+            DependencyProperty.Register("IsMovePile", typeof(bool), typeof(MovePileBehavior), new PropertyMetadata(false));
 
-        private static MovePileState State = null;
+        private static Dictionary<object, MovePileState> StateMap = new Dictionary<object, MovePileState>();
 
         public bool IsMovePile
         {
@@ -31,24 +31,23 @@ namespace Spider.Solitaire.View
             }
         }
 
-        private static void OnIsMovePileChanged(object sender, DependencyPropertyChangedEventArgs args)
-        {
-            MovePileBehavior behavior = sender as MovePileBehavior;
-        }
-
         protected override void OnAttached()
         {
-            if (State == null)
+            Window window = Window.GetWindow(AssociatedObject);
+            MovePileState state =
+                StateMap.Values.Where(value => value.Window == window).FirstOrDefault();
+            if (state == null)
             {
-                State = new MovePileState(Application.Current.MainWindow as MainWindow);
+                state = new MovePileState(window as MainWindow);
             }
+            StateMap[AssociatedObject] = state;
 
             AssociatedObject.MouseLeftButtonDown +=
-                (sender, e) => { if (!IsMovePile) State.element_MouseDown(sender, e); };
+                (sender, e) => { if (!IsMovePile) StateMap[sender].element_MouseDown(sender, e); };
             AssociatedObject.MouseLeftButtonUp +=
-                (sender, e) => { if (IsMovePile) State.element_MouseUp(sender, e); };
+                (sender, e) => { if (IsMovePile) StateMap[sender].element_MouseUp(sender, e); };
             AssociatedObject.MouseMove +=
-                (sender, e) => { if (IsMovePile) State.element_MouseMove(sender, e); };
+                (sender, e) => { if (IsMovePile) StateMap[sender].element_MouseMove(sender, e); };
         }
 
         private class MovePileState
@@ -70,6 +69,7 @@ namespace Spider.Solitaire.View
                 movePile = mainWindow.movePile;
             }
 
+            public Window Window { get { return mainWindow; } }
             public object DataContext { get { return mainWindow.DataContext; } }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
