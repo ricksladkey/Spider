@@ -97,7 +97,7 @@
                         TargetType="vm:CardViewModel"/>
                 </i:Interaction.Behaviors>
                 <ContentControl.Effect>
-                    <DropShadowEffect ShadowDepth="10"/>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="20"/>
                 </ContentControl.Effect>
             </ContentControl>
             <Button Command="{Binding DataContext.DealCommand, ElementName=window}" Canvas.Left="450" Canvas.Top="400">

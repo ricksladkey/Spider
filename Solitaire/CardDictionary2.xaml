@@ -1715,7 +1715,7 @@
                     <TranslateTransform X="0" Y="-2"/>
                 </Rectangle.RenderTransform>
             </Rectangle>
-            <Grid Name="TheCard" Cursor="Hand">
+            <Grid Name="TheCard">
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior/>
                 </i:Interaction.Behaviors>
@@ -1888,6 +1888,9 @@
             <DataTrigger Binding="{Binding Name}" Value="Kc">
                 <Setter TargetName="faceRect" Property="Fill" Value="{StaticResource CK}"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
+                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
+            </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
@@ -1912,6 +1915,11 @@
                 </Grid.RenderTransform>
             </Grid>
         </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
+                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
         <Grid Width="100" Height="140" Name="TheGrid">
@@ -1935,5 +1943,10 @@
                 </Grid.RenderTransform>
             </Grid>
         </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
+                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
     </DataTemplate>
 </ResourceDictionary>

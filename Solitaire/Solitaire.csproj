@@ -75,6 +75,7 @@
     <Compile Include="ViewModel\SpiderViewModel.cs" />
     <Compile Include="ViewModel\VariationViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
+    <Compile Include="View\ConfirmCommandBehavior.cs" />
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\MoveObjectBehavior.cs" />
