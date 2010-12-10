@@ -4,7 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 
-namespace ConfirmBehavior
+namespace Spider.Solitaire.View
 {
     public class Confirm : Behavior<UIElement>
     {

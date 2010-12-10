@@ -1,3 +1,5 @@
+- make spider engine a DLL
+- make empty space not selectable unless from card is set
 - confirm new game, paste, etc.
 - add message box mechanism
 - remove button features from stock pile and just use visual states
@@ -6,7 +8,6 @@
 - improve undo/redo buttons and put them in the corners
 - increase vertical size
 - make face up cards outside the first any suit run non-selectable
-- bind is-selectable to hand cursor
 - support holding piles for interactive moves
 - support swap by selecting from card and to card
 - stretch/compress card label to a fixed width

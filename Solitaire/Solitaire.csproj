@@ -79,6 +79,7 @@
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\MoveObjectBehavior.cs" />
+    <Compile Include="View\ShowMessageBox.cs" />
     <Compile Include="View\SuitColorToBrushConverter.cs" />
     <Page Include="CardDictionary1.xaml">
       <SubType>Designer</SubType>

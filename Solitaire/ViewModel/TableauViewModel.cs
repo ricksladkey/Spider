@@ -33,6 +33,7 @@ namespace Spider.Solitaire.ViewModel
         public Tableau Tableau { get { return Model.Game.Tableau; } }
         public int CheckPoint { get { return Tableau.CheckPoint; } }
         public int FirstSpace { get { return Tableau.NumberOfSpaces == 0 ? -1 : Tableau.Spaces[0]; } }
+        public bool FromSelected { get { return FromCard != null; } }
 
         public void Revert(int checkPoint)
         {

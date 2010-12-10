@@ -132,9 +132,14 @@ namespace Spider.Solitaire.View
                     MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
                     return;
                 }
+                var element = (FrameworkElement)sender;
+                initialDataContext = element.DataContext;
+                if (!MoveObjectBehavior.SelectCommand.CanExecute(initialDataContext))
+                {
+                    return;
+                }
                 mouseDown = true;
                 mouseDrag = false;
-                var element = (FrameworkElement)sender;
                 startPosition = e.GetPosition(Canvas);
                 var gt = element.TransformToVisual(Canvas);
                 var margin = new Vector(3, 3);
@@ -142,7 +147,6 @@ namespace Spider.Solitaire.View
                 Canvas.SetLeft(MoveObject, point.X);
                 Canvas.SetTop(MoveObject, point.Y);
                 offset = startPosition - point;
-                initialDataContext = element.DataContext;
                 MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
                 Mouse.Capture(MoveObject);
             }
