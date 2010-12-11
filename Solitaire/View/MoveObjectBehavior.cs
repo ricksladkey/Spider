@@ -25,50 +25,26 @@ namespace Spider.Solitaire.View
 
         public bool IsMoveObject
         {
-            get
-            {
-                return (bool)base.GetValue(IsMoveObjectProperty);
-            }
-            set
-            {
-                base.SetValue(IsMoveObjectProperty, value);
-            }
+            get { return (bool)base.GetValue(IsMoveObjectProperty); }
+            set { base.SetValue(IsMoveObjectProperty, value); }
         }
 
         public Type TargetType
         {
-            get
-            {
-                return (Type)base.GetValue(TargetTypeProperty);
-            }
-            set
-            {
-                base.SetValue(TargetTypeProperty, value);
-            }
+            get { return (Type)base.GetValue(TargetTypeProperty); }
+            set { base.SetValue(TargetTypeProperty, value); }
         }
 
         public ICommand SelectCommand
         {
-            get
-            {
-                return (ICommand)base.GetValue(SelectCommandProperty);
-            }
-            set
-            {
-                base.SetValue(SelectCommandProperty, value);
-            }
+            get { return (ICommand)base.GetValue(SelectCommandProperty); }
+            set { base.SetValue(SelectCommandProperty, value); }
         }
 
         public ICommand AutoSelectCommand
         {
-            get
-            {
-                return (ICommand)base.GetValue(AutoSelectCommandProperty);
-            }
-            set
-            {
-                base.SetValue(AutoSelectCommandProperty, value);
-            }
+            get { return (ICommand)base.GetValue(AutoSelectCommandProperty); }
+            set { base.SetValue(AutoSelectCommandProperty, value); } 
         }
 
         protected override void OnAttached()
