@@ -4,44 +4,26 @@ using System.Linq;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows;
-using Spider.Solitaire.ViewModel;
 
 namespace Spider.Solitaire.View
 {
     public class OverlapPanel : Panel
     {
-        public static readonly DependencyProperty DownOffsetProperty =
-              DependencyProperty.Register("DownOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty OffsetProperty =
+              DependencyProperty.Register("Offset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
+        public static readonly DependencyProperty OffsetSelectorsProperty =
+            DependencyProperty.Register("OffsetSelectors", typeof(List<OffsetSelector>), typeof(OverlapPanel), new UIPropertyMetadata(new List<OffsetSelector>()));
 
-        public static readonly DependencyProperty UpOffsetProperty =
-              DependencyProperty.Register("UpOffset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
-
-        public OverlapPanel()
+        public double Offset
         {
+            get { return (double)GetValue(OffsetProperty); }
+            set { SetValue(OffsetProperty, value); }
         }
 
-        public double DownOffset
+        public List<OffsetSelector> OffsetSelectors
         {
-            get
-            {
-                return (double)GetValue(DownOffsetProperty);
-            }
-            set
-            {
-                SetValue(DownOffsetProperty, value);
-            }
-        }
-
-        public double UpOffset
-        {
-            get
-            {
-                return (double)GetValue(UpOffsetProperty);
-            }
-            set
-            {
-                SetValue(UpOffsetProperty, value);
-            }
+            get { return (List<OffsetSelector>)GetValue(OffsetSelectorsProperty); }
+            set { SetValue(OffsetSelectorsProperty, value); }
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -81,11 +63,18 @@ namespace Spider.Solitaire.View
         private double GetOffset(UIElement element)
         {
             var contentPresenter = element as ContentPresenter;
-            if (contentPresenter != null && contentPresenter.DataContext is DownCardViewModel)
+            if (contentPresenter != null && contentPresenter.DataContext != null)
             {
-                return DownOffset;
+                Type type = contentPresenter.DataContext.GetType();
+                foreach (var selector in OffsetSelectors)
+                {
+                    if (selector.Type.IsAssignableFrom(type))
+                    {
+                        return selector.Offset;
+                    }
+                }
             }
-            return UpOffset;
+            return Offset;
         }
     }
 }

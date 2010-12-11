@@ -16,7 +16,12 @@
             <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <vw:OverlapPanel DownOffset="5" UpOffset="25"/>
+                        <vw:OverlapPanel Offset="0">
+                            <vw:OverlapPanel.OffsetSelectors>
+                                <vw:OffsetSelector Type="{x:Type vm:DownCardViewModel}" Offset="5"/>
+                                <vw:OffsetSelector Type="{x:Type vm:UpCardViewModel}" Offset="25"/>
+                            </vw:OverlapPanel.OffsetSelectors>
+                        </vw:OverlapPanel>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
