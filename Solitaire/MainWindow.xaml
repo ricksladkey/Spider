@@ -9,8 +9,11 @@
     DataContext="{DynamicResource SpiderViewModelDataSource}">
     <Window.Resources>
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
+        <Style x:Key="PileMargin">
+            <Setter Property="Control.Margin" Value="3,3,3,3"/>
+        </Style>
         <DataTemplate x:Key="PileTemplate">
-            <ItemsControl ItemsSource="{Binding}" Margin="3,3,3,3">
+            <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <vw:OverlapPanel DownOffset="5" UpOffset="25"/>
@@ -69,19 +72,14 @@
             </MenuItem>
         </Menu>
         <Canvas Background="{StaticResource GamePlayBackground}" x:Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
-            <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}">
+            <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}" ItemContainerStyle="{StaticResource PileMargin}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ContentControl Content="{Binding}" Margin="3,3,3,3"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}">
+            <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}" ItemContainerStyle="{StaticResource PileMargin}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />

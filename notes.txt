@@ -1,9 +1,7 @@
 - make spider engine a DLL
-- make empty space not selectable unless from card is set
 - confirm new game, paste, etc.
 - add message box mechanism
 - remove button features from stock pile and just use visual states
-- remove margin around move pile and remove margin adjustment in move object behavior
 - fix dotted blue line around stock pile
 - improve undo/redo buttons and put them in the corners
 - increase vertical size

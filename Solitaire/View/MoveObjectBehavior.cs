@@ -142,8 +142,7 @@ namespace Spider.Solitaire.View
                 mouseDrag = false;
                 startPosition = e.GetPosition(Canvas);
                 var gt = element.TransformToVisual(Canvas);
-                var margin = new Vector(3, 3);
-                var point = gt.Transform(new Point(0, 0)) - margin;
+                var point = gt.Transform(new Point(0, 0));
                 Canvas.SetLeft(MoveObject, point.X);
                 Canvas.SetTop(MoveObject, point.Y);
                 offset = startPosition - point;

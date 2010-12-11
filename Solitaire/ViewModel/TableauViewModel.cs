@@ -136,7 +136,7 @@ namespace Spider.Solitaire.ViewModel
                 }
                 if (Tableau.IsSpace(column))
                 {
-                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
+                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = FromSelected };
                 }
             }
         }
