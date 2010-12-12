@@ -69,14 +69,15 @@ namespace Spider.Solitaire.View
             if (IsMoveObject)
             {
                 state.MoveObjectBehavior = this;
+                AssociatedObject.Visibility = Visibility.Collapsed;
             }
 
             AssociatedObject.MouseLeftButtonDown +=
                 (sender, e) => { if (!IsMoveObject) StateMap[sender].element_MouseDown(sender, e); };
             AssociatedObject.MouseLeftButtonUp +=
-                (sender, e) => { if (IsMoveObject) StateMap[sender].element_MouseUp(sender, e); };
+                (sender, e) => { StateMap[sender].element_MouseUp(sender, e); };
             AssociatedObject.MouseMove +=
-                (sender, e) => { if (IsMoveObject) StateMap[sender].element_MouseMove(sender, e); };
+                (sender, e) => { StateMap[sender].element_MouseMove(sender, e); };
         }
 
         private T FindParent<T>(DependencyObject element)
@@ -100,43 +101,37 @@ namespace Spider.Solitaire.View
         {
             private bool mouseDown;
             private bool mouseDrag;
-            private Point startPosition;
-            private Vector offset;
+            private int clickCount;
+            private Point startPositionElement;
+            private Point startPositionMouse;
+            private Vector offsetElementToMouse;
+            private Point fromPosition;
             private object initialDataContext;
 
             public Canvas Canvas { get; set; }
             public MoveObjectBehavior MoveObjectBehavior { get; set; }
 
             public FrameworkElement MoveObject { get { return MoveObjectBehavior.AssociatedObject; } }
+            public bool FromSelected { get { return MoveObjectBehavior.FromSelected; } }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
-                if (e.ClickCount == 2)
-                {
-                    MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
-                    return;
-                }
                 var element = (FrameworkElement)sender;
                 initialDataContext = element.DataContext;
                 if (!MoveObjectBehavior.SelectCommand.CanExecute(initialDataContext))
                 {
                     return;
                 }
-                if (MoveObjectBehavior.FromSelected)
-                {
-                    MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
-                    return;
-                }
                 mouseDown = true;
                 mouseDrag = false;
-                startPosition = e.GetPosition(Canvas);
-                var gt = element.TransformToVisual(Canvas);
-                var point = gt.Transform(new Point(0, 0));
-                Canvas.SetLeft(MoveObject, point.X);
-                Canvas.SetTop(MoveObject, point.Y);
-                offset = startPosition - point;
-                MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
-                Mouse.Capture(MoveObject);
+                clickCount = e.ClickCount;
+                startPositionElement = element.TransformToVisual(Canvas).Transform(new Point(0, 0));
+                startPositionMouse = e.GetPosition(Canvas);
+                offsetElementToMouse = startPositionMouse - startPositionElement;
+                if (!FromSelected)
+                {
+                    fromPosition = startPositionElement;
+                }
             }
 
             public void element_MouseMove(object sender, MouseEventArgs e)
@@ -145,16 +140,23 @@ namespace Spider.Solitaire.View
                 if (mouseDown)
                 {
                     var position = e.GetPosition(Canvas);
-                    Canvas.SetLeft(element, position.X - offset.X);
-                    Canvas.SetTop(element, position.Y - offset.Y);
                     if (!mouseDrag)
                     {
-                        var drag = startPosition - position;
+                        var drag = startPositionMouse - position;
                         if (Math.Abs(drag.X) >= SystemParameters.MinimumHorizontalDragDistance ||
                             Math.Abs(drag.Y) >= SystemParameters.MinimumVerticalDragDistance)
                         {
                             mouseDrag = true;
+                            MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
+                            MoveObject.Visibility = Visibility.Visible;
+                            MoveObject.IsHitTestVisible = false;
+                            Mouse.Capture(MoveObject);
                         }
+                    }
+                    if (mouseDrag)
+                    {
+                        Canvas.SetLeft(MoveObject, position.X - offsetElementToMouse.X);
+                        Canvas.SetTop(MoveObject, position.Y - offsetElementToMouse.Y);
                     }
                 }
             }
@@ -162,14 +164,46 @@ namespace Spider.Solitaire.View
             public void element_MouseUp(object sender, MouseButtonEventArgs e)
             {
                 Mouse.Capture(null);
-                mouseDown = false;
                 if (mouseDrag)
                 {
+                    var position = e.GetPosition(Canvas);
                     var element = Mouse.DirectlyOver as FrameworkElement;
                     var dataContext = element != null ? element.DataContext : null;
                     var isDesiredType = dataContext != null && MoveObjectBehavior.TargetType.IsAssignableFrom(dataContext.GetType());
                     MoveObjectBehavior.SelectCommand.Execute(isDesiredType ? dataContext : null);
+                    MoveObject.Visibility = Visibility.Collapsed;
+                    MoveObject.IsHitTestVisible = true;
                 }
+                else if (mouseDown)
+                {
+                    if (clickCount == 1)
+                    {
+                        if (!FromSelected)
+                        {
+                            MoveObject.Visibility = Visibility.Visible;
+                            Canvas.SetLeft(MoveObject, startPositionElement.X);
+                            Canvas.SetTop(MoveObject, startPositionElement.Y);
+                        }
+                        else
+                        {
+                            MoveObject.Visibility = Visibility.Collapsed;
+                            var element = sender as FrameworkElement;
+                            var toPosition = element.TransformToVisual(Canvas).Transform(new Point(0, 25));
+                            AnimateMove(fromPosition, toPosition);
+                        }
+                        MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
+                    }
+                    else if (clickCount == 2)
+                    {
+                        MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
+                    }
+                }
+                mouseDown = false;
+                mouseDrag = false;
+            }
+
+            private void AnimateMove(Point from, Point to)
+            {
             }
         }
     }

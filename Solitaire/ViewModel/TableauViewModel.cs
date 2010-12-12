@@ -170,8 +170,12 @@ namespace Spider.Solitaire.ViewModel
                 Pile fromPile = Tableau.UpPiles[FromCard.Column];
                 for (int row = FromCard.Row; row < fromPile.Count; row++)
                 {
-                    yield return new UpCardViewModel { Card = fromPile[row] };
+                    yield return new UpCardViewModel { Card = fromPile[row], Column = FromCard.Column, Row = row, IsSelectable = true };
                 }
+            }
+            else
+            {
+                yield return new EmptySpaceViewModel { IsSelectable = true };
             }
         }
     }

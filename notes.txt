@@ -1,3 +1,4 @@
+- if drag is started while from is selected, start dragging the new card
 - split select command into select-from and select-to
 - make spider engine a DLL
 - confirm new game, paste, etc.

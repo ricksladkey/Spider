@@ -91,7 +91,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-            <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}" IsHitTestVisible="False">
+            <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior
                         IsMoveObject="True"
