@@ -33,14 +33,21 @@ namespace Spider.Tests
         public void SpiderViewModelConstructorTest1()
         {
             var target = new SpiderViewModel();
-            Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
-            Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
-            foreach (var pile in target.Tableau.Piles)
+            try
             {
-                Assert.AreEqual(1, pile.Count);
-                Assert.IsInstanceOfType(pile[0], typeof(EmptySpaceViewModel));
+                Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
+                foreach (var pile in target.Tableau.Piles)
+                {
+                    Assert.AreEqual(1, pile.Count);
+                    Assert.IsInstanceOfType(pile[0], typeof(EmptySpaceViewModel));
+                }
+                Assert.AreEqual(0, target.Tableau.StockPile.Count);
             }
-            Assert.AreEqual(0, target.Tableau.StockPile.Count);
+            finally
+            {
+                target.Dispose();
+            }
         }
 
         /// <summary>
@@ -50,12 +57,19 @@ namespace Spider.Tests
         public void SpiderViewModelConstructorTest2()
         {
             var target = new SpiderViewModel(sampleData);
-            Assert.AreEqual(2, target.Tableau.DiscardPiles.Count);
-            Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
-            var pile = target.Tableau.Piles[0];
-            Assert.AreEqual(11, pile.Count);
-            Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
-            Assert.AreEqual(1, target.Tableau.StockPile.Count);
+            try
+            {
+                Assert.AreEqual(2, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
+                var pile = target.Tableau.Piles[0];
+                Assert.AreEqual(11, pile.Count);
+                Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
+                Assert.AreEqual(1, target.Tableau.StockPile.Count);
+            }
+            finally
+            {
+                target.Dispose();
+            }
         }
 
         /// <summary>
@@ -65,16 +79,23 @@ namespace Spider.Tests
         public void NewCommandTest()
         {
             var target = new SpiderViewModel();
-            target.NewCommand.Execute(null);
-            Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
-            Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
-            foreach (var pile in target.Tableau.Piles)
+            try
             {
-                Assert.IsTrue(pile.Count > 1);
-                Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
-                Assert.IsInstanceOfType(pile[pile.Count - 1], typeof(UpCardViewModel));
+                target.NewCommand.Execute(null);
+                Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
+                foreach (var pile in target.Tableau.Piles)
+                {
+                    Assert.IsTrue(pile.Count > 1);
+                    Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
+                    Assert.IsInstanceOfType(pile[pile.Count - 1], typeof(UpCardViewModel));
+                }
+                Assert.IsTrue(target.Tableau.StockPile.Count > 0);
             }
-            Assert.IsTrue(target.Tableau.StockPile.Count > 0);
+            finally
+            {
+                target.Dispose();
+            }
         }
 
         /// <summary>
@@ -87,22 +108,28 @@ namespace Spider.Tests
             var newVariation = Variation.Spiderette4;
 
             var target = new SpiderViewModel();
-
-            Assert.AreEqual(originalVariation, target.Variation);
-            foreach (var variation in target.Variations)
+            try
             {
-                Assert.AreEqual(originalVariation == variation.Value, variation.IsChecked);
+                Assert.AreEqual(originalVariation, target.Variation);
+                foreach (var variation in target.Variations)
+                {
+                    Assert.AreEqual(originalVariation == variation.Value, variation.IsChecked);
+                }
+                Assert.AreEqual(originalVariation.NumberOfPiles, target.Game.NumberOfPiles);
+
+                target.SetVariationCommand.Execute(new VariationViewModel(newVariation, false));
+
+                Assert.AreEqual(newVariation, target.Variation);
+                foreach (var variation in target.Variations)
+                {
+                    Assert.AreEqual(newVariation == variation.Value, variation.IsChecked);
+                }
+                Assert.AreEqual(newVariation.NumberOfPiles, target.Game.NumberOfPiles);
             }
-            Assert.AreEqual(originalVariation.NumberOfPiles, target.Game.NumberOfPiles);
-
-            target.SetVariationCommand.Execute(new VariationViewModel(newVariation, false));
-
-            Assert.AreEqual(newVariation, target.Variation);
-            foreach (var variation in target.Variations)
+            finally
             {
-                Assert.AreEqual(newVariation == variation.Value, variation.IsChecked);
+                target.Dispose();
             }
-            Assert.AreEqual(newVariation.NumberOfPiles, target.Game.NumberOfPiles);
         }
 
         /// <summary>
@@ -115,19 +142,25 @@ namespace Spider.Tests
             var newAlgorithm = AlgorithmType.Search;
 
             var target = new SpiderViewModel();
-
-            Assert.AreEqual(originalAlgorithm, target.AlgorithmType);
-            foreach (var variation in target.Algorithms)
+            try
             {
-                Assert.AreEqual(originalAlgorithm == variation.Value, variation.IsChecked);
+                Assert.AreEqual(originalAlgorithm, target.AlgorithmType);
+                foreach (var variation in target.Algorithms)
+                {
+                    Assert.AreEqual(originalAlgorithm == variation.Value, variation.IsChecked);
+                }
+
+                target.SetAlgorithmCommand.Execute(new AlgorithmViewModel(newAlgorithm, false));
+
+                Assert.AreEqual(newAlgorithm, target.AlgorithmType);
+                foreach (var variation in target.Algorithms)
+                {
+                    Assert.AreEqual(newAlgorithm == variation.Value, variation.IsChecked);
+                }
             }
-
-            target.SetAlgorithmCommand.Execute(new AlgorithmViewModel(newAlgorithm, false));
-
-            Assert.AreEqual(newAlgorithm, target.AlgorithmType);
-            foreach (var variation in target.Algorithms)
+            finally
             {
-                Assert.AreEqual(newAlgorithm == variation.Value, variation.IsChecked);
+                target.Dispose();
             }
         }
     }

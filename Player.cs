@@ -12,10 +12,11 @@ using LevenbergMarquardtLeastSquaresFitting;
 
 using Spider.Collections;
 using Spider.Engine;
+using Spider.GamePlay;
 
-namespace Spider.GamePlay
+namespace Spider
 {
-    public class Player : IGameSettings
+    public class Player : IGameSettings, IDisposable
     {
         private int played;
         private int won;
@@ -517,5 +518,30 @@ namespace Spider.GamePlay
             Console.WriteLine("};");
         }
 #endif
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        ~Player()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // Free managed resources.
+                semaphore.Dispose();
+            }
+            // Free native resources if there are any.
+        }
     }
 }

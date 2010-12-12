@@ -298,6 +298,14 @@ namespace Spider.Collections
 
         #endregion
 
+        protected IList<T> Items
+        {
+            get
+            {
+                return this;
+            }
+        }
+
         private void IncreaseCapacity(int additionalCapacity)
         {
             int newCapacity = (count + additionalCapacity) * 2;

@@ -7,6 +7,7 @@ using Spider.Collections;
 
 namespace Spider.Engine
 {
+    [Serializable]
     public class InvalidMoveException : Exception
     {
         public InvalidMoveException(string message)

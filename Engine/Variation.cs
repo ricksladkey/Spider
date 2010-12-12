@@ -94,7 +94,7 @@ namespace Spider.Engine
                     case Value.Spiderette2: return 1;
                     case Value.Spiderette4: return 1;
                 }
-                throw new Exception("unknown variation");
+                throw new InvalidOperationException("unknown variation");
             }
         }
 
@@ -156,7 +156,7 @@ namespace Spider.Engine
                     case Value.Spiderette2: return 7;
                     case Value.Spiderette4: return 7;
                 }
-                throw new Exception("unknown variation");
+                throw new InvalidOperationException("unknown variation");
             }
         }
 
@@ -173,7 +173,7 @@ namespace Spider.Engine
                     case Value.Spiderette2: return 2;
                     case Value.Spiderette4: return 4;
                 }
-                throw new Exception("unknown variation");
+                throw new InvalidOperationException("unknown variation");
             }
         }
 
@@ -190,7 +190,7 @@ namespace Spider.Engine
                     case Value.Spiderette2: return SpideretteTwoSuitDeck;
                     case Value.Spiderette4: return SpideretteFourSuitDeck;
                 }
-                throw new Exception("unknown variation");
+                throw new InvalidOperationException("unknown variation");
             }
         }
 
@@ -207,7 +207,7 @@ namespace Spider.Engine
                     case Value.Spiderette2: return SpideretteLayoutParts;
                     case Value.Spiderette4: return SpideretteLayoutParts;
                 }
-                throw new Exception("unknown variation");
+                throw new InvalidOperationException("unknown variation");
             }
         }
 
@@ -222,7 +222,7 @@ namespace Spider.Engine
                 case Value.Spiderette2: return "2t";
                 case Value.Spiderette4: return "4t";
             }
-            throw new Exception("unknown variation");
+            throw new InvalidOperationException("unknown variation");
         }
 
         public static Variation FromAsciiString(string text)
@@ -233,7 +233,7 @@ namespace Spider.Engine
             if (text == "1t") { return Variation.Spiderette1; }
             if (text == "2t") { return Variation.Spiderette2; }
             if (text == "4t") { return Variation.Spiderette4; }
-            throw new Exception("unknown variation");
+            throw new InvalidOperationException("unknown variation");
         }
 
         public override string ToString()
