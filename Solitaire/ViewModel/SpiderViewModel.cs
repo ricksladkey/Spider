@@ -216,7 +216,7 @@ namespace Spider.Solitaire.ViewModel
                 Tableau.Deal();
             }
             AddCheckPoint();
-            Refresh();
+            ResetMoveAndRefresh();
         }
 
         private bool CanMove()

@@ -8,8 +8,10 @@ using Spider.GamePlay;
 
 namespace Spider.Solitaire.ViewModel
 {
-    public class TableauViewModel
+    public class TableauViewModel : ViewModelBase
     {
+        private CardViewModel fromCard;
+
         public TableauViewModel(SpiderViewModel model)
         {
             Model = model;
@@ -27,12 +29,22 @@ namespace Spider.Solitaire.ViewModel
         public PileViewModel StockPile { get; private set; }
         public PileViewModel MovePile { get; private set; }
 
-        public CardViewModel FromCard { get; set; }
-        public CardViewModel ToCard { get; set; }
-
         public Tableau Tableau { get { return Model.Game.Tableau; } }
         public int CheckPoint { get { return Tableau.CheckPoint; } }
         public int FirstSpace { get { return Tableau.NumberOfSpaces == 0 ? -1 : Tableau.Spaces[0]; } }
+
+        public CardViewModel FromCard
+        {
+            get { return fromCard; }
+            set
+            {
+                fromCard = value;
+                OnPropertyChanged("FromCard");
+                OnPropertyChanged("FromSelected");
+            }
+        }
+
+        public CardViewModel ToCard { get; set; }
         public bool FromSelected { get { return FromCard != null; } }
 
         public void Revert(int checkPoint)

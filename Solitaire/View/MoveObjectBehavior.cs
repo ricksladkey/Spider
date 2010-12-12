@@ -14,6 +14,8 @@ namespace Spider.Solitaire.View
     {
         public static readonly DependencyProperty IsMoveObjectProperty =
             DependencyProperty.Register("IsMoveObject", typeof(bool), typeof(MoveObjectBehavior), new PropertyMetadata(false));
+        public static readonly DependencyProperty FromSelectedProperty =
+            DependencyProperty.Register("FromSelected", typeof(bool), typeof(MoveObjectBehavior), new UIPropertyMetadata(false));
         public static readonly DependencyProperty TargetTypeProperty =
             DependencyProperty.Register("TargetType", typeof(Type), typeof(MoveObjectBehavior), new PropertyMetadata(null));
         public static readonly DependencyProperty SelectCommandProperty =
@@ -27,6 +29,12 @@ namespace Spider.Solitaire.View
         {
             get { return (bool)base.GetValue(IsMoveObjectProperty); }
             set { base.SetValue(IsMoveObjectProperty, value); }
+        }
+
+        public bool FromSelected
+        {
+            get { return (bool)GetValue(FromSelectedProperty); }
+            set { SetValue(FromSelectedProperty, value); }
         }
 
         public Type TargetType
@@ -112,6 +120,11 @@ namespace Spider.Solitaire.View
                 initialDataContext = element.DataContext;
                 if (!MoveObjectBehavior.SelectCommand.CanExecute(initialDataContext))
                 {
+                    return;
+                }
+                if (MoveObjectBehavior.FromSelected)
+                {
+                    MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
                     return;
                 }
                 mouseDown = true;

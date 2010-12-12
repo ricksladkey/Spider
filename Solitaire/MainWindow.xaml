@@ -95,6 +95,7 @@
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior
                         IsMoveObject="True"
+                        FromSelected="{Binding DataContext.Tableau.FromSelected, ElementName=window}"
                         SelectCommand="{Binding DataContext.SelectCommand, ElementName=window}"
                         AutoSelectCommand="{Binding DataContext.AutoSelectCommand, ElementName=window}"
                         TargetType="vm:CardViewModel"/>
