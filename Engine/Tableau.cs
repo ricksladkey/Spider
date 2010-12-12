@@ -65,6 +65,7 @@ namespace Spider.Engine
                 upPiles[row] = new Pile();
             }
             scratchPile = new Pile();
+            Refresh();
         }
 
         public int NumberOfSpaces
@@ -143,7 +144,7 @@ namespace Spider.Engine
                         }
                     }
                 }
-                Debug.Assert((spaces as System.Collections.IStructuralEquatable).Equals(SlowSpaces, EqualityComparer<int>.Default));
+                Debug.Assert(Utils.CollectionsAreEqual(spaces, SlowSpaces));
                 return spaces;
             }
         }

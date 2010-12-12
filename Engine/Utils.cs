@@ -99,5 +99,18 @@ namespace Spider.Engine
                 Trace.WriteLine(string.Format(format, args));
             }
         }
+
+        public static bool CollectionsAreEqual<T>(ICollection<T> a, ICollection<T> b)
+        {
+            if (a == null && b == null)
+            {
+                return true;
+            }
+            if (a == null || b == null)
+            {
+                return false;
+            }
+            return (a as System.Collections.IStructuralEquatable).Equals(b, EqualityComparer<T>.Default);
+        }
     }
 }

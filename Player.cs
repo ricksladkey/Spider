@@ -16,7 +16,7 @@ using Spider.GamePlay;
 
 namespace Spider
 {
-    public class Player : IGameSettings, IDisposable
+    public class Player : IGameSettings
     {
         private int played;
         private int won;
@@ -25,7 +25,6 @@ namespace Spider
         private int movesWon;
         private int movesLost;
         private int nextInstance;
-        private Semaphore semaphore;
         private ConcurrentQueue<Game> gameQueue;
 
         public Player()
@@ -123,33 +122,33 @@ namespace Spider
             }
             else
             {
-                semaphore = new Semaphore(threads, threads);
-                WaitCallback callback = new WaitCallback(ThreadPlayOneGame);
-
-                for (int i = 0; i < NumberOfGames; i++)
+                using (Semaphore semaphore = new Semaphore(threads, threads))
                 {
-                    // Wait for a processor to become available.
-                    semaphore.WaitOne();
+                    WaitCallback callback = state =>
+                        {
+                            Game game = GetGame();
+                            PlayOneGame(game, (int)state);
+                            ReleaseGame(game);
+                            semaphore.Release();
+                        };
 
-                    // Queue the work item to a thread.
-                    ThreadPool.QueueUserWorkItem(callback, Seed + i);
+                    for (int i = 0; i < NumberOfGames; i++)
+                    {
+                        // Wait for a processor to become available.
+                        semaphore.WaitOne();
 
-                }
+                        // Queue the work item to a thread.
+                        ThreadPool.QueueUserWorkItem(callback, Seed + i);
 
-                //  Allow all threads to finish.
-                for (int i = 0; i < threads; i++)
-                {
-                    semaphore.WaitOne();
+                    }
+
+                    //  Allow all threads to finish.
+                    for (int i = 0; i < threads; i++)
+                    {
+                        semaphore.WaitOne();
+                    }
                 }
             }
-        }
-
-        private void ThreadPlayOneGame(object state)
-        {
-            Game game = GetGame();
-            PlayOneGame(game, (int)state);
-            ReleaseGame(game);
-            semaphore.Release();
         }
 
         private Game PlayOneGame(Game game, int seed)
@@ -518,30 +517,5 @@ namespace Spider
             Console.WriteLine("};");
         }
 #endif
-
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        #endregion
-
-        ~Player()
-        {
-            Dispose(false);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                // Free managed resources.
-                semaphore.Dispose();
-            }
-            // Free native resources if there are any.
-        }
     }
 }

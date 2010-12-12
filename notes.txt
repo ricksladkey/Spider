@@ -1,3 +1,5 @@
+- split select command into select-from and select-to
+- fix selection oddities like dragging the move pile
 - make spider engine a DLL
 - confirm new game, paste, etc.
 - add message box mechanism

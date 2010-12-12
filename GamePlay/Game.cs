@@ -130,7 +130,7 @@ namespace Spider.GamePlay
             get { return coefficients; }
             set
             {
-                if (!ArrayEquals(coefficients, value))
+                if (!Utils.CollectionsAreEqual(coefficients, value))
                 {
                     coefficients = value;
                     SetCoefficients();
@@ -148,9 +148,6 @@ namespace Spider.GamePlay
         public bool Interactive { get; set; }
         public int Instance { get; set; }
 
-        public bool Won { get; private set; }
-        public bool Started { get; private set; }
-
         public Pile Shuffled { get; private set; }
         public Tableau Tableau { get; private set; }
         public Tableau FindTableau { get; private set; }
@@ -167,6 +164,15 @@ namespace Spider.GamePlay
 
         private TableauInputOutput TableauInputOutput { get; set; }
         private MoveProcessor MoveProcessor { get; set; }
+
+        public bool Won
+        {
+            get
+            {
+                return Tableau.DiscardPiles.Count > 0 &&
+                    Tableau.NumberOfSpaces == NumberOfPiles;
+            }
+        }
 
         public List<ComplexMove> ComplexCandidates
         {
@@ -205,8 +211,6 @@ namespace Spider.GamePlay
 
         public void Clear()
         {
-            Started = false;
-            Won = false;
             Shuffled.Clear();
             Tableau.Clear();
         }
@@ -317,7 +321,6 @@ namespace Spider.GamePlay
             Shuffled.Copy(Variation.Deck);
             Shuffled.Shuffle(Seed);
             Tableau.PrepareLayout(Shuffled);
-            Started = true;
         }
 
         private void CopyGame()
@@ -330,9 +333,8 @@ namespace Spider.GamePlay
 
         public bool MakeMove()
         {
-            if (Tableau.NumberOfSpaces == NumberOfPiles)
+            if (Won)
             {
-                Won = true;
                 return true;
             }
 
@@ -587,19 +589,6 @@ namespace Spider.GamePlay
         public override string ToString()
         {
             return TableauInputOutput.ToPrettyString();
-        }
-
-        private static bool ArrayEquals<T>(T[] a, T[] b)
-        {
-            if (a == null && b == null)
-            {
-                return true;
-            }
-            if (a == null || b == null)
-            {
-                return false;
-            }
-            return (a as System.Collections.IStructuralEquatable).Equals(b, EqualityComparer<T>.Default);
         }
     }
 }
