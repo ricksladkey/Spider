@@ -178,7 +178,8 @@ namespace Spider.Solitaire.View
                 var element = (FrameworkElement)sender;
                 if (element != MoveObject)
                 {
-                    if (!MoveObjectBehavior.MoveSelectCommand.CanExecute(element.DataContext))
+                    if (!MoveObjectBehavior.MoveSelectCommand.CanExecute(element.DataContext) &&
+                        !MoveObjectBehavior.AutoSelectCommand.CanExecute(element.DataContext))
                     {
                         return;
                     }
