@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interactivity;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Spider.Solitaire.View
 {
@@ -18,10 +19,20 @@ namespace Spider.Solitaire.View
             DependencyProperty.Register("FromSelected", typeof(bool), typeof(MoveObjectBehavior), new UIPropertyMetadata(false));
         public static readonly DependencyProperty TargetTypeProperty =
             DependencyProperty.Register("TargetType", typeof(Type), typeof(MoveObjectBehavior), new PropertyMetadata(null));
-        public static readonly DependencyProperty SelectCommandProperty =
-            DependencyProperty.Register("SelectCommand", typeof(ICommand), typeof(MoveObjectBehavior), new PropertyMetadata(null));
+        public static readonly DependencyProperty MoveSelectCommandProperty =
+            DependencyProperty.Register("MoveSelectCommand", typeof(ICommand), typeof(MoveObjectBehavior), new PropertyMetadata(null));
         public static readonly DependencyProperty AutoSelectCommandProperty =
             DependencyProperty.Register("AutoSelectCommand", typeof(ICommand), typeof(MoveObjectBehavior), new PropertyMetadata(null));
+        public static readonly DependencyProperty StoryboardProperty =
+            DependencyProperty.Register("Storyboard", typeof(Storyboard), typeof(MoveObjectBehavior), new UIPropertyMetadata(null));
+        public static readonly DependencyProperty FromProperty =
+            DependencyProperty.Register("From", typeof(Point), typeof(MoveObjectBehavior), new UIPropertyMetadata(new Point()));
+        public static readonly DependencyProperty ToProperty =
+            DependencyProperty.Register("To", typeof(Point), typeof(MoveObjectBehavior), new UIPropertyMetadata(new Point()));
+        public static readonly DependencyProperty DurationProperty =
+            DependencyProperty.Register("Duration", typeof(Duration), typeof(MoveObjectBehavior), new UIPropertyMetadata(new Duration(new TimeSpan(0, 0, 1))));
+        public static readonly DependencyProperty ScaledDurationProperty =
+            DependencyProperty.Register("ScaledDuration", typeof(Duration), typeof(MoveObjectBehavior), new UIPropertyMetadata(new Duration(new TimeSpan(0, 0, 1))));
 
         private static Dictionary<object, MoveObjectState> StateMap = new Dictionary<object, MoveObjectState>();
 
@@ -43,16 +54,46 @@ namespace Spider.Solitaire.View
             set { base.SetValue(TargetTypeProperty, value); }
         }
 
-        public ICommand SelectCommand
+        public ICommand MoveSelectCommand
         {
-            get { return (ICommand)base.GetValue(SelectCommandProperty); }
-            set { base.SetValue(SelectCommandProperty, value); }
+            get { return (ICommand)base.GetValue(MoveSelectCommandProperty); }
+            set { base.SetValue(MoveSelectCommandProperty, value); }
         }
 
         public ICommand AutoSelectCommand
         {
             get { return (ICommand)base.GetValue(AutoSelectCommandProperty); }
             set { base.SetValue(AutoSelectCommandProperty, value); } 
+        }
+
+        public Storyboard Storyboard
+        {
+            get { return (Storyboard)GetValue(StoryboardProperty); }
+            set { SetValue(StoryboardProperty, value); }
+        }
+
+        public Point From
+        {
+            get { return (Point)GetValue(FromProperty); }
+            set { SetValue(FromProperty, value); }
+        }
+
+        public Point To
+        {
+            get { return (Point)GetValue(ToProperty); }
+            set { SetValue(ToProperty, value); }
+        }
+
+        public Duration Duration
+        {
+            get { return (Duration)GetValue(DurationProperty); }
+            set { SetValue(DurationProperty, value); }
+        }
+
+        public Duration ScaledDuration
+        {
+            get { return (Duration)GetValue(ScaledDurationProperty); }
+            set { SetValue(ScaledDurationProperty, value); }
         }
 
         protected override void OnAttached()
@@ -68,16 +109,16 @@ namespace Spider.Solitaire.View
             StateMap[AssociatedObject] = state;
             if (IsMoveObject)
             {
-                state.MoveObjectBehavior = this;
+                state.SetParent(this);
                 AssociatedObject.Visibility = Visibility.Collapsed;
             }
 
-            AssociatedObject.MouseLeftButtonDown +=
-                (sender, e) => { if (!IsMoveObject) StateMap[sender].element_MouseDown(sender, e); };
-            AssociatedObject.MouseLeftButtonUp +=
-                (sender, e) => { StateMap[sender].element_MouseUp(sender, e); };
-            AssociatedObject.MouseMove +=
-                (sender, e) => { StateMap[sender].element_MouseMove(sender, e); };
+            AssociatedObject.PreviewMouseLeftButtonDown +=
+                (sender, e) => StateMap[sender].element_MouseDown(sender, e);
+            AssociatedObject.PreviewMouseMove +=
+                (sender, e) => StateMap[sender].element_MouseMove(sender, e);
+            AssociatedObject.PreviewMouseLeftButtonUp +=
+                (sender, e) => StateMap[sender].element_MouseUp(sender, e);
         }
 
         private T FindParent<T>(DependencyObject element)
@@ -107,20 +148,41 @@ namespace Spider.Solitaire.View
             private Vector offsetElementToMouse;
             private Point fromPosition;
             private object initialDataContext;
+            private Action onStoryboardCompletedAction;
 
             public Canvas Canvas { get; set; }
-            public MoveObjectBehavior MoveObjectBehavior { get; set; }
+            public MoveObjectBehavior MoveObjectBehavior { get; private set; }
 
             public FrameworkElement MoveObject { get { return MoveObjectBehavior.AssociatedObject; } }
             public bool FromSelected { get { return MoveObjectBehavior.FromSelected; } }
 
+            public void SetParent(MoveObjectBehavior moveObjectBehavoir)
+            {
+                MoveObjectBehavior = moveObjectBehavoir;
+                if (MoveObjectBehavior.Storyboard != null)
+                {
+                    MoveObjectBehavior.Storyboard.Completed += new EventHandler(Storyboard_Completed);
+                }
+            }
+
+            void Storyboard_Completed(object sender, EventArgs e)
+            {
+                if (onStoryboardCompletedAction != null)
+                {
+                    onStoryboardCompletedAction();
+                }
+            }
+
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
                 var element = (FrameworkElement)sender;
-                initialDataContext = element.DataContext;
-                if (!MoveObjectBehavior.SelectCommand.CanExecute(initialDataContext))
+                if (element != MoveObject)
                 {
-                    return;
+                    if (!MoveObjectBehavior.MoveSelectCommand.CanExecute(element.DataContext))
+                    {
+                        return;
+                    }
+                    initialDataContext = element.DataContext;
                 }
                 mouseDown = true;
                 mouseDrag = false;
@@ -147,7 +209,11 @@ namespace Spider.Solitaire.View
                             Math.Abs(drag.Y) >= SystemParameters.MinimumVerticalDragDistance)
                         {
                             mouseDrag = true;
-                            MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
+                            if (FromSelected)
+                            {
+                                MoveObjectBehavior.MoveSelectCommand.Execute(null);
+                            }
+                            MoveObjectBehavior.MoveSelectCommand.Execute(initialDataContext);
                             MoveObject.Visibility = Visibility.Visible;
                             MoveObject.IsHitTestVisible = false;
                             Mouse.Capture(MoveObject);
@@ -170,7 +236,7 @@ namespace Spider.Solitaire.View
                     var element = Mouse.DirectlyOver as FrameworkElement;
                     var dataContext = element != null ? element.DataContext : null;
                     var isDesiredType = dataContext != null && MoveObjectBehavior.TargetType.IsAssignableFrom(dataContext.GetType());
-                    MoveObjectBehavior.SelectCommand.Execute(isDesiredType ? dataContext : null);
+                    MoveObjectBehavior.MoveSelectCommand.Execute(isDesiredType ? dataContext : null);
                     MoveObject.Visibility = Visibility.Collapsed;
                     MoveObject.IsHitTestVisible = true;
                 }
@@ -178,32 +244,59 @@ namespace Spider.Solitaire.View
                 {
                     if (clickCount == 1)
                     {
-                        if (!FromSelected)
+                        if (MoveObjectBehavior.MoveSelectCommand.CanExecute(initialDataContext))
                         {
-                            MoveObject.Visibility = Visibility.Visible;
-                            Canvas.SetLeft(MoveObject, startPositionElement.X);
-                            Canvas.SetTop(MoveObject, startPositionElement.Y);
+                            if (!FromSelected)
+                            {
+                                Canvas.SetLeft(MoveObject, startPositionElement.X);
+                                Canvas.SetTop(MoveObject, startPositionElement.Y);
+                                MoveObject.Visibility = Visibility.Visible;
+                                MoveObjectBehavior.MoveSelectCommand.Execute(initialDataContext);
+                            }
+                            else
+                            {
+                                var element = sender as FrameworkElement;
+                                var toPosition = element.TransformToVisual(Canvas).Transform(new Point(0, 25));
+                                AnimateMove(fromPosition, toPosition, () =>
+                                    {
+                                        MoveObject.Visibility = Visibility.Collapsed;
+                                        MoveObjectBehavior.MoveSelectCommand.Execute(initialDataContext);
+                                    });
+                            }
                         }
-                        else
+                        else if (MoveObjectBehavior.AutoSelectCommand.CanExecute(initialDataContext))
                         {
-                            MoveObject.Visibility = Visibility.Collapsed;
-                            var element = sender as FrameworkElement;
-                            var toPosition = element.TransformToVisual(Canvas).Transform(new Point(0, 25));
-                            AnimateMove(fromPosition, toPosition);
+                            MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
                         }
-                        MoveObjectBehavior.SelectCommand.Execute(initialDataContext);
                     }
                     else if (clickCount == 2)
                     {
-                        MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
+                        if (MoveObjectBehavior.AutoSelectCommand.CanExecute(initialDataContext))
+                        {
+                            MoveObject.Visibility = Visibility.Collapsed;
+                            MoveObjectBehavior.AutoSelectCommand.Execute(initialDataContext);
+                        }
                     }
                 }
                 mouseDown = false;
                 mouseDrag = false;
             }
 
-            private void AnimateMove(Point from, Point to)
+            private void AnimateMove(Point from, Point to, Action onStoryboardCompleted)
             {
+                if (MoveObjectBehavior.Storyboard != null)
+                {
+                    MoveObjectBehavior.From = from;
+                    MoveObjectBehavior.To = to;
+                    var scaledDuration = (from - to).Length / Canvas.RenderSize.Width * MoveObjectBehavior.Duration.TimeSpan.TotalSeconds;
+                    MoveObjectBehavior.ScaledDuration = new Duration(TimeSpan.FromSeconds(scaledDuration));
+                    onStoryboardCompletedAction = onStoryboardCompleted;
+                    MoveObjectBehavior.Storyboard.Begin();
+                }
+                else
+                {
+                    onStoryboardCompleted();
+                }
             }
         }
     }

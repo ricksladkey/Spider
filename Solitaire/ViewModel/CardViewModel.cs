@@ -12,8 +12,10 @@ namespace Spider.Solitaire.ViewModel
         public Card Card { get; set; }
         public int Column { get; set; }
         public int Row { get; set; }
-        public bool IsSelectable { get; set; }
+        public bool IsMoveSelectable { get; set; }
+        public bool IsAutoSelectable { get; set; }
 
+        public bool IsSelectable { get { return IsMoveSelectable || IsAutoSelectable; } }
         public string Face { get { return Card.Face.ToLabel(); } }
         public string Suit { get { return Card.Suit.ToPrettyString(); } }
         public SuitColor Color { get { return Card.Suit.GetColor(); } }
@@ -21,14 +23,20 @@ namespace Spider.Solitaire.ViewModel
 
         public override string ToString()
         {
-            return string.Format("Card: {0}, Column = {1}, Row = {2}, IsSelectable = {3}", Card, Column, Row, IsSelectable);
+            return string.Format("Card: {0}, Column = {1}, Row = {2}, IsMoveSelectable = {3}, IsAutoSelectable = {4}",
+                Card, Column, Row, IsMoveSelectable, IsAutoSelectable);
         }
 
         #region IEquatable<CardViewModel> Members
 
         public bool Equals(CardViewModel other)
         {
-            return Card == other.Card && Column == other.Column && Row == other.Row && IsSelectable == other.IsSelectable;
+            return
+                Card == other.Card &&
+                Column == other.Column &&
+                Row == other.Row &&
+                IsMoveSelectable == other.IsMoveSelectable &&
+                IsAutoSelectable == other.IsAutoSelectable;
         }
 
         #endregion

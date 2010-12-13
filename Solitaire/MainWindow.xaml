@@ -94,44 +94,43 @@
             <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior
+                        x:Name="moveBehaviorObject"
                         IsMoveObject="True"
                         FromSelected="{Binding DataContext.Tableau.FromSelected, ElementName=window}"
-                        SelectCommand="{Binding DataContext.SelectCommand, ElementName=window}"
+                        MoveSelectCommand="{Binding DataContext.MoveSelectCommand, ElementName=window}"
                         AutoSelectCommand="{Binding DataContext.AutoSelectCommand, ElementName=window}"
-                        TargetType="vm:CardViewModel"/>
+                        TargetType="vm:CardViewModel"
+                        Duration="0:0:0.5"
+                        >
+                        <!--<vw:MoveObjectBehavior.Storyboard>
+                            <Storyboard>
+                                <ParallelTimeline>
+                                    <DoubleAnimation
+                                        Storyboard.TargetName="movePile"
+                                        Storyboard.TargetProperty="(Canvas.Left)"
+                                        From="{Binding ElementName=moveBehaviorObject, Path=From.X}"
+                                        To="{Binding ElementName=moveBehaviorObject, Path=To.X}"
+                                        Duration="{Binding ElementName=moveBehaviorObject, Path=ScaledDuration}"
+                                        FillBehavior="Stop"
+                                    />
+                                            <DoubleAnimation
+                                        Storyboard.TargetName="movePile"
+                                        Storyboard.TargetProperty="(Canvas.Top)"
+                                        From="{Binding ElementName=moveBehaviorObject, Path=From.Y}"
+                                        To="{Binding ElementName=moveBehaviorObject, Path=To.Y}"
+                                        Duration="{Binding ElementName=moveBehaviorObject, Path=ScaledDuration}"
+                                        FillBehavior="Stop"
+                                    />
+                                </ParallelTimeline>
+                            </Storyboard>
+                        </vw:MoveObjectBehavior.Storyboard>-->
+                    </vw:MoveObjectBehavior>
                 </i:Interaction.Behaviors>
                 <ContentControl.Effect>
                     <DropShadowEffect ShadowDepth="0" BlurRadius="20"/>
                 </ContentControl.Effect>
             </ContentControl>
-            <Button Command="{Binding DataContext.DealCommand, ElementName=window}" Canvas.Left="450" Canvas.Top="400">
-                <Button.Template>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <ContentControl x:Name="stockPile" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
-                        	<ContentControl.Effect>
-                        		<DropShadowEffect ShadowDepth="10" Opacity="0"/>
-                        	</ContentControl.Effect>
-                        	<VisualStateManager.VisualStateGroups>
-                        		<VisualStateGroup x:Name="CommonStates">
-                        			<VisualStateGroup.Transitions>
-                        				<VisualTransition GeneratedDuration="0:0:0.5"/>
-                        			</VisualStateGroup.Transitions>
-                        			<VisualState x:Name="Normal"/>
-                        			<VisualState x:Name="MouseOver">
-                        				<Storyboard>
-                        					<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" Storyboard.TargetName="stockPile">
-                        						<EasingDoubleKeyFrame KeyTime="0" Value="1"/>
-                        					</DoubleAnimationUsingKeyFrames>
-                        				</Storyboard>
-                        			</VisualState>
-                        			<VisualState x:Name="Pressed"/>
-                        			<VisualState x:Name="Disabled"/>
-                        		</VisualStateGroup>
-                        	</VisualStateManager.VisualStateGroups>
-                        </ContentControl>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
+            <ContentControl x:Name="stockPile" Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
             <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding DataContext.UndoCommand, ElementName=window}" Content="Undo"/>
             <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding DataContext.RedoCommand, ElementName=window}" Content="Redo"/>
         </Canvas>

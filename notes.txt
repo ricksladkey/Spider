@@ -1,10 +1,7 @@
-- if drag is started while from is selected, start dragging the new card
-- split select command into select-from and select-to
+- restore visual states to stock pile
 - make spider engine a DLL
 - confirm new game, paste, etc.
 - add message box mechanism
-- remove button features from stock pile and just use visual states
-- fix dotted blue line around stock pile
 - improve undo/redo buttons and put them in the corners
 - increase vertical size
 - make face up cards outside the first any suit run non-selectable

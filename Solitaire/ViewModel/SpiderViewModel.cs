@@ -66,7 +66,7 @@ namespace Spider.Solitaire.ViewModel
             RedoCommand = new RelayCommand(Redo, CanRedo);
             DealCommand = new RelayCommand(Deal, CanDeal);
             MoveCommand = new RelayCommand(Move, CanMove);
-            SelectCommand = new RelayCommand<CardViewModel>(Select, CanSelect);
+            MoveSelectCommand = new RelayCommand<CardViewModel>(MoveSelect, CanMoveSelect);
             AutoSelectCommand = new RelayCommand<CardViewModel>(AutoSelect, CanAutoSelect);
             SetVariationCommand = new RelayCommand<VariationViewModel>(SetVariation);
             SetAlgorithmCommand = new RelayCommand<AlgorithmViewModel>(SetAlgorithm);
@@ -99,7 +99,7 @@ namespace Spider.Solitaire.ViewModel
         public ICommand RedoCommand { get; private set; }
         public ICommand DealCommand { get; private set; }
         public ICommand MoveCommand { get; private set; }
-        public ICommand SelectCommand { get; private set; }
+        public ICommand MoveSelectCommand { get; private set; }
         public ICommand AutoSelectCommand { get; private set; }
         public ICommand SetVariationCommand { get; private set; }
         public ICommand SetAlgorithmCommand { get; private set; }
@@ -224,18 +224,13 @@ namespace Spider.Solitaire.ViewModel
             return Game.Tableau.NumberOfSpaces != Game.NumberOfPiles;
         }
 
-        private void Select(CardViewModel card)
+        private void MoveSelect(CardViewModel card)
         {
-            Utils.WriteLine("Selecting: {0}", card);
+            Utils.WriteLine("MoveSelecting: {0}", card);
+
             if (card == null)
             {
                 ResetMoveAndRefresh();
-                return;
-            }
-
-            if (card.Column == -1 && card.Row == -1)
-            {
-                // Now handled by a button.
                 return;
             }
 
@@ -263,14 +258,22 @@ namespace Spider.Solitaire.ViewModel
             ResetMoveAndRefresh();
         }
 
-        private bool CanSelect(CardViewModel card)
+        private bool CanMoveSelect(CardViewModel card)
         {
-            return card != null && card.IsSelectable;
+            return card != null && card.IsMoveSelectable;
         }
 
         private void AutoSelect(CardViewModel card)
         {
             Utils.WriteLine("Auto-selecting: {0}", card);
+
+            if (card.Column == -1 && card.Row == -1)
+            {
+                Deal();
+                ResetMoveAndRefresh();
+                return;
+            }
+
             Tableau.FromCard = card;
             int firstSpace = Tableau.FirstSpace;
             if (firstSpace == -1)
@@ -292,7 +295,7 @@ namespace Spider.Solitaire.ViewModel
 
         private bool CanAutoSelect(CardViewModel card)
         {
-            return true;
+            return card != null && card.IsSelectable;
         }
 
         private void SetVariation(VariationViewModel variation)

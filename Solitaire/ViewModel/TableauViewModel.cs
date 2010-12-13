@@ -122,16 +122,16 @@ namespace Spider.Solitaire.ViewModel
                 {
                     Card card = Tableau.DownPiles[column][row];
                     bool isSelectable = FromCard.Row == 0 && row == Tableau.DownPiles[column].Count - 1;
-                    yield return new DownCardViewModel { Card = card, Column = column, IsSelectable = isSelectable };
+                    yield return new DownCardViewModel { Card = card, Column = column, IsMoveSelectable = isSelectable };
                 }
                 for (int row = 0; row < FromCard.Row; row++)
                 {
                     Card card = Tableau.UpPiles[column][row];
-                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsMoveSelectable = true };
                 }
                 if (Tableau.DownPiles[column].Count == 0 && FromCard.Row == 0)
                 {
-                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = true };
+                    yield return new EmptySpaceViewModel { Column = column, IsMoveSelectable = true };
                 }
             }
             else
@@ -144,11 +144,11 @@ namespace Spider.Solitaire.ViewModel
                 for (int row = 0; row < Tableau.UpPiles[column].Count; row++)
                 {
                     Card card = Tableau.UpPiles[column][row];
-                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsSelectable = true };
+                    yield return new UpCardViewModel { Card = card, Column = column, Row = row, IsMoveSelectable = true };
                 }
                 if (Tableau.IsSpace(column))
                 {
-                    yield return new EmptySpaceViewModel { Column = column, IsSelectable = FromSelected };
+                    yield return new EmptySpaceViewModel { Column = column, IsMoveSelectable = FromSelected };
                 }
             }
         }
@@ -159,7 +159,7 @@ namespace Spider.Solitaire.ViewModel
             for (int i = 0; i < stockPile.Count; i += Tableau.NumberOfPiles)
             {
                 bool isSelectable = i + Tableau.NumberOfPiles >= stockPile.Count;
-                yield return new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1, IsSelectable = isSelectable };
+                yield return new DownCardViewModel { Card = Card.Empty, Column = -1, Row = -1, IsAutoSelectable = isSelectable };
             }
         }
 
@@ -170,12 +170,12 @@ namespace Spider.Solitaire.ViewModel
                 Pile fromPile = Tableau.UpPiles[FromCard.Column];
                 for (int row = FromCard.Row; row < fromPile.Count; row++)
                 {
-                    yield return new UpCardViewModel { Card = fromPile[row], Column = FromCard.Column, Row = row, IsSelectable = true };
+                    yield return new UpCardViewModel { Card = fromPile[row], Column = FromCard.Column, Row = row, IsMoveSelectable = true };
                 }
             }
             else
             {
-                yield return new EmptySpaceViewModel { IsSelectable = true };
+                yield return new EmptySpaceViewModel { IsMoveSelectable = true };
             }
         }
     }
