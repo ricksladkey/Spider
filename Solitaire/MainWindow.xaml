@@ -94,7 +94,7 @@
             <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior
-                        x:Name="moveBehaviorObject"
+                        x:Name="moveObjectBehavior"
                         IsMoveObject="True"
                         FromSelected="{Binding DataContext.Tableau.FromSelected, ElementName=window}"
                         MoveSelectCommand="{Binding DataContext.MoveSelectCommand, ElementName=window}"
@@ -108,17 +108,17 @@
                                     <DoubleAnimation
                                         Storyboard.TargetName="movePile"
                                         Storyboard.TargetProperty="(Canvas.Left)"
-                                        From="{Binding ElementName=moveBehaviorObject, Path=From.X}"
-                                        To="{Binding ElementName=moveBehaviorObject, Path=To.X}"
-                                        Duration="{Binding ElementName=moveBehaviorObject, Path=ScaledDuration}"
+                                        From="{Binding ElementName=moveObjectBehavior, Path=From.X}"
+                                        To="{Binding ElementName=moveObjectBehavior, Path=To.X}"
+                                        Duration="{Binding ElementName=moveObjectBehavior, Path=ScaledDuration}"
                                         FillBehavior="Stop"
                                     />
-                                            <DoubleAnimation
+                                    <DoubleAnimation
                                         Storyboard.TargetName="movePile"
                                         Storyboard.TargetProperty="(Canvas.Top)"
-                                        From="{Binding ElementName=moveBehaviorObject, Path=From.Y}"
-                                        To="{Binding ElementName=moveBehaviorObject, Path=To.Y}"
-                                        Duration="{Binding ElementName=moveBehaviorObject, Path=ScaledDuration}"
+                                        From="{Binding ElementName=moveObjectBehavior, Path=From.Y}"
+                                        To="{Binding ElementName=moveObjectBehavior, Path=To.Y}"
+                                        Duration="{Binding ElementName=moveObjectBehavior, Path=ScaledDuration}"
                                         FillBehavior="Stop"
                                     />
                                 </ParallelTimeline>
