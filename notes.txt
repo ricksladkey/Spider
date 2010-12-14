@@ -1,3 +1,5 @@
+- fix hard-coded 25 pixel offset
+- abstract move animation into another behavior
 - restore visual states to stock pile
 - make spider engine a DLL
 - confirm new game, paste, etc.

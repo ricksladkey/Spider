@@ -42,7 +42,7 @@ namespace Spider.Tests
         public void EmptyTest1()
         {
             // No cards: we win.
-            string data = "@2||||@";
+            string data = "@2|As|||@";
             game = new Game(data);
             Assert.IsTrue(game.MakeMove());
         }
@@ -51,7 +51,7 @@ namespace Spider.Tests
         public void EmptyTest2()
         {
             // No useful move: we lose.
-            string data = "@2|||AS|@";
+            string data = "@2|||As|@";
             game = new Game(data);
             Assert.IsFalse(game.MakeMove());
         }

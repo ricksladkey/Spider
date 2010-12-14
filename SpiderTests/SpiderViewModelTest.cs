@@ -138,12 +138,12 @@ namespace Spider.Tests
         [TestMethod()]
         public void SetAlgorithmCommandTest()
         {
-            var originalAlgorithm = AlgorithmType.Study;
-            var newAlgorithm = AlgorithmType.Search;
-
             var target = new SpiderViewModel();
             try
             {
+                var originalAlgorithm = AlgorithmType.Search;
+                var newAlgorithm = AlgorithmType.Study;
+
                 Assert.AreEqual(originalAlgorithm, target.AlgorithmType);
                 foreach (var variation in target.Algorithms)
                 {

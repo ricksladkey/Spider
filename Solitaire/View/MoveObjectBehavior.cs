@@ -149,9 +149,6 @@ namespace Spider.Solitaire.View
             private Vector offsetElementToMouse;
             private Point fromPosition;
             private object initialDataContext;
-#if false
-            private Action onStoryboardCompletedAction;
-#endif
 
             public Canvas Canvas { get; set; }
             public MoveObjectBehavior MoveObjectBehavior { get; private set; }
@@ -162,23 +159,7 @@ namespace Spider.Solitaire.View
             public void SetParent(MoveObjectBehavior moveObjectBehavoir)
             {
                 MoveObjectBehavior = moveObjectBehavoir;
-#if false
-                if (MoveObjectBehavior.Storyboard != null)
-                {
-                    MoveObjectBehavior.Storyboard.Completed += new EventHandler(Storyboard_Completed);
-                }
-#endif
             }
-
-#if false
-            void Storyboard_Completed(object sender, EventArgs e)
-            {
-                if (onStoryboardCompletedAction != null)
-                {
-                    onStoryboardCompletedAction();
-                }
-            }
-#endif
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
@@ -298,44 +279,15 @@ namespace Spider.Solitaire.View
                     MoveObjectBehavior.To = to;
                     var scaledDuration = (from - to).Length / Canvas.RenderSize.Width * MoveObjectBehavior.Duration.TimeSpan.TotalSeconds;
                     MoveObjectBehavior.ScaledDuration = new Duration(TimeSpan.FromSeconds(scaledDuration));
-#if false
-                    onStoryboardCompletedAction = onStoryboardCompleted;
-                    MoveObjectBehavior.Storyboard.Begin();
-#else
-                    var sbr = new StoryboardRunner(MoveObjectBehavior.Storyboard);
+
+                    var sbp = new StoryboardPlayer(MoveObjectBehavior.Storyboard);
                     var ui = TaskScheduler.FromCurrentSynchronizationContext();
-                    sbr.RunStoryboardAsync().ContinueWith(task => onStoryboardCompleted(), ui);
-#endif
+                    sbp.PlayStoryboardAsync().ContinueWith(task => onStoryboardCompleted(), ui);
                 }
                 else
                 {
                     onStoryboardCompleted();
                 }
-            }
-        }
-
-        private class StoryboardRunner
-        {
-            public StoryboardRunner(Storyboard storyboard)
-            {
-                this.storyboard = storyboard;
-            }
-
-            private Storyboard storyboard;
-            private TaskCompletionSource<object> tcs;
-
-            public Task RunStoryboardAsync()
-            {
-                tcs = new TaskCompletionSource<object>();
-                storyboard.Completed += storyboard_Completed;
-                storyboard.Begin();
-                return tcs.Task;
-            }
-
-            void storyboard_Completed(object sender, EventArgs e)
-            {
-                storyboard.Completed -= storyboard_Completed;
-                tcs.SetResult(null);
             }
         }
     }

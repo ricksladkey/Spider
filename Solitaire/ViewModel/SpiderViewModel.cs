@@ -53,7 +53,7 @@ namespace Spider.Solitaire.ViewModel
             Variation = Variation.Spider2;
             Variations = new ObservableCollection<VariationViewModel>();
 
-            AlgorithmType = AlgorithmType.Study;
+            AlgorithmType = AlgorithmType.Search;
             Algorithms = new ObservableCollection<AlgorithmViewModel>();
 
             checkPoints = new List<int>();
