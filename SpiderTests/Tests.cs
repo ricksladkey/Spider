@@ -45,6 +45,7 @@ namespace Spider.Tests
             string data = "@2|As|||@";
             game = new Game(data);
             Assert.IsTrue(game.MakeMove());
+            Assert.IsTrue(game.Won);
         }
 
         [TestMethod]
@@ -54,6 +55,7 @@ namespace Spider.Tests
             string data = "@2|||As|@";
             game = new Game(data);
             Assert.IsFalse(game.MakeMove());
+            Assert.IsFalse(game.Won);
         }
 
         [TestMethod]
@@ -525,13 +527,32 @@ namespace Spider.Tests
             CheckSearchSucceeds(data1, data2);
         }
 
+        [TestMethod]
+        public void SearchTest3()
+        {
+            // Why does it move Js -> Qh instead of 4s -> 5s?
+            string data1 = @"
+                @2||Th7h3s-2sKh7hAs7s-3hAh8s-2sTsQh9hTh-7s8s3s9s-4sKh8hKs-Jh
+                3s9s-8h2h4sJs-Th7s8hAh-9hTsKs5s|9s-QhJs-7h6h-KhQh-7h6s5s-9h-
+                Js-4h-4h-5h|Ks8hTs9h8s4s6sJh2h5h6hKs6hJh2hAs3h4hJh2s9s6sTs3s
+                2h3hQs5s8sAhAs5sAsQsQs5hKhThQs6s6h4h3h7sJs5h2sQh4sAh@
+            ";
+            string data2 = @"
+                @2||Th7h3s-2sKh7hAs7s-3hAh8s-2sTsQh9hTh-7s8s3s9s-4sKh8hKs-Jh
+                3s-8h2h4sJs-Th7s8hAh-9hTsKs5s|9s-QhJs-7h6h-KhQhJs-7h6s5s-9h-
+                9s-4h-4h-5h|Ks8hTs9h8s4s6sJh2h5h6hKs6hJh2hAs3h4hJh2s9s6sTs3s
+                2h3hQs5s8sAhAs5sAsQsQs5hKhThQs6s6h4h3h7sJs5h2sQh4sAh@
+            ";
+            CheckSearchSucceeds(data1, data2);
+        }
+
         private void CheckSearchSucceeds(string data1, string data2)
         {
             string initial = data1;
             game = new Game(initial, AlgorithmType.Search);
             game.Diagnostics = true;
             Assert.IsTrue(game.MakeMove());
-            string expected = data2;
+            string expected = new Game(data2).ToAsciiString();
             string actual = game.ToAsciiString();
             if (expected != actual)
             {
