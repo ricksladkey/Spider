@@ -1709,7 +1709,7 @@
     </DrawingBrush>
     
     <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid">
+        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
@@ -1894,7 +1894,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid">
+        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
@@ -1922,7 +1922,7 @@
         </DataTemplate.Triggers>
     </DataTemplate>
     <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid">
+        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
