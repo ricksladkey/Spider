@@ -30,9 +30,6 @@
             <ScaleTransform x:Key="upsideDown" ScaleX="-1" ScaleY="-1" />
         </DataTemplate.Resources>
         <Grid Name="grid1" Style="{StaticResource CardGridStyle}">
-            <i:Interaction.Behaviors>
-                <vw:MoveObjectBehavior/>
-            </i:Interaction.Behaviors>
             <Rectangle Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="White"/>
             <TextBlock Name="textBlock1" Text="{Binding Face}" FontSize="16" Margin="5,2,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
             <TextBlock Name="textBlock2" Text="{Binding Suit}" FontSize="20" Margin="0,0,5,0" HorizontalAlignment="Right" VerticalAlignment="Top" />
@@ -44,24 +41,22 @@
     
     <DataTemplate x:Key="DownCardTemplate">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
-            <i:Interaction.Behaviors>
-                <vw:MoveObjectBehavior/>
-            </i:Interaction.Behaviors>
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
         </Grid>
     </DataTemplate>
     
     <DataTemplate x:Key="EmptySpaceTemplate">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
-            <i:Interaction.Behaviors>
-                <vw:MoveObjectBehavior/>
-            </i:Interaction.Behaviors>
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
         </Grid>
     </DataTemplate>
     
     <DataTemplate x:Key="CardTemplate">
-        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}"/>
+        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}">
+            <i:Interaction.Behaviors>
+                <vw:MoveObjectBehavior/>
+            </i:Interaction.Behaviors>
+        </ContentPresenter>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
                 <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
