@@ -5,16 +5,20 @@
     xmlns:vw="clr-namespace:Spider.Solitaire.View"
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     >
+    
     <vw:SuitColorToBrushConverter x:Key="ColorConverter" Red="#FFDD0000" Black="Black"/>
+    
     <Style TargetType="{x:Type Grid}" x:Key="CardGridStyle">
         <Setter Property="Height" Value="140"/>
         <Setter Property="Width" Value="100"/>
     </Style>
+    
     <Style TargetType="{x:Type Rectangle}" x:Key="CardRectangleStyle">
         <Setter Property="Stroke" Value="Black"/>
         <Setter Property="RadiusX" Value="5"/>
         <Setter Property="RadiusY" Value="5"/>
     </Style>
+    
     <DataTemplate x:Key="UpCardTemplate">
         <DataTemplate.Resources>
             <Style TargetType="TextBlock">
@@ -37,6 +41,7 @@
             <TextBlock Name="textBlock5" Text="{Binding Suit}" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
     </DataTemplate>
+    
     <DataTemplate x:Key="DownCardTemplate">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
             <i:Interaction.Behaviors>
@@ -45,6 +50,7 @@
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="DarkGoldenrod"/>
         </Grid>
     </DataTemplate>
+    
     <DataTemplate x:Key="EmptySpaceTemplate">
         <Grid x:Name="grid1" Style="{StaticResource CardGridStyle}">
             <i:Interaction.Behaviors>
@@ -53,8 +59,9 @@
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
         </Grid>
     </DataTemplate>
+    
     <DataTemplate x:Key="CardTemplate">
-        <ContentPresenter x:Name="cardPresenter" ContentSource="Content" ContentTemplate="{StaticResource EmptySpaceTemplate}"/>
+        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}"/>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
                 <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
@@ -64,4 +71,5 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
+    
 </ResourceDictionary>

@@ -1941,7 +1941,7 @@
     </DataTemplate>
     
     <DataTemplate x:Key="CardTemplate">
-        <ContentPresenter x:Name="cardPresenter" ContentSource="Content" ContentTemplate="{StaticResource EmptySpaceTemplate}" CacheMode="BitmapCache"/>
+        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}" CacheMode="BitmapCache"/>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
                 <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
