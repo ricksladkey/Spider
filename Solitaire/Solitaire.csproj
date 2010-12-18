@@ -67,6 +67,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="ViewModel\AlgorithmViewModel.cs" />
+    <Compile Include="ViewModel\CardType.cs" />
     <Compile Include="ViewModel\CheckableViewModel.cs" />
     <Compile Include="ViewModel\DownCardViewModel.cs" />
     <Compile Include="ViewModel\EmptySpaceViewModel.cs" />

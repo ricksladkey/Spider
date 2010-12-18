@@ -11,6 +11,7 @@ namespace Spider.Solitaire.ViewModel
         public EmptySpaceViewModel()
         {
             Card = Card.Empty;
+            CardType = CardType.EmptySpace;
         }
     }
 }

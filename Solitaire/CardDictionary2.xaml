@@ -5,6 +5,7 @@
     xmlns:vw="clr-namespace:Spider.Solitaire.View"
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     >
+    
     <LinearGradientBrush x:Key="CardNormalBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#00FFFFFF" Offset="0" />
         <GradientStop Color="#77FFFFFF" Offset="0.5" />
@@ -1708,8 +1709,8 @@
         </DrawingBrush.Drawing>
     </DrawingBrush>
     
-    <DataTemplate DataType="{x:Type vm:UpCardViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
+    <DataTemplate x:Key="UpCardTemplate">
+        <Grid Width="100" Height="140" Name="TheGrid">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
@@ -1893,8 +1894,9 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
-    <DataTemplate DataType="{x:Type vm:DownCardViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
+    
+    <DataTemplate x:Key="DownCardTemplate">
+        <Grid Width="100" Height="140" Name="TheGrid">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
@@ -1921,8 +1923,9 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
-    <DataTemplate DataType="{x:Type vm:EmptySpaceViewModel}">
-        <Grid Width="100" Height="140" Name="TheGrid" CacheMode="BitmapCache">
+    
+    <DataTemplate x:Key="EmptySpaceTemplate">
+        <Grid Width="100" Height="140" Name="TheGrid">
             <Rectangle Name="TheShadow" Opacity="0.3" Fill="{StaticResource Shadow}">
                 <Rectangle.RenderTransform>
                     <TranslateTransform X="0" Y="-2"/>
@@ -1949,4 +1952,17 @@
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
+    
+    <DataTemplate x:Key="CardTemplate">
+        <ContentPresenter x:Name="cardPresenter" ContentSource="Content" ContentTemplate="{StaticResource EmptySpaceTemplate}" CacheMode="BitmapCache"/>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
+                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Up}">
+                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource UpCardTemplate}"/>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+    
 </ResourceDictionary>

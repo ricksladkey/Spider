@@ -1,3 +1,6 @@
+- rename discard piles to foundation piles
+- fix mouse click before the animation is complete interferes with the move
+- for search move just one move instead of the search move set
 - fix hard-coded 25 pixel offset
 - abstract move animation into another behavior
 - restore visual states to stock pile

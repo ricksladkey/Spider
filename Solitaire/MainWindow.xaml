@@ -13,7 +13,7 @@
             <Setter Property="Control.Margin" Value="3,3,3,3"/>
         </Style>
         <DataTemplate x:Key="PileTemplate">
-            <ItemsControl ItemsSource="{Binding}">
+            <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource CardTemplate}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <vw:OverlapPanel Offset="0">

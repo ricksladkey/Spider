@@ -8,5 +8,9 @@ namespace Spider.Solitaire.ViewModel
 {
     public class UpCardViewModel : CardViewModel
     {
+        public UpCardViewModel()
+        {
+            CardType = CardType.Up;
+        }
     }
 }
