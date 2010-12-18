@@ -77,7 +77,7 @@
             </MenuItem>
         </Menu>
         <Canvas Background="{StaticResource GamePlayBackground}" x:Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
-            <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}" ItemContainerStyle="{StaticResource PileMargin}">
+            <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}" ItemContainerStyle="{StaticResource PileMargin}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal" />

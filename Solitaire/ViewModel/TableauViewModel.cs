@@ -16,7 +16,7 @@ namespace Spider.Solitaire.ViewModel
         {
             Model = model;
 
-            DiscardPiles = new PileViewModel();
+            DiscardPiles = new ObservableCollection<PileViewModel>();
             Piles = new ObservableCollection<PileViewModel>();
             StockPile = new PileViewModel();
             MovePile = new PileViewModel();
@@ -24,7 +24,7 @@ namespace Spider.Solitaire.ViewModel
 
         public SpiderViewModel Model { get; private set; }
 
-        public PileViewModel DiscardPiles { get; private set; }
+        public ObservableCollection<PileViewModel> DiscardPiles { get; private set; }
         public ObservableCollection<PileViewModel> Piles { get; private set; }
         public PileViewModel StockPile { get; private set; }
         public PileViewModel MovePile { get; private set; }
@@ -65,16 +65,13 @@ namespace Spider.Solitaire.ViewModel
 
         public void Refresh()
         {
-            Refresh(DiscardPiles, GetDiscardCards());
+            EnsurePileCount(DiscardPiles, Tableau.Variation.NumberOfFoundations);
+            for (int column = 0; column < Tableau.Variation.NumberOfFoundations; column++)
+            {
+                Refresh(DiscardPiles[column], GetDiscardPileCards(column));
+            }
 
-            while (Piles.Count > Tableau.NumberOfPiles)
-            {
-                Piles.RemoveAt(Piles.Count - 1);
-            }
-            while (Piles.Count < Tableau.NumberOfPiles)
-            {
-                Piles.Add(new PileViewModel());
-            }
+            EnsurePileCount(Piles, Tableau.NumberOfPiles);
             for (int column = 0; column < Tableau.NumberOfPiles; column++)
             {
                 Refresh(Piles[column], GetPileCards(column));
@@ -82,6 +79,18 @@ namespace Spider.Solitaire.ViewModel
 
             Refresh(StockPile, GetStockCards());
             Refresh(MovePile, GetMoveCards());
+        }
+
+        private void EnsurePileCount(ObservableCollection<PileViewModel> piles, int count)
+        {
+            while (piles.Count > count)
+            {
+                piles.RemoveAt(Piles.Count - 1);
+            }
+            while (piles.Count < count)
+            {
+                piles.Add(new PileViewModel());
+            }
         }
 
         private void Refresh(ObservableCollection<CardViewModel> collection, IEnumerable<CardViewModel> cards)
@@ -105,12 +114,16 @@ namespace Spider.Solitaire.ViewModel
             }
         }
 
-        private IEnumerable<CardViewModel> GetDiscardCards()
+        private IEnumerable<CardViewModel> GetDiscardPileCards(int column)
         {
-            for (int i = 0; i < Tableau.DiscardPiles.Count; i++)
+            if (column < Tableau.DiscardPiles.Count)
             {
-                Pile pile = Tableau.DiscardPiles[i];
+                Pile pile = Tableau.DiscardPiles[column];
                 yield return new UpCardViewModel { Card = pile[pile.Count - 1] };
+            }
+            else
+            {
+                yield return new EmptySpaceViewModel { };
             }
         }
 
