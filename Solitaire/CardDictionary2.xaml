@@ -1889,9 +1889,6 @@
             <DataTrigger Binding="{Binding Name}" Value="Kc">
                 <Setter TargetName="faceRect" Property="Fill" Value="{StaticResource CK}"/>
             </DataTrigger>
-            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
-                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
-            </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
     
@@ -1917,11 +1914,6 @@
                 </Grid.RenderTransform>
             </Grid>
         </Grid>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
-                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
-            </DataTrigger>
-        </DataTemplate.Triggers>
     </DataTemplate>
     
     <DataTemplate x:Key="EmptySpaceTemplate">
@@ -1946,11 +1938,6 @@
                 </Grid.RenderTransform>
             </Grid>
         </Grid>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
-                <Setter TargetName="TheCard" Property="Cursor" Value="Hand"/>
-            </DataTrigger>
-        </DataTemplate.Triggers>
     </DataTemplate>
     
     <DataTemplate x:Key="CardTemplate">
@@ -1961,6 +1948,9 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Up}">
                 <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource UpCardTemplate}"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
+                <Setter TargetName="cardPresenter" Property="Cursor" Value="Hand"/>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
