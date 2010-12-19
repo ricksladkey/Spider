@@ -71,6 +71,7 @@
     <Compile Include="ViewModel\CheckableViewModel.cs" />
     <Compile Include="ViewModel\DownCardViewModel.cs" />
     <Compile Include="ViewModel\EmptySpaceViewModel.cs" />
+    <Compile Include="ViewModel\SuitColor.cs" />
     <Compile Include="ViewModel\TableauViewModel.cs" />
     <Compile Include="ViewModel\UpCardViewModel.cs" />
     <Compile Include="ViewModel\CardViewModel.cs" />
@@ -79,13 +80,11 @@
     <Compile Include="ViewModel\VariationViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />
     <Compile Include="View\ConfirmCommandBehavior.cs" />
-    <Compile Include="View\OffsetSelector.cs" />
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\MoveObjectBehavior.cs" />
     <Compile Include="View\ShowMessageBox.cs" />
     <Compile Include="View\StoryboardPlayer.cs" />
-    <Compile Include="View\SuitColorToBrushConverter.cs" />
     <Page Include="CardDictionary1.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

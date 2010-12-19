@@ -6,8 +6,6 @@
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     >
     
-    <vw:SuitColorToBrushConverter x:Key="ColorConverter" Red="#FFDD0000" Black="Black"/>
-    
     <Style TargetType="{x:Type Grid}" x:Key="CardGridStyle">
         <Setter Property="Height" Value="140"/>
         <Setter Property="Width" Value="100"/>
@@ -22,7 +20,14 @@
     <DataTemplate x:Key="UpCardTemplate">
         <DataTemplate.Resources>
             <Style TargetType="TextBlock">
-                <Setter Property="Foreground" Value="{Binding Color, Converter={StaticResource ColorConverter}}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Color}" Value="{x:Static vm:SuitColor.Black}">
+                        <Setter Property="Foreground" Value="Black"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Color}" Value="{x:Static vm:SuitColor.Red}">
+                        <Setter Property="Foreground" Value="#FFDD0000"/>
+                    </DataTrigger>
+                </Style.Triggers>
                 <Setter Property="FontWeight" Value="Normal" />
                 <Setter Property="FontFamily" Value="Segoe UI Semibold" />
                 <Setter Property="IsHitTestVisible" Value="False"/>

@@ -7,26 +7,41 @@
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     Title="Spider" Height="500" Width="1080" Name="window"
     DataContext="{DynamicResource SpiderViewModelDataSource}">
+    
     <Window.Resources>
+        
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
+        
         <Style x:Key="PileMargin">
             <Setter Property="Control.Margin" Value="3,3,3,3"/>
         </Style>
+        
+        <Style x:Key="CardOffset">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.EmptySpace}">
+                    <Setter Property="vw:OverlapPanel.Offset" Value="0"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
+                    <Setter Property="vw:OverlapPanel.Offset" Value="5"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Up}">
+                    <Setter Property="vw:OverlapPanel.Offset" Value="25"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
         <DataTemplate x:Key="PileTemplate">
-            <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource CardTemplate}">
+            <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource CardTemplate}" ItemContainerStyle="{StaticResource CardOffset}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <vw:OverlapPanel Offset="0">
-                            <vw:OverlapPanel.OffsetSelectors>
-                                <vw:OffsetSelector Type="{x:Type vm:DownCardViewModel}" Offset="5"/>
-                                <vw:OffsetSelector Type="{x:Type vm:UpCardViewModel}" Offset="25"/>
-                            </vw:OverlapPanel.OffsetSelectors>
-                        </vw:OverlapPanel>
+                        <vw:OverlapPanel/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
         </DataTemplate>
+        
     </Window.Resources>
+    
     <Window.InputBindings>
         <KeyBinding Modifiers="Control" Key="N" Command="{Binding NewCommand}"/>
         <KeyBinding Modifiers="Alt" Key="F4" Command="{Binding ExitCommand}"/>
@@ -37,7 +52,9 @@
         <KeyBinding Modifiers="Control" Key="D" Command="{Binding DealCommand}"/>
         <KeyBinding Modifiers="Control" Key="M" Command="{Binding MoveCommand}"/>
     </Window.InputBindings>
+    
     <DockPanel>
+        
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
                 <MenuItem Header="_New" Command="{Binding NewCommand}" InputGestureText="Ctrl+N"/>
@@ -76,7 +93,9 @@
                 <MenuItem Header="_Move" Command="{Binding MoveCommand}" InputGestureText="Ctrl+M"/>
             </MenuItem>
         </Menu>
+        
         <Canvas Background="{StaticResource GamePlayBackground}" x:Name="mainCanvas" ClipToBounds="True" DataContext="{Binding Tableau}">
+
             <ItemsControl Canvas.Left="45" Canvas.Top="-120" ItemsSource="{Binding DiscardPiles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}" ItemContainerStyle="{StaticResource PileMargin}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -84,6 +103,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+            
             <ItemsControl Canvas.Left="0" Canvas.Top="25" ItemsSource="{Binding Piles}" ItemTemplate="{StaticResource ResourceKey=PileTemplate}" ItemContainerStyle="{StaticResource PileMargin}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -91,6 +111,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+            
             <ContentControl x:Name="movePile" Canvas.Left="200" Canvas.Top="200" Content="{Binding MovePile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}">
                 <i:Interaction.Behaviors>
                     <vw:MoveObjectBehavior
@@ -130,9 +151,15 @@
                     <DropShadowEffect ShadowDepth="0" BlurRadius="20"/>
                 </ContentControl.Effect>
             </ContentControl>
+            
             <ContentControl x:Name="stockPile" Canvas.Left="450" Canvas.Top="400" Content="{Binding StockPile}" ContentTemplate="{StaticResource ResourceKey=PileTemplate}"/>
+            
             <Button Canvas.Left="50" Canvas.Top="400" Command="{Binding DataContext.UndoCommand, ElementName=window}" Content="Undo"/>
+            
             <Button Canvas.Left="100" Canvas.Top="400" Command="{Binding DataContext.RedoCommand, ElementName=window}" Content="Redo"/>
+            
         </Canvas>
+        
     </DockPanel>
+    
 </Window>

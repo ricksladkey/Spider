@@ -10,20 +10,16 @@ namespace Spider.Solitaire.View
     public class OverlapPanel : Panel
     {
         public static readonly DependencyProperty OffsetProperty =
-              DependencyProperty.Register("Offset", typeof(double), typeof(OverlapPanel), new PropertyMetadata(0.0));
-        public static readonly DependencyProperty OffsetSelectorsProperty =
-            DependencyProperty.Register("OffsetSelectors", typeof(List<OffsetSelector>), typeof(OverlapPanel), new UIPropertyMetadata(new List<OffsetSelector>()));
+            DependencyProperty.RegisterAttached("Offset", typeof(double), typeof(OverlapPanel), new UIPropertyMetadata(0.0));
 
-        public double Offset
+        public static double GetOffset(DependencyObject obj)
         {
-            get { return (double)GetValue(OffsetProperty); }
-            set { SetValue(OffsetProperty, value); }
+            return (double)obj.GetValue(OffsetProperty);
         }
 
-        public List<OffsetSelector> OffsetSelectors
+        public static void SetOffset(DependencyObject obj, double value)
         {
-            get { return (List<OffsetSelector>)GetValue(OffsetSelectorsProperty); }
-            set { SetValue(OffsetSelectorsProperty, value); }
+            obj.SetValue(OffsetProperty, value);
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -58,23 +54,6 @@ namespace Spider.Solitaire.View
             }
 
             return finalSize;
-        }
-
-        private double GetOffset(UIElement element)
-        {
-            var contentPresenter = element as ContentPresenter;
-            if (contentPresenter != null && contentPresenter.DataContext != null)
-            {
-                Type type = contentPresenter.DataContext.GetType();
-                foreach (var selector in OffsetSelectors)
-                {
-                    if (selector.Type.IsAssignableFrom(type))
-                    {
-                        return selector.Offset;
-                    }
-                }
-            }
-            return Offset;
         }
     }
 }
