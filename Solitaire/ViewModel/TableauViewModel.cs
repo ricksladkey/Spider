@@ -65,13 +65,13 @@ namespace Spider.Solitaire.ViewModel
 
         public void Refresh()
         {
-            EnsurePileCount(DiscardPiles, Tableau.Variation.NumberOfFoundations);
+            SetCollectionCount(DiscardPiles, Tableau.Variation.NumberOfFoundations);
             for (int column = 0; column < Tableau.Variation.NumberOfFoundations; column++)
             {
                 Refresh(DiscardPiles[column], GetDiscardPileCards(column));
             }
 
-            EnsurePileCount(Piles, Tableau.NumberOfPiles);
+            SetCollectionCount(Piles, Tableau.NumberOfPiles);
             for (int column = 0; column < Tableau.NumberOfPiles; column++)
             {
                 Refresh(Piles[column], GetPileCards(column));
@@ -81,15 +81,16 @@ namespace Spider.Solitaire.ViewModel
             Refresh(MovePile, GetMoveCards());
         }
 
-        private void EnsurePileCount(ObservableCollection<PileViewModel> piles, int count)
+        private void SetCollectionCount<T>(Collection<T> collection, int count)
+            where T : new()
         {
-            while (piles.Count > count)
+            while (collection.Count > count)
             {
-                piles.RemoveAt(piles.Count - 1);
+                collection.RemoveAt(collection.Count - 1);
             }
-            while (piles.Count < count)
+            while (collection.Count < count)
             {
-                piles.Add(new PileViewModel());
+                collection.Add(new T());
             }
         }
 
