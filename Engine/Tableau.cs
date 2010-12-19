@@ -25,6 +25,7 @@ namespace Spider.Engine
         public Tableau(Tableau other)
             : this()
         {
+            Variation = other.Variation;
             Copy(other);
         }
 

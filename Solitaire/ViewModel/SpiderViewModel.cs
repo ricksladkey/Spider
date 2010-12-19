@@ -282,7 +282,7 @@ namespace Spider.Solitaire.ViewModel
                 return;
             }
 
-            Tableau.ToCard = new EmptySpaceViewModel { Column = firstSpace };
+            Tableau.ToCard = Tableau.Piles[firstSpace][0];
             if (Tableau.TryMove())
             {
                 AddCheckPoint();

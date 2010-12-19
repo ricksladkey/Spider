@@ -35,12 +35,12 @@ namespace Spider.Tests
             var target = new SpiderViewModel();
             try
             {
-                Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfFoundations, target.Tableau.DiscardPiles.Count);
                 Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
                 foreach (var pile in target.Tableau.Piles)
                 {
                     Assert.AreEqual(1, pile.Count);
-                    Assert.IsInstanceOfType(pile[0], typeof(EmptySpaceViewModel));
+                    Assert.AreEqual(pile[0].CardType, CardType.EmptySpace);
                 }
                 Assert.AreEqual(0, target.Tableau.StockPile.Count);
             }
@@ -59,11 +59,13 @@ namespace Spider.Tests
             var target = new SpiderViewModel(sampleData);
             try
             {
-                Assert.AreEqual(2, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfFoundations, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(CardType.Up, target.Tableau.DiscardPiles[1][0].CardType);
+                Assert.AreEqual(CardType.EmptySpace, target.Tableau.DiscardPiles[2][0].CardType);
                 Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
                 var pile = target.Tableau.Piles[0];
                 Assert.AreEqual(11, pile.Count);
-                Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
+                Assert.AreEqual(pile[0].CardType, CardType.Down);
                 Assert.AreEqual(1, target.Tableau.StockPile.Count);
             }
             finally
@@ -82,13 +84,13 @@ namespace Spider.Tests
             try
             {
                 target.NewCommand.Execute(null);
-                Assert.AreEqual(0, target.Tableau.DiscardPiles.Count);
+                Assert.AreEqual(target.Variation.NumberOfFoundations, target.Tableau.DiscardPiles.Count);
                 Assert.AreEqual(target.Variation.NumberOfPiles, target.Tableau.Piles.Count);
                 foreach (var pile in target.Tableau.Piles)
                 {
                     Assert.IsTrue(pile.Count > 1);
-                    Assert.IsInstanceOfType(pile[0], typeof(DownCardViewModel));
-                    Assert.IsInstanceOfType(pile[pile.Count - 1], typeof(UpCardViewModel));
+                    Assert.AreEqual(pile[0].CardType, CardType.Down);
+                    Assert.AreEqual(pile[pile.Count - 1].CardType, CardType.Up);
                 }
                 Assert.IsTrue(target.Tableau.StockPile.Count > 0);
             }

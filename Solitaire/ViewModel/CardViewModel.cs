@@ -34,6 +34,7 @@ namespace Spider.Solitaire.ViewModel
         {
             return
                 Card == other.Card &&
+                CardType == other.CardType &&
                 Column == other.Column &&
                 Row == other.Row &&
                 IsMoveSelectable == other.IsMoveSelectable &&
