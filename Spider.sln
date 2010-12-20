@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider", "Spider.csproj", "{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTests", "SpiderTests\SpiderTests.csproj", "{8AF8065B-5844-4BD7-9848-A12CA4338AFF}"
@@ -18,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solitaire", "Solitaire\Solitaire.csproj", "{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTool", "SpiderTool\SpiderTool.csproj", "{8E67399D-F956-4C56-9736-31752E41BF8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider.Engine", "Engine\Spider.Engine.csproj", "{585A91A7-20E9-4C67-9FE2-D338EE302149}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -30,14 +30,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|x86.ActiveCfg = Debug|x86
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Debug|x86.Build.0 = Debug|x86
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|x86.ActiveCfg = Release|x86
-		{D7CCE11A-F5A9-4AD0-9DC8-7E39EC77DA3B}.Release|x86.Build.0 = Release|x86
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}.Debug|x86.ActiveCfg = Debug|x86
@@ -68,6 +60,14 @@ Global
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Release|Any CPU.ActiveCfg = Release|x86
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Release|x86.ActiveCfg = Release|x86
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Release|x86.Build.0 = Release|x86
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Debug|x86.ActiveCfg = Debug|x86
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Debug|x86.Build.0 = Debug|x86
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|Any CPU.Build.0 = Release|Any CPU
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|x86.ActiveCfg = Release|x86
+		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
