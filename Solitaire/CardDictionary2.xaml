@@ -1931,23 +1931,4 @@
         </Grid>
     </DataTemplate>
     
-    <DataTemplate x:Key="CardTemplate">
-        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}" CacheMode="BitmapCache">
-            <i:Interaction.Behaviors>
-                <vw:MoveObjectBehavior/>
-            </i:Interaction.Behaviors>
-        </ContentPresenter>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
-                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Up}">
-                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource UpCardTemplate}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding IsSelectable}" Value="True">
-                <Setter TargetName="cardPresenter" Property="Cursor" Value="Hand"/>
-            </DataTrigger>
-        </DataTemplate.Triggers>
-    </DataTemplate>
-    
 </ResourceDictionary>

@@ -55,21 +55,5 @@
             <Rectangle x:Name="rectangle1" Style="{StaticResource CardRectangleStyle}" Fill="Green"/>
         </Grid>
     </DataTemplate>
-    
-    <DataTemplate x:Key="CardTemplate">
-        <ContentPresenter x:Name="cardPresenter" ContentTemplate="{StaticResource EmptySpaceTemplate}">
-            <i:Interaction.Behaviors>
-                <vw:MoveObjectBehavior/>
-            </i:Interaction.Behaviors>
-        </ContentPresenter>
-        <DataTemplate.Triggers>
-            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Down}">
-                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource DownCardTemplate}"/>
-            </DataTrigger>
-            <DataTrigger Binding="{Binding CardType}" Value="{x:Static vm:CardType.Up}">
-                <Setter TargetName="cardPresenter" Property="ContentTemplate" Value="{StaticResource UpCardTemplate}"/>
-            </DataTrigger>
-        </DataTemplate.Triggers>
-    </DataTemplate>
-    
+
 </ResourceDictionary>

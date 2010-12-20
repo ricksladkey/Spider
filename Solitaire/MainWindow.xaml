@@ -11,7 +11,27 @@
     <Window.Resources>
         
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
-        
+
+        <DataTemplate x:Key="CardTemplate">
+            <ContentPresenter x:Name="cardPresenter" CacheMode="BitmapCache">
+                <ContentPresenter.ContentTemplateSelector>
+                    <vw:CardTemplateSelector
+                        EmptySpaceTemplate="{StaticResource EmptySpaceTemplate}"
+                        DownCardTemplate="{StaticResource DownCardTemplate}"
+                        UpCardTemplate="{StaticResource UpCardTemplate}"
+                    />
+                </ContentPresenter.ContentTemplateSelector>
+                <i:Interaction.Behaviors>
+                    <vw:MoveObjectBehavior/>
+                </i:Interaction.Behaviors>
+            </ContentPresenter>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsSelectable}" Value="True">
+                    <Setter TargetName="cardPresenter" Property="Cursor" Value="Hand"/>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
         <Style x:Key="PileMargin">
             <Setter Property="Control.Margin" Value="3,3,3,3"/>
         </Style>
@@ -29,7 +49,7 @@
                 </DataTrigger>
             </Style.Triggers>
         </Style>
-        
+
         <DataTemplate x:Key="PileTemplate">
             <ItemsControl ItemsSource="{Binding}" ItemTemplate="{StaticResource CardTemplate}" ItemContainerStyle="{StaticResource CardOffset}">
                 <ItemsControl.ItemsPanel>
