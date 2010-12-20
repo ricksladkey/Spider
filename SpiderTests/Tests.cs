@@ -6,9 +6,9 @@ using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Spider.Collections;
-using Spider.Engine;
-using Spider.GamePlay;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
+using Spider.Engine.GamePlay;
 
 namespace Spider.Tests
 {

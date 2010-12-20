@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Spider.Collections
+namespace Spider.Engine.Collections
 {
     /// <summary>
     /// An AllocatedList is a list that uses a ListAllocator

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spider.Engine;
-using Spider.GamePlay;
+using Spider.Engine.Core;
+using Spider.Engine.GamePlay;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows;

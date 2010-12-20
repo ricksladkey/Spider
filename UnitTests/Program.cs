@@ -6,8 +6,8 @@ using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Spider.Collections;
-using Spider.Engine;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
 using Spider.Tests;
 
 namespace UnitTests

@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
+using Spider.Engine.Collections;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     [DebuggerDisplay("NumberOfPiles = {NumberOfPiles}")]
-    public class Tableau : Core, IEnumerable<Pile>, IRunFinder, IGetCard
+    public class Tableau : CoreBase, IEnumerable<Pile>, IRunFinder, IGetCard
     {
         static Tableau()
         {

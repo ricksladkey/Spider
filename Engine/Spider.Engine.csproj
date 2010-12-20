@@ -95,7 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\AllocatedList.cs" />
-    <Compile Include="Core\Core.cs" />
+    <Compile Include="Core\CoreBase.cs" />
     <Compile Include="Core\Card.cs" />
     <Compile Include="Core\ComplexMove.cs" />
     <Compile Include="Core\IRunFinder.cs" />

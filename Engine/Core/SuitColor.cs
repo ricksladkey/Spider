@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     public enum SuitColor
     {

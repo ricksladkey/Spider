@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 using NumUtils.NelderMeadSimplex;
 using LevenbergMarquardtLeastSquaresFitting;
 
-using Spider.Collections;
-using Spider.Engine;
-using Spider.GamePlay;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
+using Spider.Engine.GamePlay;
 
 namespace Spider
 {

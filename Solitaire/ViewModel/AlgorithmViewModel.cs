@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spider.GamePlay;
+using Spider.Engine.GamePlay;
 
 namespace Spider.Solitaire.ViewModel
 {

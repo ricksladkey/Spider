@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Spider.GamePlay
+namespace Spider.Engine.GamePlay
 {
     [DebuggerDisplay("{value}")]
     public struct AlgorithmType : IEquatable<AlgorithmType>

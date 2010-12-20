@@ -6,7 +6,7 @@ using System.Linq;
 using System.Windows;
 using Spider.Solitaire.ViewModel;
 using System.Text;
-using Spider.Engine;
+using Spider.Engine.Core;
 
 namespace Spider.Solitaire
 {

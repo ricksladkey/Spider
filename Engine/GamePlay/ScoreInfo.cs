@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
-using Spider.Engine;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
 
-namespace Spider.GamePlay
+namespace Spider.Engine.GamePlay
 {
     public struct ScoreInfo
     {

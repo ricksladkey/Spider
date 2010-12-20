@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Spider.Solitaire.ViewModel;
-using Spider.Engine;
+using Spider.Engine.Core;
 
 namespace Spider.Solitaire
 {

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
+using Spider.Engine.Collections;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     [DebuggerDisplay("Count = {Count}, FromRow = {FromRow}, Suits = {Suits}")]
     [DebuggerTypeProxy(typeof(EnumerableDebugView))]

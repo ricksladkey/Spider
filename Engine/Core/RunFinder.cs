@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
+using Spider.Engine.Collections;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     /// <summary>
     /// A run finder performs one pass through the piles of a tableau
     /// and reduces all subsequent run length calculations to constant
     /// time operations.
     /// </summary>
-    public class RunFinder : Core, IRunFinder
+    public class RunFinder : CoreBase, IRunFinder
     {
         private class PileInfo
         {

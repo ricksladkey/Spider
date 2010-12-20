@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
-using Spider.Engine;
-using Spider.GamePlay;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
+using Spider.Engine.GamePlay;
 
 namespace Spider
 {

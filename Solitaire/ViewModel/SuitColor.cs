@@ -7,8 +7,8 @@ namespace Spider.Solitaire.ViewModel
 {
     public enum SuitColor
     {
-        Empty = Spider.Engine.SuitColor.Empty,
-        Black = Spider.Engine.SuitColor.Black,
-        Red = Spider.Engine.SuitColor.Red,
+        Empty = Spider.Engine.Core.SuitColor.Empty,
+        Black = Spider.Engine.Core.SuitColor.Black,
+        Red = Spider.Engine.Core.SuitColor.Red,
     }
 }

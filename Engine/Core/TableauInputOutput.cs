@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
+using Spider.Engine.Collections;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     public class TableauInputOutput
     {

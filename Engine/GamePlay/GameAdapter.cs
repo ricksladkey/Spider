@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
-using Spider.Engine;
+using Spider.Engine.Collections;
+using Spider.Engine.Core;
 
-namespace Spider.GamePlay
+namespace Spider.Engine.GamePlay
 {
     /// <summary>
     /// A GameAdapter is a base class that can be used to
     /// make it appear as though classes derived from it
     /// are actually part of the Game class itself.
     /// </summary>
-    public class GameAdapter : Core, IGame
+    public class GameAdapter : CoreBase, IGame
     {
         protected IGame game;
 

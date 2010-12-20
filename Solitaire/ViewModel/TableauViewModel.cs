@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spider.Engine;
+using Spider.Engine.Core;
 using System.Collections.ObjectModel;
-using Spider.GamePlay;
+using Spider.Engine.GamePlay;
 
 namespace Spider.Solitaire.ViewModel
 {

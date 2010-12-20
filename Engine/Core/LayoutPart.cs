@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Spider.Collections;
+using Spider.Engine.Collections;
 
-namespace Spider.Engine
+namespace Spider.Engine.Core
 {
     [DebuggerDisplay("Column = {Column}, Count = {Count}")]
     public struct LayoutPart

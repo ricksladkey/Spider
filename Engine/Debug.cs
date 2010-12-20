@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Spider
+namespace Spider.Engine
 {
     public static class Debug
     {
