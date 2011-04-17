@@ -5,14 +5,14 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interactivity;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Threading.Tasks;
+using Markup.Programming.Core;
 
 namespace Spider.Solitaire.View
 {
-    public class MoveObjectBehavior : Behavior<FrameworkElement>
+    public class MoveObjectBehavior : Handler
     {
         public static readonly DependencyProperty IsMoveObjectProperty =
             DependencyProperty.Register("IsMoveObject", typeof(bool), typeof(MoveObjectBehavior), new PropertyMetadata(false));
@@ -97,30 +97,7 @@ namespace Spider.Solitaire.View
             set { SetValue(ScaledDurationProperty, value); }
         }
 
-        protected override void OnAttached()
-        {
-            base.OnAttached();
-
-            var canvas = FindParent<Canvas>(AssociatedObject);
-            var state = StateMap.Values.Where(value => value.Canvas == canvas).FirstOrDefault();
-            if (state == null)
-            {
-                state = new MoveObjectState { Canvas = canvas };
-            }
-            StateMap[AssociatedObject] = state;
-            if (IsMoveObject)
-            {
-                state.SetParent(this);
-                AssociatedObject.Visibility = Visibility.Collapsed;
-            }
-
-            AssociatedObject.PreviewMouseLeftButtonDown +=
-                (sender, e) => StateMap[sender].element_MouseDown(sender, e);
-            AssociatedObject.PreviewMouseMove +=
-                (sender, e) => StateMap[sender].element_MouseMove(sender, e);
-            AssociatedObject.PreviewMouseLeftButtonUp +=
-                (sender, e) => StateMap[sender].element_MouseUp(sender, e);
-        }
+        public FrameworkElement MoveObject { get { return AssociatedObject as FrameworkElement; } }
 
         private T FindParent<T>(DependencyObject element)
             where T : DependencyObject
@@ -153,7 +130,7 @@ namespace Spider.Solitaire.View
             public Canvas Canvas { get; set; }
             public MoveObjectBehavior MoveObjectBehavior { get; private set; }
 
-            public FrameworkElement MoveObject { get { return MoveObjectBehavior.AssociatedObject; } }
+            public FrameworkElement MoveObject { get { return MoveObjectBehavior.MoveObject; } }
             public bool FromSelected { get { return MoveObjectBehavior.FromSelected; } }
 
             public void SetParent(MoveObjectBehavior moveObjectBehavoir)
@@ -289,6 +266,29 @@ namespace Spider.Solitaire.View
                     onStoryboardCompleted();
                 }
             }
+        }
+
+        protected override void OnActiveExecute(Markup.Programming.Core.Engine engine)
+        {
+            var canvas = FindParent<Canvas>(AssociatedObject);
+            var state = StateMap.Values.Where(value => value.Canvas == canvas).FirstOrDefault();
+            if (state == null)
+            {
+                state = new MoveObjectState { Canvas = canvas };
+            }
+            StateMap[AssociatedObject] = state;
+            if (IsMoveObject)
+            {
+                state.SetParent(this);
+                MoveObject.Visibility = Visibility.Collapsed;
+            }
+
+            MoveObject.PreviewMouseLeftButtonDown +=
+                (sender, e) => StateMap[sender].element_MouseDown(sender, e);
+            MoveObject.PreviewMouseMove +=
+                (sender, e) => StateMap[sender].element_MouseMove(sender, e);
+            MoveObject.PreviewMouseLeftButtonUp +=
+                (sender, e) => StateMap[sender].element_MouseUp(sender, e);
         }
     }
 }

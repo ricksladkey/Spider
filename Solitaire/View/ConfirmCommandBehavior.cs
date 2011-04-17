@@ -2,31 +2,20 @@
 using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interactivity;
+using Markup.Programming.Core;
 
 namespace Spider.Solitaire.View
 {
-    public class Confirm : Behavior<UIElement>
+    public class Confirm : Handler
     {
-
-        protected override void OnAttached()
-        {
-            base.OnAttached();
-            if (AssociatedObject is ButtonBase)
-            {
-                ((ButtonBase)AssociatedObject).Click += new RoutedEventHandler(PromptAndExecuteCommand);
-            }
-            else
-            {
-                AssociatedObject.MouseLeftButtonDown += new MouseButtonEventHandler(PromptAndExecuteCommand);
-            }
-
-        }
         protected override void OnDetaching()
         {
             base.OnDetaching();
-            ((Button)AssociatedObject).Click -= PromptAndExecuteCommand;
-            AssociatedObject.MouseLeftButtonDown -= PromptAndExecuteCommand;
+
+            if (AssociatedObject is ButtonBase)
+                (AssociatedObject as ButtonBase).Click -= PromptAndExecuteCommand;
+            else
+                (AssociatedObject as UIElement).MouseLeftButtonDown -= PromptAndExecuteCommand;
         }
 
         void PromptAndExecuteCommand(object sender, RoutedEventArgs e)
@@ -39,8 +28,6 @@ namespace Spider.Solitaire.View
                 }
             }
         }
-
-
 
         public static readonly DependencyProperty CommandParameterProperty = DependencyProperty.Register("CommandParameter", typeof(object), typeof(Confirm), null);
         public object CommandParameter
@@ -78,7 +65,13 @@ namespace Spider.Solitaire.View
             set { SetValue(ConfirmMessageProperty, value); }
         }
 
-
+        protected override void OnActiveExecute(Markup.Programming.Core.Engine engine)
+        {
+            if (AssociatedObject is ButtonBase)
+                (AssociatedObject as ButtonBase).Click += new RoutedEventHandler(PromptAndExecuteCommand);
+            else
+                (AssociatedObject as UIElement).MouseLeftButtonDown += new MouseButtonEventHandler(PromptAndExecuteCommand);
+        }
     }
 }
 

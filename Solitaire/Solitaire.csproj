@@ -46,9 +46,11 @@
     <OutputPath>..\bin\Any CPU\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Markup.Programming">
+      <HintPath>..\..\WPF\Markup.Programming\bin\WPF4\Debug\Markup.Programming.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -81,7 +83,6 @@
     <Compile Include="View\OverlapPanel.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="View\MoveObjectBehavior.cs" />
-    <Compile Include="View\ShowMessageBox.cs" />
     <Compile Include="View\StoryboardPlayer.cs" />
     <Page Include="CardDictionary1.xaml">
       <SubType>Designer</SubType>
