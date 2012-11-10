@@ -5,6 +5,8 @@
     xmlns:vw="clr-namespace:Spider.Solitaire.View"
     xmlns:vm="clr-namespace:Spider.Solitaire.ViewModel"
     >
+
+    <!-- Playing Cards from Adam Nathan's "Windows Presentation Foundation Unleashed" book samples at http://adamnathan.net/wpf/ -->
     
     <LinearGradientBrush x:Key="CardNormalBrush" StartPoint="0,0" EndPoint="0,1">
         <GradientStop Color="#00FFFFFF" Offset="0" />
