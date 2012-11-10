@@ -4,26 +4,24 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Spider.Engine.Collections;
 using Spider.Engine.Core;
 using Spider.Engine.GamePlay;
+using Xunit;
 
 namespace Spider.Tests
 {
-    [TestClass]
     public class Tests
     {
         private Game game = null;
 
-        [TestMethod]
+        [Fact]
         public void InstantiationTest()
         {
             game = new Game();
         }
 
-        [TestMethod]
+        [Fact]
         public void SerializationTest()
         {
             string data1 = @"
@@ -35,30 +33,30 @@ namespace Spider.Tests
             Game game1 = new Game(data1);
             Game game2 = new Game(game1.ToAsciiString());
             string data2 = game2.ToAsciiString();
-            Assert.AreEqual(TrimAll(data2), TrimAll(data1));
+            Assert.Equal(TrimAll(data2), TrimAll(data1));
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyTest1()
         {
             // No cards: we win.
             string data = "@2|As|||@";
             game = new Game(data);
-            Assert.IsTrue(game.MakeMove());
-            Assert.IsTrue(game.Won);
+            Assert.True(game.MakeMove());
+            Assert.True(game.Won);
         }
 
-        [TestMethod]
+        [Fact]
         public void EmptyTest2()
         {
             // No useful move: we lose.
             string data = "@2|||As|@";
             game = new Game(data);
-            Assert.IsFalse(game.MakeMove());
-            Assert.IsFalse(game.Won);
+            Assert.False(game.MakeMove());
+            Assert.False(game.Won);
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest1()
         {
             // Undo an ordinary move.
@@ -67,7 +65,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Move");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest2()
         {
             // Undo an ordinary move that turns over a card.
@@ -76,7 +74,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Move");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest3()
         {
             // Undo an ordinary move that causes a discard.
@@ -85,7 +83,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Move");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest4()
         {
             // Undo an ordinary move that causes a discard and turns over a card.
@@ -94,7 +92,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Move");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest5()
         {
             // Undo a deal.
@@ -103,7 +101,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Deal");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest6()
         {
             // Undo a deal that causes a discard.
@@ -112,7 +110,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Deal");
         }
 
-        [TestMethod]
+        [Fact]
         public void UndoTest7()
         {
             // Undo a deal that causes a discard and turns over a card.
@@ -121,7 +119,7 @@ namespace Spider.Tests
             CheckUndo(data1, data2, "Deal");
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest1()
         {
             // A 1/1 swap move, 1 space.
@@ -130,7 +128,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest2()
         {
             // A 1/1 whole pile swap move, 1 space.
@@ -139,7 +137,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest3()
         {
             // A 1/3 swap move, 2 spaces.
@@ -148,7 +146,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest4()
         {
             // A 2/2 swap move, 2 spaces.
@@ -157,7 +155,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest5()
         {
             // A 2/2 whole pile swap move, 2 spaces.
@@ -166,7 +164,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest6()
         {
             // A 1/6 swap move, 3 spaces.
@@ -175,7 +173,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest7()
         {
             // A 2/5 swap move, 3 spaces.
@@ -184,7 +182,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest8()
         {
             // A 3/4 swap move, 3 spaces.
@@ -193,7 +191,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest9()
         {
             // A 4/3 swap move, 3 spaces.
@@ -202,7 +200,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest10()
         {
             // A 5/2 swap move, 3 spaces.
@@ -211,7 +209,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest11()
         {
             // A 6/1 swap move, 3 spaces.
@@ -220,7 +218,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest12()
         {
             // A 1/1 out-of-order swap move, 0 spaces, 1 holding pile.
@@ -229,7 +227,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest13()
         {
             // A 1/1 in-order swap move, 0 spaces, 1 holding pile.
@@ -238,8 +236,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
-        [Ignore] // XXX: SwapMoveFinder.Check no longer finds *all* holding moves.
+        [Fact(Skip = "XXX: SwapMoveFinder.Check no longer finds *all* holding moves.")]
         public void SwapTest14()
         {
             // A 1/1 in-order swap move, 0 spaces, 2 holding piles.
@@ -248,7 +245,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SwapTest15()
         {
             // A 2/2 out-of-order swap move, 1 spaces, 1 holding piles.
@@ -257,7 +254,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest1()
         {
             // A 1/1 composite single pile move, 1 space.
@@ -266,7 +263,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest2()
         {
             // A 1/1 inversion move, 1 space.
@@ -275,7 +272,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest3()
         {
             // A 1/1/1 composite single pile move, 1 space.
@@ -284,7 +281,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest4()
         {
             // A 1/1/1 inversion move, 1 space.
@@ -293,7 +290,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest5()
         {
             // A 1/1/1 mixed composite single pile move, 1 space.
@@ -302,7 +299,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest6()
         {
             // A 1/1/1 inversion move, 1 space
@@ -312,7 +309,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest7()
         {
             // A 1/1/1 inversion move, 1 space
@@ -322,7 +319,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest8()
         {
             // A 1/2 composite single pile move, 2 spaces.
@@ -331,7 +328,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest9()
         {
             // A 1/3 composite single pile move, 2 spaces.
@@ -340,7 +337,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest10()
         {
             // A 2/2 composite single pile move, 2 spaces.
@@ -349,7 +346,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest11()
         {
             // A 1/4 composite single pile move, three spaces.
@@ -358,7 +355,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest12()
         {
             // A 1/6 composite single pile move, three spaces.
@@ -367,7 +364,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest13()
         {
             // A 2/5 composite single pile move, three spaces.
@@ -376,7 +373,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest14()
         {
             // A 4/3 composite single pile move, three spaces.
@@ -385,7 +382,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest15()
         {
             // A 1/1/1/1 composite single pile move with reused piles, 1 space.
@@ -394,7 +391,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest16()
         {
             // A 1/1 composite single pile move, 0 spaces.
@@ -403,7 +400,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest17()
         {
             // A 1/1/1 composite single pile move with reused pile, 1 space.
@@ -412,7 +409,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest18()
         {
             // A 1/1/1 partial composite single pile move, 1 space.
@@ -421,7 +418,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest19()
         {
             // A 1/1/1 reload to from composite single pile move, 1 space.
@@ -430,7 +427,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest20()
         {
             // A 1/1/1 interior holding composite single pile move, 1 space.
@@ -439,7 +436,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest21()
         {
             // A 1/1/1 partial holding composite single pile move, 1 space.
@@ -448,7 +445,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest22()
         {
             // This tests a large offload that can be done as a single pile.
@@ -457,7 +454,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest23()
         {
             // Same test a the previous but requires a holding pile.
@@ -466,7 +463,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest24()
         {
             // A composite single pile move with a discard.
@@ -475,7 +472,7 @@ namespace Spider.Tests
             CheckMove(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest25()
         {
             // A 2/1/1 composite single pile move, 2 spaces, using an uncovering move.
@@ -484,7 +481,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest26()
         {
             // A 2/1/1 composite single pile move, 2 spaces, using an uncovering move with a holding pile.
@@ -493,7 +490,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest27()
         {
             // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move.
@@ -502,7 +499,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void CompositeSinglePileTest28()
         {
             // A 2/1/1 composite single pile move that turns over a card, 2 spaces, using an uncovering move with a holding pile.
@@ -511,7 +508,7 @@ namespace Spider.Tests
             CheckMoveSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SearchTest1()
         {
             string data1 = "@2|||Ts-9s-8s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -519,7 +516,7 @@ namespace Spider.Tests
             CheckSearchSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SearchTest2()
         {
             string data1 = "@2|||Ts-9s9s-8s9s-7s-Ks-Ks-Ks-Ks-Ks-Ks|@";
@@ -527,7 +524,7 @@ namespace Spider.Tests
             CheckSearchSucceeds(data1, data2);
         }
 
-        [TestMethod]
+        [Fact]
         public void SearchTest3()
         {
             // Why does it move Js -> Qh instead of 4s -> 5s?
@@ -551,7 +548,7 @@ namespace Spider.Tests
             string initial = data1;
             game = new Game(initial, AlgorithmType.Search);
             game.Diagnostics = true;
-            Assert.IsTrue(game.MakeMove());
+            Assert.True(game.MakeMove());
             string expected = new Game(data2).ToAsciiString();
             string actual = game.ToAsciiString();
             if (expected != actual)
@@ -562,7 +559,7 @@ namespace Spider.Tests
                 Utils.WriteLine("expected: {0}", expected);
                 Utils.WriteLine("actual:   {0}", actual);
             }
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
         private void CheckResults(string initial, string expected, string actual)
@@ -575,7 +572,7 @@ namespace Spider.Tests
                 Utils.WriteLine("expected: {0}", expected);
                 Utils.WriteLine("actual:   {0}", actual);
             }
-            Assert.AreEqual(expected, actual);
+            Assert.Equal(expected, actual);
         }
 
         private void CheckMoveSucceeds(string initial, string expected)
@@ -583,7 +580,7 @@ namespace Spider.Tests
             // Check that the only available move is made.
             game = new Game(initial);
             game.Diagnostics = true;
-            Assert.IsTrue(game.MakeMove());
+            Assert.True(game.MakeMove());
             string actual = TrimAll(game.ToAsciiString());
             CheckResults(initial, expected, actual);
         }
@@ -604,7 +601,7 @@ namespace Spider.Tests
                     PrintCandidates();
                     Print();
                 }
-                Assert.IsTrue(after < before);
+                Assert.True(after < before);
             }
             else
             {
@@ -630,7 +627,7 @@ namespace Spider.Tests
             int checkPoint = game.Tableau.CheckPoint;
             if (action == "Move")
             {
-                Assert.IsTrue(game.MakeMove());
+                Assert.True(game.MakeMove());
             }
             else if (action == "Deal")
             {

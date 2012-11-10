@@ -11,13 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{1F3B7D25-9596-4C0D-9FB9-005CD8F3773A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTests", "SpiderTests\SpiderTests.csproj", "{8AF8065B-5844-4BD7-9848-A12CA4338AFF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Solitaire", "Solitaire\Solitaire.csproj", "{D27FF5E3-1DA0-4B3D-BF2F-D53C8F2098D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTool", "SpiderTool\SpiderTool.csproj", "{8E67399D-F956-4C56-9736-31752E41BF8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spider.Engine", "Engine\Spider.Engine.csproj", "{585A91A7-20E9-4C67-9FE2-D338EE302149}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpiderTests", "SpiderTests\SpiderTests.csproj", "{7820E4A4-662E-4CE4-BE3F-90A380059C21}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -46,14 +46,12 @@ Global
 		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|Any CPU.Build.0 = Release|Any CPU
 		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|x86.ActiveCfg = Release|x86
 		{585A91A7-20E9-4C67-9FE2-D338EE302149}.Release|x86.Build.0 = Release|x86
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|x86.ActiveCfg = Debug|x86
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Debug|x86.Build.0 = Debug|x86
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|x86.ActiveCfg = Release|x86
-		{8AF8065B-5844-4BD7-9848-A12CA4338AFF}.Release|x86.Build.0 = Release|x86
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7820E4A4-662E-4CE4-BE3F-90A380059C21}.Release|x86.ActiveCfg = Release|Any CPU
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E67399D-F956-4C56-9736-31752E41BF8F}.Debug|x86.ActiveCfg = Debug|x86

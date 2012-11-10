@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Spider.Engine.Collections;
 using Spider.Engine.Core;
 using Spider.Tests;
