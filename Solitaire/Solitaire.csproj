@@ -46,9 +46,6 @@
     <OutputPath>..\bin\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Markup.Programming">
-      <HintPath>..\..\WPF\Markup.Programming\bin\WPF4\Debug\Markup.Programming.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
