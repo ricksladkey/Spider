@@ -113,6 +113,8 @@ namespace Spider.Solitaire.ViewModel
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
+            if (parameter == null || !(parameter is T))
+                return false;
             return _canExecute == null ? true : _canExecute((T)parameter);
         }
 

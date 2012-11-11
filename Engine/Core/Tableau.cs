@@ -815,7 +815,7 @@ namespace Spider.Engine.Core
                     ZobristKeys[column][row] = new int[cards];
                     for (int card = 0; card < cards; card++)
                     {
-                        ZobristKeys[column][row][card] = random.Next(int.MinValue, int.MaxValue);
+                        ZobristKeys[column][row][card] = random.Next();
                     }
                 }
             }
