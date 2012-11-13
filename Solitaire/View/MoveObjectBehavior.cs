@@ -9,11 +9,19 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Threading.Tasks;
 using Markup.Programming.Core;
+using System.Reflection;
 
 namespace Spider.Solitaire.View
 {
     public class MoveObjectBehavior : Handler
     {
+        private static object disconnectedItem =
+            typeof(System.Windows.Data.BindingExpressionBase)
+                .GetField("DisconnectedItem", BindingFlags.Static | BindingFlags.NonPublic)
+                .GetValue(null);
+
+        private static bool IsDisconnectedItem(object obj) { return obj == disconnectedItem; }
+
         public static readonly DependencyProperty IsMoveObjectProperty =
             DependencyProperty.Register("IsMoveObject", typeof(bool), typeof(MoveObjectBehavior), new PropertyMetadata(false));
         public static readonly DependencyProperty FromSelectedProperty =
@@ -133,14 +141,16 @@ namespace Spider.Solitaire.View
             public FrameworkElement MoveObject { get { return MoveObjectBehavior.MoveObject; } }
             public bool FromSelected { get { return MoveObjectBehavior.FromSelected; } }
 
-            public void SetParent(MoveObjectBehavior moveObjectBehavoir)
+            public void SetParent(MoveObjectBehavior moveObjectBehavior)
             {
-                MoveObjectBehavior = moveObjectBehavoir;
+                MoveObjectBehavior = moveObjectBehavior;
             }
 
             public void element_MouseDown(object sender, MouseButtonEventArgs e)
             {
                 var element = (FrameworkElement)sender;
+                if (element != MoveObject && IsDisconnectedItem(element.DataContext))
+                    element = MoveObject;
                 if (element != MoveObject)
                 {
                     if (!MoveObjectBehavior.MoveSelectCommand.CanExecute(element.DataContext) &&

@@ -13,7 +13,10 @@
         <SolidColorBrush x:Key="GamePlayBackground" Color="DarkGreen"/>
 
         <DataTemplate x:Key="CardTemplate">
-            <ContentPresenter x:Name="cardPresenter" CacheMode="BitmapCache">
+            <ContentPresenter x:Name="cardPresenter">
+                <ContentPresenter.CacheMode>
+                    <BitmapCache/>
+                </ContentPresenter.CacheMode>
                 <ContentPresenter.ContentTemplateSelector>
                     <vw:CardTemplateSelector
                         EmptySpaceTemplate="{StaticResource EmptySpaceTemplate}"

@@ -9,6 +9,18 @@ using Spider.Engine.Core;
 
 namespace Spider.Engine.GamePlay
 {
+    /// <summary>
+    /// Finds composite single pile moves.
+    /// </summary>
+    /// <remarks>
+    /// A composite single pile move is a move that preserves the number of
+    /// spaces by rearranging the cards in a single pile.  A simple example
+    /// is a pile that has a single face up card that can be played but is
+    /// buried under a run of other cards.  If those cards can be either
+    /// relocated to holding piles or rebuilt up as a run on an available
+    /// space, then that card can be played leaving a new space to make up
+    /// for the space used during the moving.
+    /// </remarks>
     public class CompositeSinglePileMoveFinder : GameAdapter
     {
         private int from;
